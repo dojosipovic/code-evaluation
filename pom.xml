@@ -53,11 +53,12 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                    <encoding>UTF-8</encoding>
+                    <configLocation>${maven.multiModuleProjectDirectory}/checkstyle.xml</configLocation>
+                    <suppressionsLocation>${maven.multiModuleProjectDirectory}/checkstyle-suppressions.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
+
+                    <propertyExpansion>org.checkstyle.google.severity=${org.checkstyle.google.severity}</propertyExpansion>
                 </configuration>
             </plugin>
         </plugins>

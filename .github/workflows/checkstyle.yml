@@ -3,10 +3,25 @@ name: Checkstyle
 on:
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - "backend-core/**"
+      - "backend-plagscan/**"
+      - "pom.xml"
+      - "**/pom.xml"
+      - "checkstyle.xml"
+      - "checkstyle-suppressions.xml"
+      - ".github/workflows/checkstyle.yml"
 
 jobs:
   checkstyle:
+    name: Checkstyle (${{ matrix.module }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ backend-core, backend-plagscan ]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,4 +34,4 @@ jobs:
           cache: maven
 
       - name: Run Checkstyle
-        run: mvn checkstyle:check
+        run: mvn -pl ${{ matrix.module }} -am checkstyle:check -e

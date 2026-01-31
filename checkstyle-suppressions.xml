@@ -5,7 +5,5 @@
 <suppressions>
     <suppress checks="MissingJavadocMethod" />
     <suppress checks="MissingJavadocType" />
-    <suppress
-            files=".*MyEntity\.java"
-    />
+    <suppress files=".*MyEntity\.java" checks="JavadocParagraph|LineLength"/>
 </suppressions>

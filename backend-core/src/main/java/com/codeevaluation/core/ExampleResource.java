@@ -10,7 +10,7 @@ public class ExampleResource {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
+    public String hello(){
         return "Hello from Quarkus REST";
     }
 }

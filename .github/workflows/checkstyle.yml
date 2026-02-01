@@ -3,6 +3,9 @@ name: Checkstyle
 on:
   pull_request:
     branches: [ main, develop ]
+    types: [opened, synchronize, ready_for_review, closed]
+  push:
+    branches: [ main, develop ]
 
 permissions:
   contents: read
@@ -28,7 +31,9 @@ jobs:
 
   checkstyle-backend-core:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.backend_core == 'true' }}
+    if: >
+      needs.detect-changes.outputs.backend_core == 'true' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +47,9 @@ jobs:
 
   checkstyle-backend-plagscan:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.backend_plagscan == 'true' }}
+    if: >
+      needs.detect-changes.outputs.backend_plagscan == 'true' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

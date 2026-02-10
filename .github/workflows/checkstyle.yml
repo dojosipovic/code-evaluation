@@ -3,7 +3,7 @@ name: Checkstyle
 on:
   pull_request:
     branches: [ main, develop ]
-    types: [opened, synchronize, ready_for_review, closed]
+    types: [opened, synchronize, ready_for_review]
   push:
     branches: [ main, develop ]
 

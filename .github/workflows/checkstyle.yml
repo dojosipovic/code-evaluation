@@ -43,7 +43,7 @@ jobs:
           java-version: 21
           cache: maven
       - name: Run Checkstyle (backend-core)
-        run: mvn -pl backend-core -am checkstyle:check
+        run: mvn -pl backend-core checkstyle:check
 
   checkstyle-backend-plagscan:
     needs: detect-changes
@@ -59,4 +59,4 @@ jobs:
           java-version: 21
           cache: maven
       - name: Run Checkstyle (backend-plagscan)
-        run: mvn -pl backend-plagscan -am checkstyle:check
+        run: mvn -pl backend-plagscan checkstyle:check

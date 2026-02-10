@@ -93,30 +93,31 @@ public class JplagService {
             Path reportFile = rootDir.resolve("report.plag");
             ReportObjectFactory reportFactory = new ReportObjectFactory(reportFile.toFile());
             reportFactory.createAndSaveReport(result);
-            String fixed = """
-            {
-                "language": "cpp",
-                "baseCodeSubmissionDirectory": "BaseCode",
-                "submissionDirectories": [
-                  "."
-                ],
-              "clusteringOptions": {
-                    "similarityMetric": "AVG",
-                    "spectralKernelBandwidth": 20.0,
-                    "spectralGaussianProcessVariance": 0.0025000000000000005,
-                    "spectralMinRuns": 5,
-                    "spectralMaxRuns": 50,
-                    "spectralMaxKMeansIterationPerRun": 200,
-                    "agglomerativeThreshold": 0.2,
-                    "preprocessor": "CUMULATIVE_DISTRIBUTION_FUNCTION",
-                    "enabled": true,
-                    "algorithm": "SPECTRAL",
-                    "agglomerativeInterClusterSimilarity": "AVERAGE",
-                    "preprocessorThreshold": 0.2,
-                    "preprocessorPercentile": 0.5
-                }
-            }
-            """;
+            String fixed =
+                    """
+                    {
+                        "language": "cpp",
+                        "baseCodeSubmissionDirectory": "BaseCode",
+                        "submissionDirectories": [
+                          "."
+                        ],
+                      "clusteringOptions": {
+                            "similarityMetric": "AVG",
+                            "spectralKernelBandwidth": 20.0,
+                            "spectralGaussianProcessVariance": 0.0025000000000000005,
+                            "spectralMinRuns": 5,
+                            "spectralMaxRuns": 50,
+                            "spectralMaxKMeansIterationPerRun": 200,
+                            "agglomerativeThreshold": 0.2,
+                            "preprocessor": "CUMULATIVE_DISTRIBUTION_FUNCTION",
+                            "enabled": true,
+                            "algorithm": "SPECTRAL",
+                            "agglomerativeInterClusterSimilarity": "AVERAGE",
+                            "preprocessorThreshold": 0.2,
+                            "preprocessorPercentile": 0.5
+                        }
+                    }
+                    """;
 
             URI uri = URI.create("jar:" + reportFile.toUri());
 
@@ -183,6 +184,7 @@ public class JplagService {
                         try {
                             Files.deleteIfExists(path);
                         } catch (IOException ignored) {
+                            // ignore
                         }
                     });
         } catch (IOException e) {
@@ -226,7 +228,7 @@ public class JplagService {
                 }
 
                 List<String> members = c.getMembers().stream()
-                        .map(m -> stripCppExt(m.getName())) // ili getDisplayName(), ovisno što Submission nudi
+                        .map(m -> stripCppExt(m.getName()))
                         .toList();
 
                 ClusterResult dto = new ClusterResult(

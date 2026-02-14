@@ -1,6 +1,6 @@
-package com.codeevaluation.core.models;
+package com.codeevaluation.core.model;
 
-import com.codeevaluation.core.enums.Role;
+import com.codeevaluation.core.enumeration.Role;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_user")
 @Getter
 @Setter
 public class User extends PanacheEntityBase {
@@ -25,6 +25,9 @@ public class User extends PanacheEntityBase {
 
     @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

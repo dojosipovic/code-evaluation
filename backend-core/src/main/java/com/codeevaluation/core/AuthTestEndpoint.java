@@ -1,11 +1,13 @@
 package com.codeevaluation.core;
 
+import com.codeevaluation.core.model.User;
+import com.codeevaluation.core.service.AuthService;
 import io.quarkus.security.Authenticated;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -18,6 +20,9 @@ import java.util.Set;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthTestEndpoint {
 
+    @Inject
+    AuthService authService;
+
     public record LoginRequest(String username, String password) {}
 
     public record LoginResponse(String accessToken) {}
@@ -25,15 +30,14 @@ public class AuthTestEndpoint {
     @POST
     @Path("/login")
     public LoginResponse login(LoginRequest req) {
-        // TODO: validiraj iz baze + hash provjera
-        if (!"dominik".equals(req.username()) || !"test".equals(req.password())) {
-            throw new NotAuthorizedException("Bad credentials");
-        }
+
+        // nije dobro da se tu vraca user nego da service vrati token
+        User user = authService.authenticate(req.username(), req.password());
 
         String token =
-                Jwt.issuer("my-app")
-                        .subject(req.username())
-                        .groups(Set.of("USER"))
+                Jwt.issuer("code-evaluation")
+                        .subject(user.getUsername())
+                        .groups(Set.of(user.getRole().toString()))
                         .expiresIn(Duration.ofHours(1))
                         .sign();
 

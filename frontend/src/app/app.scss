@@ -1,0 +1,7 @@
+@media (max-width: 600px) {
+  .p-toast {
+    width: calc(100vw - 24px) !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}

@@ -1,1 +1,56 @@
-<p>login works!</p>
+<div class="bg">
+  <div class="shell">
+    <p-card styleClass="card">
+      <div class="header">
+        <div class="brand">
+          <i class="pi pi-lock"></i>
+          <span>Prijava</span>
+        </div>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" pInputText type="username" formControlName="username" placeholder="johndoe" />
+          <small class="error" *ngIf="isInvalid('username')">Unesi username</small>
+        </div>
+
+        <div class="field">
+          <label for="password">Lozinka</label>
+          <p-password
+            inputId="password"
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Lozinka">
+          </p-password>
+          <small class="error" *ngIf="isInvalid('password')">Lozinka je obavezna.</small>
+        </div>
+
+        <div class="row">
+          <div class="remember">
+            <p-checkbox formControlName="remember" inputId="remember" binary="true"></p-checkbox>
+            <label for="remember">Zapamti me</label>
+          </div>
+          <a class="link" href="#" (click)="$event.preventDefault()">Zaboravljena lozinka?</a>
+        </div>
+
+        <p-button
+          type="submit"
+          label="Prijavi se"
+          icon="pi pi-sign-in"
+          styleClass="w-full"
+          [disabled]="form.invalid || loading"
+          [loading]="loading">
+        </p-button>
+
+        <p-divider></p-divider>
+
+        <div class="hint">
+          Nemaš račun?
+          <a class="link" href="#" (click)="$event.preventDefault()">Registriraj se</a>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

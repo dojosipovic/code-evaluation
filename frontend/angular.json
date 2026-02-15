@@ -30,6 +30,7 @@
               }
             ],
             "styles": [
+              "primeicons/primeicons.css",
               "src/styles.scss"
             ]
           },

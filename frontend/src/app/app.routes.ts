@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
-import { Login } from './login/login';
+import { Login } from './pages/login/login';
+import { Dashboard } from './pages/dashboard/dashboard';
+import { authGuard } from './services/auth/auth.guard';
+import { guestGuard } from './services/auth/guest.guard';
 
 export const routes: Routes = [
-    { path: 'login', component: Login },
+    { path: 'login', canActivate: [guestGuard], component: Login },
+    { path: 'dashboard', canActivate: [authGuard], component: Dashboard },
 
-    { path: '', pathMatch: 'full', redirectTo: 'login' },
+    { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     { path: '**', redirectTo: 'login' }
 ];

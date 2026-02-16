@@ -10,6 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../../services/auth/auth-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -32,7 +34,9 @@ export class Login {
 
   constructor(
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private auth: AuthService,
+    private router: Router
   ) {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
@@ -62,18 +66,21 @@ export class Login {
     }
 
     this.loading = true;
+    const { username, password, remember } = this.form.getRawValue();
 
-    // za sada samo demo
-    console.log('login form', this.form.getRawValue());
-    setTimeout(() => {
+    this.auth.login({ username: username!, password: password! }).subscribe(ok => {
       this.loading = false;
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Prijava uspješna',
-        detail: 'Dobrodošao natrag!'
-      });
+      if (!ok) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Neuspješna prijava',
+          detail: 'Provjeri korisničko ime/lozinku.'
+        });
+        return;
+      }
 
-    }, 800);
+      this.router.navigateByUrl('/dashboard');
+    });
   }
 }

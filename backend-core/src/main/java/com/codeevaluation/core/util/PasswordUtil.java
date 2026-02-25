@@ -3,6 +3,8 @@ package com.codeevaluation.core.util;
 import io.quarkus.elytron.security.common.BcryptUtil;
 
 public class PasswordUtil {
+    private PasswordUtil() {}
+
     public static String hash(String password) {
         return BcryptUtil.bcryptHash(password, 12);
     }

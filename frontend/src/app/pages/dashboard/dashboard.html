@@ -1,0 +1,16 @@
+<p>dashboard works!</p>
+<p-card header="Dashboard">
+    <p>Dobrodošao 👋</p>
+
+    <p-button
+        label="Dohvati moje podatke"
+        icon="pi pi-user"
+        (onClick)="loadMe()"
+        styleClass="mb-3">
+    </p-button>
+
+    @if (me) {
+        <pre>{{ me }}</pre>
+    }
+    
+</p-card>

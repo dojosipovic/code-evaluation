@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { ILoginRequest } from '../../models/ILoginRequest';
 import { ILoginResponse } from '../../models/ILoginResponse';
 import { catchError, map, of, tap } from 'rxjs';
@@ -10,13 +10,13 @@ import { IRefreshResponse } from '../../models/IRefreshResponse';
 })
 export class AuthService {
   private readonly tokenKey = 'access_token';
+  private _token = signal<string | null>(this.readToken());
+  private http = inject(HttpClient);
+
   readonly apiBase = '';
 
-  private _token = signal<string | null>(this.readToken());
   token = computed(() => this._token());
   isAuthenticated = computed(() => !!this.token());
-
-  constructor(private http: HttpClient) {}
 
   login(req: ILoginRequest, remember: boolean) {
     return this.http.post<ILoginResponse>(`${this.apiBase}/auth/login`, req)

@@ -1,8 +1,8 @@
 package com.codeevaluation.core;
 
-import com.codeevaluation.core.api.dto.LoginRequestDTO;
-import com.codeevaluation.core.api.dto.LoginResponseDTO;
-import com.codeevaluation.core.api.dto.RefreshResponseDTO;
+import com.codeevaluation.core.api.dto.LoginRequestDto;
+import com.codeevaluation.core.api.dto.LoginResponseDto;
+import com.codeevaluation.core.api.dto.RefreshResponseDto;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.service.AuthService;
 import com.codeevaluation.core.util.CookieUtil;
@@ -31,14 +31,14 @@ public class AuthResource {
 
     @POST
     @Path("/login")
-    public Response login(LoginRequestDTO req) {
+    public Response login(LoginRequestDto req) {
         User user = authService.authenticate(req.username(), req.password());
 
         String access = authService.issueAccessToken(user);
         var refreshIssue = authService.issueRefreshToken(user);
         var refreshTokenCookie = CookieUtil.buildRefreshCookie(refreshIssue.refreshPlain());
 
-        return Response.ok(new LoginResponseDTO(access))
+        return Response.ok(new LoginResponseDto(access))
                 .cookie(refreshTokenCookie)
                 .build();
     }
@@ -49,7 +49,7 @@ public class AuthResource {
         var res = authService.refresh(refreshPlain);
         var refreshTokenCookie = CookieUtil.buildRefreshCookie(res.refreshPlain());
 
-        return Response.ok(new RefreshResponseDTO(res.accessToken()))
+        return Response.ok(new RefreshResponseDto(res.accessToken()))
                 .cookie(refreshTokenCookie)
                 .build();
     }

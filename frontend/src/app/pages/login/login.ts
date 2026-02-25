@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -10,7 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
-import { AuthService } from '../../services/auth/auth-service';
+import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -30,22 +30,17 @@ import { Router } from '@angular/router';
 })
 export class Login {
   loading = false;
-  form: any;
-
-  constructor(
-    private fb: FormBuilder,
-    private messageService: MessageService,
-    private auth: AuthService,
-    private router: Router
-  ) {
-    this.form = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required]],
-      remember: [true]
-    })
-  }
-
   
+  private fb = inject(FormBuilder);
+  private messageService = inject(MessageService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
+  form = this.fb.group({
+    username: ['', [Validators.required]],
+    password: ['', [Validators.required]],
+    remember: [true]
+  });
 
   isInvalid(name: 'username' | 'password') {
     const c = this.form.get(name);
@@ -68,7 +63,7 @@ export class Login {
     this.loading = true;
     const { username, password, remember } = this.form.getRawValue();
 
-    this.auth.login({ username: username!, password: password! }).subscribe(ok => {
+    this.auth.login({ username: username!, password: password! }, !!remember).subscribe(ok => {
       this.loading = false;
 
       if (!ok) {

@@ -9,9 +9,11 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import java.time.Instant;
+import lombok.extern.slf4j.Slf4j;
 
 @Provider
 @Priority(2)
+@Slf4j
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Context
@@ -19,13 +21,15 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable throwable) {
+        log.error("Unhandled exception: {}", throwable.getMessage(), throwable);
+
         int status = 500;
 
         ApiError body = new ApiError(
                 Instant.now(),
                 status,
                 "Internal Server Error",
-                safeMessage(throwable.getMessage()),
+                "Unexpected error",
                 uriInfo.getPath()
         );
 
@@ -33,9 +37,5 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                 .type(MediaType.APPLICATION_JSON)
                 .entity(body)
                 .build();
-    }
-
-    private String safeMessage(String msg) {
-        return (msg == null || msg.isBlank()) ? "Unexpected error" : msg;
     }
 }

@@ -7,14 +7,20 @@ import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeuix/themes/lara';
 import { MessageService } from 'primeng/api';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from './services/auth/auth.interceptor';
+import { bearerInterceptor } from './services/auth/bearer.interceptor';
+import { credentialsInterceptor } from './services/auth/credentials.interceptor';
+import { refreshInterceptor } from './services/auth/refresh.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([
+      credentialsInterceptor,
+      bearerInterceptor,
+      refreshInterceptor
+    ])),
     providePrimeNG({
       ripple: true,
       theme: {

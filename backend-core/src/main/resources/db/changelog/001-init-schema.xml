@@ -34,4 +34,30 @@
         </sql>
     </changeSet>
 
+    <changeSet id="002-create-refresh-token-table" author="dominik">
+        <createTable tableName="refresh_token">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             referencedTableName="app_user"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_refresh_token_user"/>
+            </column>
+
+            <column name="token_hash" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="expires_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="revoked_at" type="timestamp with time zone"/>
+
+            <column name="replaced_by_id" type="bigint"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

@@ -12,7 +12,9 @@
         <div class="field">
           <label for="username">Username</label>
           <input id="username" pInputText type="username" formControlName="username" placeholder="johndoe" />
-          <small class="error" *ngIf="isInvalid('username')">Unesi username</small>
+          @if (isInvalid('username')) {
+            <small class="error">Unesi username</small>
+          }
         </div>
 
         <div class="field">
@@ -24,7 +26,9 @@
             [toggleMask]="true"
             placeholder="Lozinka">
           </p-password>
-          <small class="error" *ngIf="isInvalid('password')">Lozinka je obavezna.</small>
+          @if (isInvalid('password')) {
+            <small class="error">Lozinka je obavezna.</small>
+          }
         </div>
 
         <div class="row">

@@ -17,6 +17,7 @@ jobs:
     outputs:
       backend_core: ${{ steps.filter.outputs.backend_core }}
       backend_plagscan: ${{ steps.filter.outputs.backend_plagscan }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +29,8 @@ jobs:
               - backend-core/**
             backend_plagscan:
               - backend-plagscan/**
+            frontend:
+              - frontend/**
 
   checkstyle-backend-core:
     needs: detect-changes
@@ -60,3 +63,27 @@ jobs:
           cache: maven
       - name: Run Checkstyle (backend-plagscan)
         run: mvn -pl backend-plagscan checkstyle:check
+
+  eslint-frontend:
+    needs: detect-changes
+    if: >
+      needs.detect-changes.outputs.frontend == 'true' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint

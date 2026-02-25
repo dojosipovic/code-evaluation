@@ -14,10 +14,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import java.time.Duration;
 import java.util.Set;
-
+/*
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)*/
 public class AuthTestEndpoint {
 
     @Inject
@@ -27,6 +27,7 @@ public class AuthTestEndpoint {
 
     public record LoginResponse(String accessToken) {}
 
+    /*
     @POST
     @Path("/login")
     public LoginResponse login(LoginRequest req) {
@@ -56,4 +57,5 @@ public class AuthTestEndpoint {
     public String adminOnly() {
         return "secret";
     }
+    */
 }

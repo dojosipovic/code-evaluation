@@ -1,5 +1,7 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.api.dto.RunBatchResponseDto;
+import com.codeevaluation.core.api.dto.TestRunResult;
 import com.codeevaluation.core.service.dto.RunResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -64,6 +66,62 @@ public class CppDockerSandboxService {
 
         } finally {
             // Best-effort cleanup
+            try {
+                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public RunBatchResponseDto compileAndRunBatch(String cppSource, List<String> inputs, int timeoutSecPerTest) {
+        Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSecPerTest, 30)));
+        Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));
+
+        String volume = "cpp-job-" + UUID.randomUUID();
+
+        RunBatchResponseDto resp = new RunBatchResponseDto();
+        resp.phase = "batch";
+        resp.results = new ArrayList<>();
+
+        try {
+            RunResult volCreate = runDockerRaw(
+                    List.of("docker", "volume", "create", volume),
+                    Duration.ofSeconds(5),
+                    null
+            );
+            if (volCreate.exitCode != 0) {
+                RunResult fail = new RunResult(volCreate.exitCode, volCreate.durationMs, volCreate.stdout, volCreate.stderr);
+                fail.phase = "volume-create";
+                resp.compile = fail;
+                return resp;
+            }
+
+            // compile once
+            RunResult compileRes = runDockerRaw(buildCompileCmd(volume), compileTimeout, cppSource);
+            compileRes.phase = "compile";
+            resp.compile = compileRes;
+
+            if (compileRes.exitCode != 0 || compileRes.timedOut) {
+                return resp; // no test runs
+            }
+
+            // run per test input (each in a fresh container)
+            for (int i = 0; i < inputs.size(); i++) {
+                String in = inputs.get(i);
+                RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in); // send stdin for this test
+                TestRunResult tr = new TestRunResult();
+                tr.index = i;
+                tr.exitCode = r.exitCode;
+                tr.durationMs = r.durationMs;
+                tr.stdout = r.stdout;
+                tr.stderr = r.stderr;
+                tr.timedOut = r.timedOut;
+                tr.timeout = r.timeout;
+                resp.results.add(tr);
+            }
+
+            return resp;
+
+        } finally {
             try {
                 runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
             } catch (Exception ignored) {}

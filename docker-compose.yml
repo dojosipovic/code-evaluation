@@ -24,10 +24,6 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db:5432/appdb
       QUARKUS_DATASOURCE_USERNAME: appuser
       QUARKUS_DATASOURCE_PASSWORD: apppass
-
-      # >>> bitno za sandbox: neka Quarkus piše job temp ovdje
-      SANDBOX_WORKDIR_CONTAINER: /sandbox-work
-      SANDBOX_WORKDIR_HOST: D:\code-evaluation\sandbox-work
     volumes:
       - //var/run/docker.sock:/var/run/docker.sock
     depends_on:

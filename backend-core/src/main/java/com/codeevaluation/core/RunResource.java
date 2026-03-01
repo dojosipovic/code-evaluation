@@ -24,6 +24,6 @@ public class RunResource {
         if (req == null || req.code() == null || req.code().isBlank()) {
             throw new BadRequestException("Missing code");
         }
-        return svc.compileAndRun(req.code(), req.timeoutSec());
+        return svc.compileAndRun(req.code(), req.input(), req.timeoutSec());
     }
 }

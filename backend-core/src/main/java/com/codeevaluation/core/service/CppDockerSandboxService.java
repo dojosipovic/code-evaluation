@@ -26,7 +26,7 @@ public class CppDockerSandboxService {
 
     private static final int MAX_OUT_CHARS = 200_000;
 
-    public RunResult compileAndRun(String cppSource, int timeoutSec) {
+    public RunResult compileAndRun(String cppSource, String input, int timeoutSec) {
         Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSec, 30)));
         Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));
 
@@ -57,7 +57,7 @@ public class CppDockerSandboxService {
             RunResult runRes = runDockerRaw(
                     buildRunCmd(volume),
                     runTimeout,
-                    null
+                    input
             );
             runRes.phase = "run";
             return runRes;
@@ -112,7 +112,7 @@ public class CppDockerSandboxService {
 
     private List<String> buildRunCmd(String volume) {
         return new ArrayList<>(List.of(
-                "docker", "run", "--rm",
+                "docker", "run", "--rm", "-i",
                 "--name", "cpp-run-" + UUID.randomUUID(),
 
                 "--network", "none",

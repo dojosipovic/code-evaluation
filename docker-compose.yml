@@ -12,5 +12,44 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  backend:
+    container_name: backend-core
+    build:
+      context: ./backend-core
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+      - "8080:8080"
+    environment:
+      # Quarkus datasource primjer
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db:5432/appdb
+      QUARKUS_DATASOURCE_USERNAME: appuser
+      QUARKUS_DATASOURCE_PASSWORD: apppass
+
+      # >>> bitno za sandbox: neka Quarkus piše job temp ovdje
+      SANDBOX_WORKDIR_CONTAINER: /sandbox-work
+      SANDBOX_WORKDIR_HOST: D:\code-evaluation\sandbox-work
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - db
+
+  cpp-compile-image:
+    profiles: [ "build-sandbox" ]
+    build:
+      context: ./cpp-compile
+      dockerfile: Dockerfile
+    image: cpp-compile:latest
+    entrypoint: [ "true" ]
+
+  cpp-run-image:
+    profiles: [ "build-sandbox" ]
+    build:
+      context: ./cpp-run
+      dockerfile: Dockerfile
+    image: cpp-run:latest
+    entrypoint: [ "true" ]
+
+
+
 volumes:
   pgdata:

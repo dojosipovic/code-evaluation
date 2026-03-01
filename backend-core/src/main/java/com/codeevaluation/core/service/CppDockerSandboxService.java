@@ -7,7 +7,6 @@ import org.jboss.logging.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
@@ -16,62 +15,73 @@ import java.util.concurrent.*;
 public class CppDockerSandboxService {
     private static final Logger LOG = Logger.getLogger(CppDockerSandboxService.class);
 
-    // DVA image-a
     private static final String IMAGE_COMPILE = "cpp-compile:latest";
     private static final String IMAGE_RUN     = "cpp-run:latest";
 
     private static final String CPUS = "1.0";
     private static final String MEMORY = "256m";
 
-    // compile treba više procesa (g++, as, ld...)
     private static final long COMPILE_PIDS_LIMIT = 64;
-    // run može biti stroži
     private static final long RUN_PIDS_LIMIT = 32;
+
+    private static final int MAX_OUT_CHARS = 200_000;
 
     public RunResult compileAndRun(String cppSource, int timeoutSec) {
         Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSec, 30)));
         Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));
 
-        Path dir = null;
+        String volume = "cpp-job-" + UUID.randomUUID();
+
         try {
-            // VAŽNO: na Windowsu je bolje da ovo bude negdje gdje Docker Desktop ima file sharing
-            // Ako ti java.io.tmpdir nije sharean, prebaci na user.home
-            dir = Files.createTempDirectory("cpp-job-");
-            Path execDir = dir.resolve("exec");
-            Files.createDirectories(execDir);
-
-            Path main = dir.resolve("main.cpp");
-            Files.writeString(main, cppSource, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            // 1) COMPILE
-            RunResult compileRes = runDocker(buildCompileCmd(dir, execDir), compileTimeout);
-            compileRes.phase = "compile";
-            if (compileRes.exitCode != 0) {
-                return compileRes; // compile error
+            // 0) create per-job volume
+            RunResult volCreate = runDockerRaw(
+                    List.of("docker", "volume", "create", volume),
+                    Duration.ofSeconds(5),
+                    null
+            );
+            if (volCreate.exitCode != 0) {
+                volCreate.phase = "volume-create";
+                return volCreate;
             }
 
-            // 2) RUN
-            RunResult runRes = runDocker(buildRunCmd(execDir), runTimeout);
+            // 1) COMPILE (stdin -> /tmp/main.cpp, output -> /runexec/a.out in volume)
+            RunResult compileRes = runDockerRaw(
+                    buildCompileCmd(volume),
+                    compileTimeout,
+                    cppSource
+            );
+            compileRes.phase = "compile";
+            if (compileRes.exitCode != 0) return compileRes;
+
+            // 2) RUN (distroless runs /runexec/a.out; volume mounted read-only)
+            RunResult runRes = runDockerRaw(
+                    buildRunCmd(volume),
+                    runTimeout,
+                    null
+            );
             runRes.phase = "run";
             return runRes;
 
-        } catch (IOException e) {
-            LOG.error("Docker execution failed", e);
-            throw new InternalServerErrorException("Docker execution failed: " + e.getMessage());
         } finally {
-            if (dir != null) {
-                try { deleteRecursive(dir); } catch (Exception ignored) {}
-            }
+            // Best-effort cleanup
+            try {
+                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
+            } catch (Exception ignored) {}
         }
     }
 
-    private List<String> buildCompileCmd(Path dir, Path execDir) {
-        // compile: /bin/sh -c "g++ ..."
-        String inner = "g++ -O2 -std=c++20 /work/main.cpp -o /runexec/a.out";
+    private List<String> buildCompileCmd(String volume) {
+        // NOTE: We run compile as root to avoid any perms issues on the volume,
+        // but still keep hardening flags.
+        String inner =
+                "cat > /tmp/main.cpp && " +
+                        "echo '=== first 80 lines ===' && sed -n '1,80p' /tmp/main.cpp && " +
+                        "echo '=== end ===' && " +
+                        "g++ -O2 -std=c++20 /tmp/main.cpp -o /runexec/a.out && " +
+                        "chmod 755 /runexec/a.out";
 
         return new ArrayList<>(List.of(
-                "docker", "run", "--rm",
+                "docker", "run", "--rm", "-i",
                 "--name", "cpp-compile-" + UUID.randomUUID(),
 
                 "--network", "none",
@@ -84,27 +94,23 @@ public class CppDockerSandboxService {
                 "--cap-drop", "ALL",
                 "--security-opt", "no-new-privileges",
 
-                "--user", "10001:10001",
+                "--user", "0:0",
 
-                // tmpfs za /tmp (g++ povremeno koristi temp)
                 "--tmpfs", "/tmp:rw,nosuid,nodev,size=128m",
 
                 "--ulimit", "core=0",
                 "--ulimit", "fsize=1048576",
                 "--ulimit", "nofile=128:128",
 
-                "-v", dir.toAbsolutePath() + ":/work:ro",
-                "-v", execDir.toAbsolutePath() + ":/runexec:rw",
+                // per-job volume for artifacts
+                "-v", volume + ":/runexec:rw",
 
                 IMAGE_COMPILE,
-
-                // pokreni komandu kroz sh (compile image nema entrypoint)
                 "/bin/sh", "-c", inner
         ));
     }
 
-    private List<String> buildRunCmd(Path execDir) {
-        // run: distroless image već ima ENTRYPOINT /runexec/a.out
+    private List<String> buildRunCmd(String volume) {
         return new ArrayList<>(List.of(
                 "docker", "run", "--rm",
                 "--name", "cpp-run-" + UUID.randomUUID(),
@@ -119,6 +125,7 @@ public class CppDockerSandboxService {
                 "--cap-drop", "ALL",
                 "--security-opt", "no-new-privileges",
 
+                // distroless is nonroot already; keep explicit
                 "--user", "10001:10001",
 
                 "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m",
@@ -127,15 +134,14 @@ public class CppDockerSandboxService {
                 "--ulimit", "fsize=1048576",
                 "--ulimit", "nofile=128:128",
 
-                // mount binarku read-only
-                "-v", execDir.resolve("a.out").toAbsolutePath() + ":/runexec/a.out:ro",
+                // same volume, read-only
+                "-v", volume + ":/runexec:ro",
 
                 IMAGE_RUN
-                // nema shell-a, nema komandi; ENTRYPOINT pokreće a.out
         ));
     }
 
-    private RunResult runDocker(List<String> cmd, Duration timeout) {
+    private RunResult runDockerRaw(List<String> cmd, Duration timeout, String stdin) {
         long start = System.nanoTime();
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(false);
@@ -143,9 +149,16 @@ public class CppDockerSandboxService {
         try {
             Process p = pb.start();
 
+            // Provide stdin (for compile we send C++ source), then close to signal EOF.
+            try (OutputStream os = p.getOutputStream()) {
+                if (stdin != null) os.write(stdin.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                LOG.debugf("stdin write/close failed (ignored): %s", e.getMessage());
+            }
+
             ExecutorService es = Executors.newFixedThreadPool(2);
-            Future<String> outF = es.submit(() -> readLimited(p.getInputStream(), 200_000));
-            Future<String> errF = es.submit(() -> readLimited(p.getErrorStream(), 200_000));
+            Future<String> outF = es.submit(() -> readLimited(p.getInputStream(), MAX_OUT_CHARS));
+            Future<String> errF = es.submit(() -> readLimited(p.getErrorStream(), MAX_OUT_CHARS));
 
             boolean finished = p.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
             if (!finished) {
@@ -196,14 +209,5 @@ public class CppDockerSandboxService {
     private static String getFuture(Future<String> f) {
         try { return f.get(2, TimeUnit.SECONDS); }
         catch (Exception e) { return ""; }
-    }
-
-    private static void deleteRecursive(Path root) throws IOException {
-        if (!Files.exists(root)) return;
-        try (var walk = Files.walk(root)) {
-            walk.sorted(Comparator.reverseOrder()).forEach(p -> {
-                try { Files.deleteIfExists(p); } catch (IOException ignored) {}
-            });
-        }
     }
 }

@@ -9,6 +9,7 @@ public class RunResult {
     public String stderr;
     public boolean timedOut;
     public String timeout;
+    public String phase;
 
     public RunResult() {}
 

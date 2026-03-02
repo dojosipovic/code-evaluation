@@ -72,6 +72,134 @@ public class CppDockerSandboxService {
         }
     }
 
+    public RunBatchResponseDto compileAndRunBatchParallel(
+            String cppSource,
+            List<String> inputs,
+            int timeoutSecPerTest,
+            int maxParallel // npr. 4 ili 8
+    ) {
+        Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSecPerTest, 30)));
+        Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));
+
+        String volume = "cpp-job-" + UUID.randomUUID();
+
+        RunBatchResponseDto resp = new RunBatchResponseDto();
+        resp.phase = "batch";
+        resp.results = new ArrayList<>();
+
+        // fail-fast
+        if (cppSource == null || cppSource.isBlank()) {
+            RunResult c = new RunResult(1, 0, "", "Empty source code");
+            c.phase = "compile";
+            resp.compile = c;
+            return resp;
+        }
+        if (inputs == null) inputs = List.of("");
+
+        // limit paralelizma
+        int threads = Math.max(1, Math.min(maxParallel, inputs.size()));
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+
+        try {
+            // 0) volume create
+            RunResult volCreate = runDockerRaw(
+                    List.of("docker", "volume", "create", volume),
+                    Duration.ofSeconds(5),
+                    null
+            );
+            if (volCreate.exitCode != 0) {
+                RunResult fail = new RunResult(volCreate.exitCode, volCreate.durationMs, volCreate.stdout, volCreate.stderr);
+                fail.phase = "volume-create";
+                resp.compile = fail;
+                return resp;
+            }
+
+            // 1) compile jednom
+            RunResult compileRes = runDockerRaw(buildCompileCmd(volume), compileTimeout, cppSource);
+            compileRes.phase = "compile";
+            resp.compile = compileRes;
+
+            if (compileRes.exitCode != 0 || compileRes.timedOut) {
+                return resp; // nema runova
+            }
+
+            // 2) paralelni runovi
+            List<Future<TestRunResult>> futures = new ArrayList<>(inputs.size());
+
+            for (int i = 0; i < inputs.size(); i++) {
+                final int idx = i;
+                final String in = inputs.get(i) == null ? "" : inputs.get(i);
+
+                futures.add(pool.submit(() -> {
+                    RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in);
+
+                    TestRunResult tr = new TestRunResult();
+                    tr.index = idx;
+                    tr.exitCode = r.exitCode;
+                    tr.durationMs = r.durationMs;
+                    tr.stdout = r.stdout;
+                    tr.stderr = r.stderr;
+                    tr.timedOut = r.timedOut;
+                    tr.timeout = r.timeout;
+
+                    if (r.exitCode >= 128) {
+                        int signal = r.exitCode - 128;
+                        tr.stderr = "Runtime error (signal " + signal + ")";
+                    }
+                    return tr;
+                }));
+            }
+
+            // pokupi rezultate (redoslijed očuvamo po indexu)
+            TestRunResult[] ordered = new TestRunResult[inputs.size()];
+
+            for (Future<TestRunResult> f : futures) {
+                try {
+                    TestRunResult tr = f.get(runTimeout.toMillis() + 2000, TimeUnit.MILLISECONDS);
+                    ordered[tr.index] = tr;
+                } catch (TimeoutException te) {
+                    // ako neka Future zapne duže od očekivanog, označi timeout
+                    TestRunResult tr = new TestRunResult();
+                    tr.index = findFirstEmpty(ordered);
+                    tr.exitCode = -1;
+                    tr.durationMs = runTimeout.toMillis();
+                    tr.stdout = "";
+                    tr.stderr = "";
+                    tr.timedOut = true;
+                    tr.timeout = runTimeout.toString();
+                    ordered[tr.index] = tr;
+                } catch (Exception e) {
+                    // bilo koja greška u workeru
+                    TestRunResult tr = new TestRunResult();
+                    tr.index = findFirstEmpty(ordered);
+                    tr.exitCode = 1;
+                    tr.durationMs = 0;
+                    tr.stdout = "";
+                    tr.stderr = "Internal error: " + e.getMessage();
+                    tr.timedOut = false;
+                    tr.timeout = null;
+                    ordered[tr.index] = tr;
+                }
+            }
+
+            resp.results = Arrays.asList(ordered);
+            return resp;
+
+        } finally {
+            pool.shutdownNow();
+            try {
+                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private static int findFirstEmpty(TestRunResult[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == null) return i;
+        }
+        return 0;
+    }
+
     public RunBatchResponseDto compileAndRunBatch(String cppSource, List<String> inputs, int timeoutSecPerTest) {
         Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSecPerTest, 30)));
         Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));

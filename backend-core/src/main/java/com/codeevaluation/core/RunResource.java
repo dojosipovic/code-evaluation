@@ -5,11 +5,13 @@ import com.codeevaluation.core.api.dto.RunBatchResponseDto;
 import com.codeevaluation.core.api.dto.RunRequestDto;
 import com.codeevaluation.core.service.CppDockerSandboxService;
 import com.codeevaluation.core.service.dto.RunResult;
+import com.codeevaluation.core.util.SandboxLimiter;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class RunResource {
 
     private final CppDockerSandboxService svc;
+    private final SandboxLimiter limiter;
 
     @POST
     public RunResult run(RunRequestDto req) {
@@ -35,10 +38,21 @@ public class RunResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public RunBatchResponseDto runCppBatch(RunBatchRequestDto req) {
-        int t = (req.timeoutSec() == null) ? 5 : req.timeoutSec();
-        List<String> inputs = (req.tests() == null) ? List.of("") :
-                req.tests().stream().map(tc -> tc.input() == null ? "" : tc.input()).toList();
 
-        return svc.compileAndRunBatch(req.code(), inputs, t);
+        if (!limiter.tryAcquire()) {
+            throw new WebApplicationException("Too many concurrent executions", 429);
+        }
+
+        try {
+            int timeout = req.timeoutSec() == null ? 5 : req.timeoutSec();
+            List<String> inputs = req.tests().stream()
+                    .map(t -> t.input() == null ? "" : t.input())
+                    .toList();
+
+            return svc.compileAndRunBatchParallel(req.code(), inputs, timeout, 3);
+        } finally {
+            limiter.release();
+        }
+
     }
 }

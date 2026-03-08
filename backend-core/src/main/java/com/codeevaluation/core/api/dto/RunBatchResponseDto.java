@@ -2,9 +2,13 @@ package com.codeevaluation.core.api.dto;
 
 import com.codeevaluation.core.service.dto.RunResult;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class RunBatchResponseDto {
-    public String phase;           // "batch"
-    public RunResult compile;      // reuse your existing RunResult DTO
-    public List<TestRunResult> results;
+    private String phase;           // "batch"
+    private RunResult compile;      // reuse your existing RunResult DTO
+    private List<TestRunResult> results;
 }

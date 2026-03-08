@@ -13,6 +13,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +41,10 @@ public class RunResource {
     public RunBatchResponseDto runCppBatch(RunBatchRequestDto req) {
 
         if (!limiter.tryAcquire()) {
-            throw new WebApplicationException("Too many concurrent executions", 429);
+            throw new WebApplicationException(
+                    "Too many concurrent executions",
+                    Response.Status.TOO_MANY_REQUESTS
+            );
         }
 
         try {

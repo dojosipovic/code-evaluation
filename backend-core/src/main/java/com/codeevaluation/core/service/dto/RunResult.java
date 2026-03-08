@@ -1,15 +1,19 @@
 package com.codeevaluation.core.service.dto;
 
 import java.time.Duration;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class RunResult {
-    public int exitCode;
-    public long durationMs;
-    public String stdout;
-    public String stderr;
-    public boolean timedOut;
-    public String timeout;
-    public String phase;
+    private int exitCode;
+    private long durationMs;
+    private String stdout;
+    private String stderr;
+    private boolean timedOut;
+    private String timeout;
+    private String phase;
 
     public RunResult() {}
 

@@ -5,13 +5,23 @@ import com.codeevaluation.core.api.dto.TestRunResult;
 import com.codeevaluation.core.service.dto.RunResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.jboss.logging.Logger;
-
-import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
 
 @ApplicationScoped
 public class CppDockerSandboxService {
@@ -41,8 +51,8 @@ public class CppDockerSandboxService {
                     Duration.ofSeconds(5),
                     null
             );
-            if (volCreate.exitCode != 0) {
-                volCreate.phase = "volume-create";
+            if (volCreate.getExitCode() != 0) {
+                volCreate.setPhase("volume-create");
                 return volCreate;
             }
 
@@ -52,8 +62,10 @@ public class CppDockerSandboxService {
                     compileTimeout,
                     cppSource
             );
-            compileRes.phase = "compile";
-            if (compileRes.exitCode != 0) return compileRes;
+            compileRes.setPhase("compile");
+            if (compileRes.getExitCode() != 0) {
+                return compileRes;
+            }
 
             // 2) RUN (distroless runs /runexec/a.out; volume mounted read-only)
             RunResult runRes = runDockerRaw(
@@ -61,14 +73,19 @@ public class CppDockerSandboxService {
                     runTimeout,
                     input
             );
-            runRes.phase = "run";
+            runRes.setPhase("run");
             return runRes;
 
         } finally {
             // Best-effort cleanup
             try {
-                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
-            } catch (Exception ignored) {}
+                runDockerRaw(
+                        List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5),
+                        null
+                );
+            } catch (Exception ignored) {
+                // ignore
+            }
         }
     }
 
@@ -84,17 +101,19 @@ public class CppDockerSandboxService {
         String volume = "cpp-job-" + UUID.randomUUID();
 
         RunBatchResponseDto resp = new RunBatchResponseDto();
-        resp.phase = "batch";
-        resp.results = new ArrayList<>();
+        resp.setPhase("batch");
+        resp.setResults(new ArrayList<>());
 
         // fail-fast
         if (cppSource == null || cppSource.isBlank()) {
             RunResult c = new RunResult(1, 0, "", "Empty source code");
-            c.phase = "compile";
-            resp.compile = c;
+            c.setPhase("compile");
+            resp.setCompile(c);
             return resp;
         }
-        if (inputs == null) inputs = List.of("");
+        if (inputs == null) {
+            inputs = List.of("");
+        }
 
         // limit paralelizma
         int threads = Math.max(1, Math.min(maxParallel, inputs.size()));
@@ -107,19 +126,24 @@ public class CppDockerSandboxService {
                     Duration.ofSeconds(5),
                     null
             );
-            if (volCreate.exitCode != 0) {
-                RunResult fail = new RunResult(volCreate.exitCode, volCreate.durationMs, volCreate.stdout, volCreate.stderr);
-                fail.phase = "volume-create";
-                resp.compile = fail;
+            if (volCreate.getExitCode() != 0) {
+                RunResult fail = new RunResult(
+                        volCreate.getExitCode(),
+                        volCreate.getDurationMs(),
+                        volCreate.getStdout(),
+                        volCreate.getStderr()
+                );
+                fail.setPhase("volume-create");
+                resp.setCompile(fail);
                 return resp;
             }
 
             // 1) compile jednom
             RunResult compileRes = runDockerRaw(buildCompileCmd(volume), compileTimeout, cppSource);
-            compileRes.phase = "compile";
-            resp.compile = compileRes;
+            compileRes.setPhase("compile");
+            resp.setCompile(compileRes);
 
-            if (compileRes.exitCode != 0 || compileRes.timedOut) {
+            if (compileRes.getExitCode() != 0 || compileRes.isTimedOut()) {
                 return resp; // nema runova
             }
 
@@ -134,17 +158,17 @@ public class CppDockerSandboxService {
                     RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in);
 
                     TestRunResult tr = new TestRunResult();
-                    tr.index = idx;
-                    tr.exitCode = r.exitCode;
-                    tr.durationMs = r.durationMs;
-                    tr.stdout = r.stdout;
-                    tr.stderr = r.stderr;
-                    tr.timedOut = r.timedOut;
-                    tr.timeout = r.timeout;
+                    tr.setIndex(idx);
+                    tr.setExitCode(r.getExitCode());
+                    tr.setDurationMs(r.getDurationMs());
+                    tr.setStdout(r.getStdout());
+                    tr.setStderr(r.getStderr());
+                    tr.setTimedOut(r.isTimedOut());
+                    tr.setTimeout(r.getTimeout());
 
-                    if (r.exitCode >= 128) {
-                        int signal = r.exitCode - 128;
-                        tr.stderr = "Runtime error (signal " + signal + ")";
+                    if (r.getExitCode() >= 128) {
+                        int signal = r.getExitCode() - 128;
+                        tr.setStderr("Runtime error (signal " + signal + ")");
                     }
                     return tr;
                 }));
@@ -156,59 +180,67 @@ public class CppDockerSandboxService {
             for (Future<TestRunResult> f : futures) {
                 try {
                     TestRunResult tr = f.get(runTimeout.toMillis() + 2000, TimeUnit.MILLISECONDS);
-                    ordered[tr.index] = tr;
+                    ordered[tr.getIndex()] = tr;
                 } catch (TimeoutException te) {
                     // ako neka Future zapne duže od očekivanog, označi timeout
                     TestRunResult tr = new TestRunResult();
-                    tr.index = findFirstEmpty(ordered);
-                    tr.exitCode = -1;
-                    tr.durationMs = runTimeout.toMillis();
-                    tr.stdout = "";
-                    tr.stderr = "";
-                    tr.timedOut = true;
-                    tr.timeout = runTimeout.toString();
-                    ordered[tr.index] = tr;
+                    tr.setIndex(findFirstEmpty(ordered));
+                    tr.setExitCode(-1);
+                    tr.setDurationMs(runTimeout.toMillis());
+                    tr.setStdout("");
+                    tr.setStderr("");
+                    tr.setTimedOut(true);
+                    tr.setTimeout(runTimeout.toString());
+                    ordered[tr.getIndex()] = tr;
                 } catch (Exception e) {
                     // bilo koja greška u workeru
                     TestRunResult tr = new TestRunResult();
-                    tr.index = findFirstEmpty(ordered);
-                    tr.exitCode = 1;
-                    tr.durationMs = 0;
-                    tr.stdout = "";
-                    tr.stderr = "Internal error: " + e.getMessage();
-                    tr.timedOut = false;
-                    tr.timeout = null;
-                    ordered[tr.index] = tr;
+                    tr.setIndex(findFirstEmpty(ordered));
+                    tr.setExitCode(1);
+                    tr.setDurationMs(0);
+                    tr.setStdout("");
+                    tr.setStderr("Internal error: " + e.getMessage());
+                    tr.setTimedOut(false);
+                    tr.setTimeout(null);
+                    ordered[tr.getIndex()] = tr;
                 }
             }
 
-            resp.results = Arrays.asList(ordered);
+            resp.setResults(Arrays.asList(ordered));
             return resp;
 
         } finally {
             pool.shutdownNow();
             try {
-                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
-            } catch (Exception ignored) {}
+                runDockerRaw(
+                        List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5),
+                        null
+                );
+            } catch (Exception ignored) {
+                // ignore
+            }
         }
     }
 
     private static int findFirstEmpty(TestRunResult[] arr) {
         for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == null) return i;
+            if (arr[i] == null) {
+                return i;
+            }
         }
         return 0;
     }
 
-    public RunBatchResponseDto compileAndRunBatch(String cppSource, List<String> inputs, int timeoutSecPerTest) {
+    public RunBatchResponseDto compileAndRunBatch(
+            String cppSource, List<String> inputs, int timeoutSecPerTest) {
         Duration runTimeout = Duration.ofSeconds(Math.max(1, Math.min(timeoutSecPerTest, 30)));
         Duration compileTimeout = Duration.ofSeconds(Math.min(20, runTimeout.getSeconds()));
 
         String volume = "cpp-job-" + UUID.randomUUID();
 
         RunBatchResponseDto resp = new RunBatchResponseDto();
-        resp.phase = "batch";
-        resp.results = new ArrayList<>();
+        resp.setPhase("batch");
+        resp.setResults(new ArrayList<>());
 
         try {
             RunResult volCreate = runDockerRaw(
@@ -216,55 +248,64 @@ public class CppDockerSandboxService {
                     Duration.ofSeconds(5),
                     null
             );
-            if (volCreate.exitCode != 0) {
-                RunResult fail = new RunResult(volCreate.exitCode, volCreate.durationMs, volCreate.stdout, volCreate.stderr);
-                fail.phase = "volume-create";
-                resp.compile = fail;
+            if (volCreate.getExitCode() != 0) {
+                RunResult fail = new RunResult(
+                        volCreate.getExitCode(),
+                        volCreate.getDurationMs(),
+                        volCreate.getStdout(),
+                        volCreate.getStderr()
+                );
+                fail.setPhase("volume-create");
+                resp.setCompile(fail);
                 return resp;
             }
 
             // compile once
             RunResult compileRes = runDockerRaw(buildCompileCmd(volume), compileTimeout, cppSource);
-            compileRes.phase = "compile";
-            resp.compile = compileRes;
+            compileRes.setPhase("compile");
+            resp.setCompile(compileRes);
 
-            if (compileRes.exitCode != 0 || compileRes.timedOut) {
+            if (compileRes.getExitCode() != 0 || compileRes.isTimedOut()) {
                 return resp; // no test runs
             }
 
             // run per test input (each in a fresh container)
             for (int i = 0; i < inputs.size(); i++) {
                 String in = inputs.get(i);
-                RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in); // send stdin for this test
+                RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in);
                 TestRunResult tr = new TestRunResult();
-                tr.index = i;
-                tr.exitCode = r.exitCode;
-                tr.durationMs = r.durationMs;
-                tr.stdout = r.stdout;
-                tr.stderr = r.stderr;
-                tr.timedOut = r.timedOut;
-                tr.timeout = r.timeout;
-                resp.results.add(tr);
+                tr.setIndex(i);
+                tr.setExitCode(r.getExitCode());
+                tr.setDurationMs(r.getDurationMs());
+                tr.setStdout(r.getStdout());
+                tr.setStderr(r.getStderr());
+                tr.setTimedOut(r.isTimedOut());
+                tr.setTimeout(r.getTimeout());
+                resp.getResults().add(tr);
             }
 
             return resp;
 
         } finally {
             try {
-                runDockerRaw(List.of("docker", "volume", "rm", "-f", volume), Duration.ofSeconds(5), null);
-            } catch (Exception ignored) {}
+                runDockerRaw(
+                        List.of("docker", "volume", "rm", "-f", volume),
+                        Duration.ofSeconds(5),
+                        null);
+            } catch (Exception ignored) {
+                // ignore
+            }
         }
     }
 
     private List<String> buildCompileCmd(String volume) {
         // NOTE: We run compile as root to avoid any perms issues on the volume,
         // but still keep hardening flags.
-        String inner =
-                "cat > /tmp/main.cpp && " +
-                        "echo '=== first 80 lines ===' && sed -n '1,80p' /tmp/main.cpp && " +
-                        "echo '=== end ===' && " +
-                        "g++ -O2 -std=c++20 /tmp/main.cpp -o /runexec/a.out && " +
-                        "chmod 755 /runexec/a.out";
+        String inner = "cat > /tmp/main.cpp && "
+                + "echo '=== first 80 lines ===' && sed -n '1,80p' /tmp/main.cpp && "
+                + "echo '=== end ===' && "
+                + "g++ -O2 -std=c++20 /tmp/main.cpp -o /runexec/a.out && "
+                + "chmod 755 /runexec/a.out";
 
         return new ArrayList<>(List.of(
                 "docker", "run", "--rm", "-i",
@@ -337,7 +378,9 @@ public class CppDockerSandboxService {
 
             // Provide stdin (for compile we send C++ source), then close to signal EOF.
             try (OutputStream os = p.getOutputStream()) {
-                if (stdin != null) os.write(stdin.getBytes(StandardCharsets.UTF_8));
+                if (stdin != null) {
+                    os.write(stdin.getBytes(StandardCharsets.UTF_8));
+                }
             } catch (IOException e) {
                 LOG.debugf("stdin write/close failed (ignored): %s", e.getMessage());
             }
@@ -360,8 +403,12 @@ public class CppDockerSandboxService {
 
             long ms = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
 
-            if (!stdout.isBlank()) LOG.infof("docker stdout:\n%s", stdout);
-            if (!stderr.isBlank()) LOG.warnf("docker stderr:\n%s", stderr);
+            if (!stdout.isBlank()) {
+                LOG.infof("docker stdout:\n%s", stdout);
+            }
+            if (!stderr.isBlank()) {
+                LOG.warnf("docker stderr:\n%s", stderr);
+            }
 
             return new RunResult(exit, ms, stdout, stderr);
 
@@ -381,7 +428,9 @@ public class CppDockerSandboxService {
             int n;
             while ((n = r.read(buf)) != -1) {
                 int take = Math.min(n, maxChars - total);
-                if (take > 0) sb.append(buf, 0, take);
+                if (take > 0) {
+                    sb.append(buf, 0, take);
+                }
                 total += take;
                 if (total >= maxChars) {
                     sb.append("\n[output truncated]\n");
@@ -393,7 +442,10 @@ public class CppDockerSandboxService {
     }
 
     private static String getFuture(Future<String> f) {
-        try { return f.get(2, TimeUnit.SECONDS); }
-        catch (Exception e) { return ""; }
+        try {
+            return f.get(2, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

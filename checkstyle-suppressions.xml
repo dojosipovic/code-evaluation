@@ -7,4 +7,5 @@
     <suppress checks="MissingJavadocType" />
     <suppress checks="CustomImportOrder" />
     <suppress files=".*MyEntity\.java" checks="JavadocParagraph|LineLength"/>
+    <suppress checks="VariableDeclarationUsageDistance"/>
 </suppressions>

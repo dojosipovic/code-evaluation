@@ -10,9 +10,11 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import java.time.Instant;
+import lombok.extern.slf4j.Slf4j;
 
 @Provider
 @Priority(1)
+@Slf4j
 public class WebAppExceptionMapper implements ExceptionMapper<WebApplicationException> {
 
     @Context
@@ -20,6 +22,8 @@ public class WebAppExceptionMapper implements ExceptionMapper<WebApplicationExce
 
     @Override
     public Response toResponse(WebApplicationException e) {
+        log.warn("Exception: {}", e.getMessage(), e);
+
         int status = e.getResponse().getStatus();
         String reason = Response.Status.fromStatusCode(status) != null
                 ? Response.Status.fromStatusCode(status).getReasonPhrase()

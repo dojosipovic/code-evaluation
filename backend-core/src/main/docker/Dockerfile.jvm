@@ -80,12 +80,22 @@
 # You can find more information about the UBI base runtime images and their configuration here:
 # https://rh-openjdk.github.io/redhat-openjdk-containers/
 ###
+# 1) stage: uzmi docker CLI binary
+FROM docker:27-cli AS dockercli
+
+# 2) stage: quarkus runtime
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 
 ENV LANGUAGE='en_US:en'
 
+USER root
+# Kopiraj docker CLI u runtime image
+COPY --from=dockercli /usr/local/bin/docker /usr/local/bin/docker
 
-# We make four distinct layers so if there are application changes the library layers can be re-used
+# (opcionalno) provjeri da radi
+RUN docker --version
+
+# Quarkus layers
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
 COPY --chown=185 target/quarkus-app/*.jar /deployments/
 COPY --chown=185 target/quarkus-app/app/ /deployments/app/
@@ -97,4 +107,3 @@ ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=or
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
-

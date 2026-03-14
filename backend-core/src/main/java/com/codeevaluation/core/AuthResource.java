@@ -1,8 +1,8 @@
 package com.codeevaluation.core;
 
-import com.codeevaluation.core.api.dto.LoginRequestDto;
-import com.codeevaluation.core.api.dto.LoginResponseDto;
-import com.codeevaluation.core.api.dto.RefreshResponseDto;
+import com.codeevaluation.core.api.dto.auth.LoginRequestDto;
+import com.codeevaluation.core.api.dto.auth.LoginResponseDto;
+import com.codeevaluation.core.api.dto.auth.RefreshResponseDto;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.service.AuthService;
 import com.codeevaluation.core.util.CookieUtil;

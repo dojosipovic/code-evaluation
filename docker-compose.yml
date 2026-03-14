@@ -12,6 +12,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "8025:8025" # web UI
+      - "1025:1025" # SMTP
+
   backend:
     container_name: backend-core
     build:

@@ -1,12 +1,16 @@
 package com.codeevaluation.core;
 
+import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.invite.InviteCreateDto;
 import com.codeevaluation.core.api.dto.invite.InviteResponseDto;
 import com.codeevaluation.core.api.dto.invite.InviteValidateDto;
+import com.codeevaluation.core.enumeration.InviteStatus;
+import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.service.InviteService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -72,5 +76,31 @@ public class InviteResource {
     public Response revokeInvite(@PathParam("id") Long inviteId) {
         inviteService.revokeInvite(inviteId);
         return Response.noContent().build();
+    }
+
+    @GET
+    @RolesAllowed("ADMIN")
+    public Response getInvites(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size,
+            @QueryParam("email") String email,
+            @QueryParam("status") InviteStatus status,
+            @QueryParam("role") Role role,
+            @QueryParam("createdByAdminId") String createdByAdminUser,
+            @QueryParam("sortBy") @DefaultValue("createdAt") String sortBy,
+            @QueryParam("sortDirection") @DefaultValue("desc") String sortDirection
+    ) {
+        PagedResponse<InviteResponseDto> response = inviteService.getInvites(
+                page,
+                size,
+                email,
+                status,
+                role,
+                createdByAdminUser,
+                sortBy,
+                sortDirection
+        );
+
+        return Response.ok(response).build();
     }
 }

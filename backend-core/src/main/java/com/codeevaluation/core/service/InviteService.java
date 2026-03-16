@@ -1,11 +1,14 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.invite.InviteResponseDto;
 import com.codeevaluation.core.api.dto.invite.InviteValidateDto;
 import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.Invite;
 import com.codeevaluation.core.repository.InviteRepository;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -137,5 +140,68 @@ public class InviteService {
         } catch (Exception e) {
             throw new IllegalStateException("Unable to hash token", e);
         }
+    }
+
+    public PagedResponse<InviteResponseDto> getInvites(
+            int page,
+            int size,
+            String email,
+            InviteStatus status,
+            Role role,
+            String createdByAdminUser,
+            String sortBy,
+            String sortDirection
+    ) {
+        validatePageParams(page, size);
+
+        Sort sort = buildSort(sortBy, sortDirection);
+
+        PanacheQuery<Invite> query = inviteRepository.search(
+                email,
+                status,
+                role,
+                createdByAdminUser,
+                sort,
+                page,
+                size
+        );
+
+        List<InviteResponseDto> items = query.list()
+                .stream()
+                .map(InviteResponseDto::from)
+                .toList();
+
+        long totalItems = query.count();
+
+        return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    private void validatePageParams(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("page must be >= 0");
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("size must be between 1 and 100");
+        }
+    }
+
+    private Sort buildSort(String sortBy, String sortDirection) {
+        String safeSortBy = (sortBy == null || sortBy.isBlank()) ? "createdAt" : sortBy;
+        String safeSortDirection = (sortDirection == null || sortDirection.isBlank()) ? "desc" : sortDirection;
+
+        String mappedField = switch (safeSortBy) {
+            case "createdAt" -> "createdAt";
+            case "email" -> "email";
+            case "status" -> "status";
+            case "role" -> "role";
+            case "expiresAt" -> "expiresAt";
+            default -> throw new IllegalArgumentException("Unsupported sortBy: " + safeSortBy);
+        };
+
+        return switch (safeSortDirection.toLowerCase()) {
+            case "asc" -> Sort.ascending(mappedField);
+            case "desc" -> Sort.descending(mappedField);
+            default -> throw new IllegalArgumentException("Unsupported sortDirection: " + safeSortDirection);
+        };
     }
 }

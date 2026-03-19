@@ -1,0 +1,116 @@
+<div class="layout">
+  @if (!isMobile) {
+    <aside class="sidebar" [class.collapsed]="collapsed">
+      <div class="sidebar-header">
+        <div class="brand">
+          <i class="pi pi-prime brand-icon"></i>
+
+          @if (!collapsed) {
+            <span class="brand-text">Moj App</span>
+          }
+        </div>
+
+        <p-button
+          icon="pi pi-bars"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="toggleSidebar()"
+          styleClass="collapse-btn"
+          [attr.aria-label]="collapsed ? 'Proširi izbornik' : 'Sažmi izbornik'"
+        ></p-button>
+      </div>
+
+      <nav class="nav">
+        @for (item of menuItems(); track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active-link"
+            [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+            class="nav-link"
+            [attr.title]="collapsed ? item.label : null"
+            (click)="closeMobileMenu()"
+          >
+            <i [class]="item.icon + ' nav-icon'"></i>
+
+            @if (!collapsed) {
+              <span class="nav-text">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </nav>
+    </aside>
+  }
+
+  <div class="main">
+    @if (isMobile) {
+        <div class="topbar">
+            <p-button
+                icon="pi pi-bars"
+                [text]="true"
+                [rounded]="true"
+                (onClick)="toggleSidebar()"
+                ariaLabel="Otvori izbornik"
+                styleClass="mobile-menu-btn"
+            ></p-button>
+
+            <span class="topbar-title">Moj App</span>
+        </div>
+    }
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+@if (isMobile) {
+  <div
+    class="mobile-overlay"
+    [class.visible]="mobileMenuVisible"
+    [attr.aria-hidden]="!mobileMenuVisible"
+    role="button"
+    tabindex="0"
+    aria-label="Zatvori bočni izbornik"
+    (click)="closeMobileMenu()"
+    (keydown.enter)="closeMobileMenu()"
+    (keydown.space)="closeMobileMenu()"
+  ></div>
+
+  <aside
+    class="mobile-sidebar"
+    [class.visible]="mobileMenuVisible"
+    [attr.aria-hidden]="!mobileMenuVisible"
+  >
+    <div class="mobile-header">
+        <p-button
+            icon="pi pi-times"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="closeMobileMenu()"
+            ariaLabel="Zatvori izbornik"
+            styleClass="mobile-menu-btn"
+        ></p-button>
+
+        <span class="brand-text">Moj App</span>
+    </div>
+
+    <nav class="nav">
+      @for (item of menuItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+          class="nav-link"
+          [attr.title]="collapsed ? item.label : null"
+          (click)="closeMobileMenu()"
+        >
+          <i [class]="item.icon + ' nav-icon'"></i>
+
+          @if (!collapsed) {
+            <span class="nav-text">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </aside>
+}

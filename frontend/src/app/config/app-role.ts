@@ -1,0 +1,1 @@
+export type AppRole = 'ADMIN' | 'PROF' | 'STUDENT';

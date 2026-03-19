@@ -7,9 +7,9 @@ import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeuix/themes/lara';
 import { MessageService } from 'primeng/api';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { bearerInterceptor } from './services/auth/bearer.interceptor';
-import { credentialsInterceptor } from './services/auth/credentials.interceptor';
-import { refreshInterceptor } from './services/auth/refresh.interceptor';
+import { bearerInterceptor } from './interceptor/bearer.interceptor';
+import { credentialsInterceptor } from './interceptor/credentials.interceptor';
+import { refreshInterceptor } from './interceptor/refresh.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -4,59 +4,67 @@ import { ILoginRequest } from '../../models/ILoginRequest';
 import { ILoginResponse } from '../../models/ILoginResponse';
 import { catchError, map, of, tap } from 'rxjs';
 import { IRefreshResponse } from '../../models/IRefreshResponse';
+import { AppRole } from '../../config/app-role';
+
+export interface JwtPayload {
+  sub?: string;
+  email?: string;
+  groups?: string[];
+  exp?: number;
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly tokenKey = 'access_token';
-  private _token = signal<string | null>(this.readToken());
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   readonly apiBase = '';
+
+  private _token = signal<string | null>(this.readToken());
 
   token = computed(() => this._token());
   isAuthenticated = computed(() => !!this.token());
 
+  payload = computed<JwtPayload | null>(() => this.parseToken(this.token()));
+  roles = computed<AppRole[]>(() => {
+    const roles = this.payload()?.groups ?? [];
+    return roles as AppRole[];
+  });
+
+  isAdmin = computed(() => this.roles().includes('ADMIN'));
+  isProf = computed(() => this.roles().includes('PROF'));
+  isUser = computed(() => this.roles().includes('STUDENT'));
+
+  primaryRole = computed<AppRole | null>(() => {
+    if (this.isAdmin()) return 'ADMIN';
+    if (this.isProf()) return 'PROF';
+    if (this.isUser()) return 'STUDENT';
+    return null;
+  });
+
+  isExpired = computed(() => {
+    const exp = this.payload()?.exp;
+    if (!exp) return false;
+    return Date.now() >= exp * 1000;
+  });
+
   login(req: ILoginRequest, remember: boolean) {
-    return this.http.post<ILoginResponse>(`${this.apiBase}/auth/login`, req)
-      .pipe(
-        tap((res) => {
-          this.setToken(res.accessToken, remember);
-          this._token.set(res.accessToken);
-        }),
-        map(() => true),
-        catchError(() => of(false))
-      );
-  }
-
-  getToken(): string | null {
-    return this._token();
-  }
-
-  setToken(token: string | null, remember?: boolean) {
-    if (!token) {
-      localStorage.removeItem(this.tokenKey);
-      sessionStorage.removeItem(this.tokenKey);
-      this._token.set(null);
-      return;
-    }
-
-    const currentlyInLocal = !!localStorage.getItem(this.tokenKey);
-    const useLocal = remember ?? currentlyInLocal;
-    
-    const store = useLocal ? localStorage : sessionStorage;
-    store.setItem(this.tokenKey, token);
-    (useLocal ? sessionStorage : localStorage).removeItem(this.tokenKey);
-
-    this._token.set(token);
+    return this.http.post<ILoginResponse>(`${this.apiBase}/auth/login`, req).pipe(
+      tap((res) => {
+        this.setToken(res.accessToken, remember);
+      }),
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   refresh() {
     return this.http
       .post<IRefreshResponse>(`${this.apiBase}/auth/refresh`, {}, { withCredentials: true })
       .pipe(
-        tap(res => this.setToken(res.accessToken)),
+        tap((res) => this.setToken(res.accessToken)),
         map(() => true),
         catchError(() => of(false))
       );
@@ -73,7 +81,58 @@ export class AuthService {
     );
   }
 
+  getToken(): string | null {
+    return this._token();
+  }
+
+  hasRole(role: AppRole): boolean {
+    return this.roles().includes(role);
+  }
+
+  hasAnyRole(requiredRoles: AppRole[]): boolean {
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const userRoles = this.roles();
+    return requiredRoles.some(role => userRoles.includes(role));
+  }
+
+  setToken(token: string | null, remember?: boolean) {
+    if (!token) {
+      localStorage.removeItem(this.tokenKey);
+      sessionStorage.removeItem(this.tokenKey);
+      this._token.set(null);
+      return;
+    }
+
+    const currentlyInLocal = !!localStorage.getItem(this.tokenKey);
+    const useLocal = remember ?? currentlyInLocal;
+
+    const store = useLocal ? localStorage : sessionStorage;
+    store.setItem(this.tokenKey, token);
+    (useLocal ? sessionStorage : localStorage).removeItem(this.tokenKey);
+
+    this._token.set(token);
+  }
+
   private readToken(): string | null {
     return localStorage.getItem(this.tokenKey) ?? sessionStorage.getItem(this.tokenKey);
+  }
+
+  private parseToken(token: string | null): JwtPayload | null {
+    if (!token) return null;
+
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+
+      const payload = parts[1];
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const json = atob(normalized);
+      return JSON.parse(json) as JwtPayload;
+    } catch {
+      return null;
+    }
   }
 }

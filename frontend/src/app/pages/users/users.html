@@ -22,8 +22,9 @@
         <div class="filters-section">
           <div class="filters-grid">
             <div class="filter-field">
-              <label>Email</label>
+              <label for="email">Email</label>
               <input
+                inputId="email"
                 pInputText
                 [(ngModel)]="inviteFilters.email"
                 (keyup.enter)="onInviteFiltersChange()"
@@ -31,8 +32,9 @@
             </div>
     
             <div class="filter-field">
-              <label>Status</label>
+              <label for="inviteStatus">Status</label>
               <p-select
+                inputId="inviteStatus"
                 [options]="inviteStatusOptions"
                 [(ngModel)]="inviteFilters.status"
                 optionLabel="label"
@@ -44,8 +46,9 @@
             </div>
     
             <div class="filter-field">
-              <label>Rola</label>
+              <label for="role">Rola</label>
               <p-select
+                inputId="role"
                 [options]="roleOptions"
                 [(ngModel)]="inviteFilters.role"
                 optionLabel="label"
@@ -57,8 +60,9 @@
             </div>
     
             <div class="filter-field">
-              <label>Created by admin ID</label>
+              <label for="createdBy">Created by admin ID</label>
               <input
+                inputId="createdBy"
                 pInputText
                 [(ngModel)]="inviteFilters.createdByAdminId"
                 (keyup.enter)="onInviteFiltersChange()"
@@ -66,8 +70,9 @@
             </div>
     
             <div class="filter-field">
-              <label>Sortiraj po</label>
+              <label for="sortBy">Sortiraj po</label>
               <p-select
+                inputId="sortBy"
                 [options]="inviteSortByOptions"
                 [(ngModel)]="inviteFilters.sortBy"
                 optionLabel="label"
@@ -77,8 +82,9 @@
             </div>
     
             <div class="filter-field">
-              <label>Smjer sortiranja</label>
+              <label for="sortDirection">Smjer sortiranja</label>
               <p-select
+                inputId="sortDirection"
                 [options]="sortDirectionOptions"
                 [(ngModel)]="inviteFilters.sortDirection"
                 optionLabel="label"
@@ -89,8 +95,8 @@
           </div>
     
           <div class="filter-actions">
-            <button pButton type="button" label="Primijeni" icon="pi pi-filter" (click)="onInviteFiltersChange()"></button>
-            <button pButton type="button" label="Reset" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()"></button>
+            <button pButton type="button" icon="pi pi-filter" (click)="onInviteFiltersChange()">Primjeni</button>
+            <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()">Reset</button>
           </div>
         </div>
     }
@@ -99,13 +105,14 @@
         <div class="filters-section">
           <div class="filters-grid">
             <div class="filter-field">
-              <label>Ime / email</label>
-              <input pInputText [(ngModel)]="userFilters.search" placeholder="Pretraži korisnike" />
+              <label for="emailSearch">Ime / email</label>
+              <input id="emailSearch" pInputText [(ngModel)]="userFilters.search" placeholder="Pretraži korisnike" />
             </div>
     
             <div class="filter-field">
-              <label>Rola</label>
+              <label for="role">Rola</label>
               <p-select
+                inputId="role"
                 [options]="roleOptions"
                 [(ngModel)]="userFilters.role"
                 optionLabel="label"
@@ -153,8 +160,7 @@
             [sortField]="inviteFilters.sortBy"
             [sortOrder]="inviteFilters.sortDirection === 'asc' ? 1 : -1"
             (onLazyLoad)="onLazyLoad($event)"
-            responsiveLayout="scroll"
-            styleClass="p-datatable-sm invites-table">
+            class="p-datatable-sm invites-table">
     
             <ng-template pTemplate="header">
               <tr>

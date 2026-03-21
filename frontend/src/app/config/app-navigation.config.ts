@@ -1,4 +1,4 @@
-import { AppRole } from "./app-role";
+import { AppRole } from "./app-types";
 
 
 export interface AppNavItem {
@@ -18,6 +18,13 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true,
     exact: true
+  },
+  {
+    label: 'Korisnici',
+    path: '/users',
+    icon: 'pi pi-users',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true
   },
   {
     label: 'Profil',

@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { ILoginRequest } from '../../models/ILoginRequest';
-import { ILoginResponse } from '../../models/ILoginResponse';
+import { ILoginRequest } from '../../models/auth/ILoginRequest';
+import { ILoginResponse } from '../../models/auth/ILoginResponse';
 import { catchError, map, of, tap } from 'rxjs';
-import { IRefreshResponse } from '../../models/IRefreshResponse';
-import { AppRole } from '../../config/app-role';
+import { IRefreshResponse } from '../../models/auth/IRefreshResponse';
+import { AppRole } from '../../config/app-types';
 
 export interface JwtPayload {
   sub?: string;

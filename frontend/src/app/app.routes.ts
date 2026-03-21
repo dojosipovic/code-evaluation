@@ -5,6 +5,7 @@ import { authGuard } from './services/auth/auth.guard';
 import { guestGuard } from './services/auth/guest.guard';
 import { AppLayout } from './layout/app-layout';
 import { getRolesForPath } from './config/app-navigation.config';
+import { Users } from './pages/users/users';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
@@ -14,6 +15,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/dashboard') } },
+            { path: 'users', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users') } },
             { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile') } },
             { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings') } },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }

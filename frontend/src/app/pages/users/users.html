@@ -1,0 +1,215 @@
+<!-- users-invites-page.component.html -->
+<div class="page-wrapper">
+  <div class="page-header">
+    <div>
+      <h2>Access management</h2>
+      <p>Pregled korisnika i inviteova</p>
+    </div>
+  </div>
+
+  <p-card class="main-card">
+    <div class="view-switcher">
+      <p-selectButton
+        [options]="viewOptions"
+        [(ngModel)]="currentView"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="onViewChange()">
+      </p-selectButton>
+    </div>
+
+    @if (currentView() === 'invites') {
+        <div class="filters-section">
+          <div class="filters-grid">
+            <div class="filter-field">
+              <label>Email</label>
+              <input
+                pInputText
+                [(ngModel)]="inviteFilters.email"
+                (keyup.enter)="onInviteFiltersChange()"
+                placeholder="Pretraži po emailu" />
+            </div>
+    
+            <div class="filter-field">
+              <label>Status</label>
+              <p-select
+                [options]="inviteStatusOptions"
+                [(ngModel)]="inviteFilters.status"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Odaberi status"
+                [showClear]="false"
+                (onChange)="onInviteFiltersChange()">
+              </p-select>
+            </div>
+    
+            <div class="filter-field">
+              <label>Rola</label>
+              <p-select
+                [options]="roleOptions"
+                [(ngModel)]="inviteFilters.role"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Odaberi rolu"
+                [showClear]="false"
+                (onChange)="onInviteFiltersChange()">
+              </p-select>
+            </div>
+    
+            <div class="filter-field">
+              <label>Created by admin ID</label>
+              <input
+                pInputText
+                [(ngModel)]="inviteFilters.createdByAdminId"
+                (keyup.enter)="onInviteFiltersChange()"
+                placeholder="npr. 12 ili uuid" />
+            </div>
+    
+            <div class="filter-field">
+              <label>Sortiraj po</label>
+              <p-select
+                [options]="inviteSortByOptions"
+                [(ngModel)]="inviteFilters.sortBy"
+                optionLabel="label"
+                optionValue="value"
+                (onChange)="onInviteFiltersChange()">
+              </p-select>
+            </div>
+    
+            <div class="filter-field">
+              <label>Smjer sortiranja</label>
+              <p-select
+                [options]="sortDirectionOptions"
+                [(ngModel)]="inviteFilters.sortDirection"
+                optionLabel="label"
+                optionValue="value"
+                (onChange)="onInviteFiltersChange()">
+              </p-select>
+            </div>
+          </div>
+    
+          <div class="filter-actions">
+            <button pButton type="button" label="Primijeni" icon="pi pi-filter" (click)="onInviteFiltersChange()"></button>
+            <button pButton type="button" label="Reset" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()"></button>
+          </div>
+        </div>
+    }
+
+    @if (currentView() === 'users') {
+        <div class="filters-section">
+          <div class="filters-grid">
+            <div class="filter-field">
+              <label>Ime / email</label>
+              <input pInputText [(ngModel)]="userFilters.search" placeholder="Pretraži korisnike" />
+            </div>
+    
+            <div class="filter-field">
+              <label>Rola</label>
+              <p-select
+                [options]="roleOptions"
+                [(ngModel)]="userFilters.role"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Rola">
+              </p-select>
+            </div>
+    
+            <div class="filter-field">
+              <label for="userStatus">Status korisnika</label>
+              <p-select
+                inputId="userStatus"
+                [options]="[
+                  { label: 'Svi', value: null },
+                  { label: 'Aktivni', value: true },
+                  { label: 'Neaktivni', value: false }
+                ]"
+                [(ngModel)]="userFilters.active"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Status korisnika">
+              </p-select>
+            </div>
+          </div>
+    
+          <div class="users-placeholder">
+            Users prikaz možeš spojiti na drugi endpoint, a filteri su namjerno drugačiji od invite prikaza.
+          </div>
+        </div>
+    }
+
+    <p-divider></p-divider>
+
+    @if (currentView() === 'invites') {
+        <div class="table-wrapper">
+          <p-table
+            [value]="invites"
+            [lazy]="true"
+            [paginator]="true"
+            [rows]="rows"
+            [first]="first"
+            [totalRecords]="totalRecords"
+            [loading]="loading()"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            [sortField]="inviteFilters.sortBy"
+            [sortOrder]="inviteFilters.sortDirection === 'asc' ? 1 : -1"
+            (onLazyLoad)="onLazyLoad($event)"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm invites-table">
+    
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="email">
+                  Email
+                  <p-sortIcon field="email"></p-sortIcon>
+                </th>
+                <th pSortableColumn="role">
+                  Role
+                  <p-sortIcon field="role"></p-sortIcon>
+                </th>
+                <th pSortableColumn="status">
+                  Status
+                  <p-sortIcon field="status"></p-sortIcon>
+                </th>
+                <th pSortableColumn="expiresAt">
+                  Expires at
+                  <p-sortIcon field="expiresAt"></p-sortIcon>
+                </th>
+                <th pSortableColumn="createdAt">
+                  Created at
+                  <p-sortIcon field="createdAt"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+    
+            <ng-template pTemplate="body" let-invite>
+              <tr>
+                <td>
+                  <div class="primary-cell">{{ invite.email }}</div>
+                </td>
+                <td>
+                  <p-tag [value]="invite.role"></p-tag>
+                </td>
+                <td>
+                  <p-tag [value]="invite.status" [severity]="getInviteSeverity(invite.status)"></p-tag>
+                </td>
+                <td>
+                  <div [class.expired]="isExpired(invite.expiresAt)">
+                    {{ invite.expiresAt | date:'dd.MM.yyyy HH:mm' }}
+                  </div>
+                </td>
+                <td>
+                  {{ invite.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                </td>
+              </tr>
+            </ng-template>
+    
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="5">Nema inviteova za zadane filtere.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+    }
+  </p-card>
+</div>

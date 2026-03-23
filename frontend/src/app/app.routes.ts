@@ -15,9 +15,11 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/dashboard') } },
-            { path: 'users', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users') } },
+            { path: 'users/:tab', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users') } },
             { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile') } },
             { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings') } },
+
+            { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

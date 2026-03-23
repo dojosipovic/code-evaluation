@@ -1,8 +1,6 @@
 /* users-invites-page.component.scss */
 :host {
   display: block;
-  min-height: 100vh;
-  background: #0f1115;
   color: #e5e7eb;
 }
 
@@ -10,6 +8,7 @@
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
+  background: transparent;
 }
 
 .page-header {

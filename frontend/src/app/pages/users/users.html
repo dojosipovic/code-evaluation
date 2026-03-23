@@ -12,9 +12,10 @@
       <p-selectButton
         [options]="viewOptions"
         [(ngModel)]="currentView"
+        [allowEmpty]="false"
         optionLabel="label"
         optionValue="value"
-        (onChange)="onViewChange()">
+        (onChange)="onViewChange($event)">
       </p-selectButton>
     </div>
 
@@ -55,40 +56,6 @@
                 optionValue="value"
                 placeholder="Odaberi rolu"
                 [showClear]="false"
-                (onChange)="onInviteFiltersChange()">
-              </p-select>
-            </div>
-    
-            <div class="filter-field">
-              <label for="createdBy">Created by admin ID</label>
-              <input
-                inputId="createdBy"
-                pInputText
-                [(ngModel)]="inviteFilters.createdByAdminId"
-                (keyup.enter)="onInviteFiltersChange()"
-                placeholder="npr. 12 ili uuid" />
-            </div>
-    
-            <div class="filter-field">
-              <label for="sortBy">Sortiraj po</label>
-              <p-select
-                inputId="sortBy"
-                [options]="inviteSortByOptions"
-                [(ngModel)]="inviteFilters.sortBy"
-                optionLabel="label"
-                optionValue="value"
-                (onChange)="onInviteFiltersChange()">
-              </p-select>
-            </div>
-    
-            <div class="filter-field">
-              <label for="sortDirection">Smjer sortiranja</label>
-              <p-select
-                inputId="sortDirection"
-                [options]="sortDirectionOptions"
-                [(ngModel)]="inviteFilters.sortDirection"
-                optionLabel="label"
-                optionValue="value"
                 (onChange)="onInviteFiltersChange()">
               </p-select>
             </div>
@@ -157,8 +124,6 @@
             [totalRecords]="totalRecords"
             [loading]="loading()"
             [rowsPerPageOptions]="[10, 20, 50]"
-            [sortField]="inviteFilters.sortBy"
-            [sortOrder]="inviteFilters.sortDirection === 'asc' ? 1 : -1"
             (onLazyLoad)="onLazyLoad($event)"
             class="p-datatable-sm invites-table">
     

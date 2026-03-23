@@ -14,11 +14,12 @@ import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { SelectButtonModule } from 'primeng/selectbutton';
+import { SelectButtonChangeEvent, SelectButtonModule } from 'primeng/selectbutton';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
+import { ActivatedRoute, Router } from '@angular/router';
 
 type ViewMode = 'users' | 'invites';
 
@@ -45,9 +46,25 @@ export class Users implements OnInit {
 
   private inviteService = inject(InviteService);
   private messageService = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  readonly currentView = signal<ViewMode>('invites');
+  readonly currentView = signal<ViewMode>('users');
   readonly loading = signal(false);
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      const tab = params.get('tab');
+
+      if (tab === 'users' || tab === 'invites') {
+        this.currentView.set(tab);
+        return;
+      }
+
+      this.currentView.set('users');
+      this.router.navigate(['/users/users'], { replaceUrl: true });
+    });
+  }
 
   viewOptions = [
     { label: 'Users', value: 'users' as ViewMode },
@@ -63,11 +80,11 @@ export class Users implements OnInit {
   inviteFilters = {
     email: '',
     status: null as InviteStatusEnum | null,
-    role: null as RoleEnum | null,
-    createdByAdminId: '',
-    sortBy: 'createdAt',
-    sortDirection: 'desc' as SortDirection
+    role: null as RoleEnum | null
   };
+
+  sortField = 'createdAt';
+  sortOrder: 1 | -1 = -1; // desc
 
   roleOptions = [
     { label: 'Sve role', value: null },
@@ -104,15 +121,19 @@ export class Users implements OnInit {
     role: null
   };
 
-  ngOnInit(): void {
-    this.loadInvites();
-  }
+  onViewChange(event: SelectButtonChangeEvent): void {
+    const view: ViewMode = event?.value;
 
-  onViewChange(): void {
-    if (this.currentView() === 'invites') {
-      this.first = 0;
-      this.loadInvites();
+    if (view !== 'users' && view !== 'invites') {
+      return;
     }
+
+    const currentTab = this.route.snapshot.paramMap.get('tab');
+    if (currentTab === view) {
+      return;
+    }
+
+    this.router.navigate(['/users', view]);
   }
 
   onInviteFiltersChange(): void {
@@ -124,11 +145,11 @@ export class Users implements OnInit {
     this.inviteFilters = {
       email: '',
       status: null,
-      role: null,
-      createdByAdminId: '',
-      sortBy: 'createdAt',
-      sortDirection: 'desc'
+      role: null
     };
+
+    this.sortField = 'createdAt';
+    this.sortOrder = -1; // desc
     this.first = 0;
     this.loadInvites();
   }
@@ -137,10 +158,12 @@ export class Users implements OnInit {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
 
-    const sortField = typeof event.sortField === 'string' ? event.sortField : null;
-    if (sortField) {
-      this.inviteFilters.sortBy = sortField;
-      this.inviteFilters.sortDirection = event.sortOrder === 1 ? 'asc' : 'desc';
+    if (typeof event.sortField === 'string' && event.sortField) {
+      this.sortField = event.sortField;
+    }
+
+    if (event.sortOrder === 1 || event.sortOrder === -1) {
+      this.sortOrder = event.sortOrder;
     }
 
     this.loadInvites();
@@ -153,9 +176,8 @@ export class Users implements OnInit {
       email: this.inviteFilters.email?.trim() || null,
       status: this.inviteFilters.status,
       role: this.inviteFilters.role,
-      createdByAdminId: this.inviteFilters.createdByAdminId?.trim() || null,
-      sortBy: this.inviteFilters.sortBy,
-      sortDirection: this.inviteFilters.sortDirection
+      sortBy: this.sortField,
+      sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
     };
   }
 
@@ -169,14 +191,12 @@ export class Users implements OnInit {
           this.invites = response.items;
           this.totalRecords = response.totalItems;
         },
-        // TODO: dodaj da se na toast to ispise
-        error: (err) => {
+        error: () => {
           this.messageService.add({
             severity: 'warn',
             summary: 'Greška',
             detail: 'Nije moguće dohvatiti podatke'
           });
-          console.error('Greška pri dohvaćanju inviteova', err);
           this.invites = [];
           this.totalRecords = 0;
         }

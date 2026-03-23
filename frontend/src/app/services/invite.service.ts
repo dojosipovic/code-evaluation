@@ -19,6 +19,7 @@ export class InviteService {
             .set(InviteQueryParamEnum.SIZE, params.size)
             .set(InviteQueryParamEnum.SORT_DIRECTION, params.sortDirection ?? defaultSortDirection);
 
+        if (params.sortBy) httpParams = httpParams.set(InviteQueryParamEnum.SORT_BY, params.sortBy);
         if (params.email) httpParams = httpParams.set(InviteQueryParamEnum.EMAIL, params.email);
         if (params.status) httpParams = httpParams.set(InviteQueryParamEnum.STATUS, params.status);
         if (params.role) httpParams = httpParams.set(InviteQueryParamEnum.ROLE, params.role);

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { InviteService } from '../../services/invite.service';
 import { IInviteResponse } from '../../models/invite/IInviteResponse';
 import { InviteStatusEnum } from '../../models/enum/InviteStatusEnum';
@@ -6,7 +6,7 @@ import { RoleEnum } from '../../models/enum/RoleEnum';
 import { SortDirection } from '../../config/app-types';
 import { TableLazyLoadEvent } from 'primeng/types/table';
 import { IInviteQueryParams } from '../../models/invite/IInviteQueryParams';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -20,6 +20,7 @@ import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 type ViewMode = 'users' | 'invites';
 
@@ -48,6 +49,10 @@ export class Users implements OnInit {
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+
+  private emailInput$ = new Subject<string>();
+  private applyFilters$ = new Subject<void>();
 
   readonly currentView = signal<ViewMode>('users');
   readonly loading = signal(false);
@@ -64,6 +69,36 @@ export class Users implements OnInit {
       this.currentView.set('users');
       this.router.navigate(['/users/users'], { replaceUrl: true });
     });
+
+    this.emailInput$
+      .pipe(
+        debounceTime(1500),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(value => {
+        this.inviteFilters.email = value;
+        this.first = 0;
+        this.loadInvites();
+      });
+
+    this.applyFilters$
+      .pipe(
+        throttleTime(2000, undefined, { leading: true, trailing: false }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.first = 0;
+        this.loadInvites();
+      });
+  }
+
+  onEmailInput(value: string): void {
+    this.emailInput$.next(value);
+  }
+
+  onApplyFilters(): void {
+    this.applyFilters$.next();
   }
 
   viewOptions = [
@@ -151,7 +186,9 @@ export class Users implements OnInit {
     this.sortField = 'createdAt';
     this.sortOrder = -1; // desc
     this.first = 0;
-    this.loadInvites();
+    //this.loadInvites();
+
+    this.applyFilters$.next();
   }
 
   onLazyLoad(event: TableLazyLoadEvent): void {

@@ -28,7 +28,8 @@
                 inputId="email"
                 pInputText
                 [(ngModel)]="inviteFilters.email"
-                (keyup.enter)="onInviteFiltersChange()"
+                (ngModelChange)="onEmailInput($event)"
+                (keyup.enter)="onApplyFilters()"
                 placeholder="Pretraži po emailu" />
             </div>
     
@@ -62,7 +63,7 @@
           </div>
     
           <div class="filter-actions">
-            <button pButton type="button" icon="pi pi-filter" (click)="onInviteFiltersChange()">Primjeni</button>
+            <button pButton type="button" icon="pi pi-filter" (click)="onApplyFilters()">Primjeni</button>
             <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()">Reset</button>
           </div>
         </div>

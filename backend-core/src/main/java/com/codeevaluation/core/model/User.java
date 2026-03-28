@@ -26,6 +26,9 @@ public class User extends PanacheEntityBase {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 

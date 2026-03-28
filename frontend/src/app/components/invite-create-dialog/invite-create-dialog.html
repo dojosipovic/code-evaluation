@@ -1,0 +1,90 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '32rem' }"
+  header="Novi invite">
+
+  <form [formGroup]="form" class="invite-form">
+    <div class="field">
+      <label for="inviteEmail">Email</label>
+      <input
+        id="inviteEmail"
+        pInputText
+        formControlName="email"
+        placeholder="Unesi email" />
+
+        @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+            <small class="error-text">
+              Email je obavezan.
+            </small>
+        }
+
+        @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+            <small class="error-text">
+              Email nije ispravan.
+            </small>
+        }
+
+        @if (form.controls.email.touched && form.controls.email.errors?.['emailExists']) {
+            <small class="error-text">
+              Korisnik s tim emailom već postoji.
+            </small>
+        }
+
+
+        @if (checkingEmail) {
+            <div class="inline-status">
+              <p-progressSpinner
+                strokeWidth="6"
+                [style]="{ width: '18px', height: '18px' }">
+              </p-progressSpinner>
+              <span>Provjera emaila...</span>
+            </div>
+        }
+    </div>
+
+    <div class="field">
+      <label for="inviteRole">Rola</label>
+      <p-select
+        inputId="inviteRole"
+        [options]="roleOptions"
+        formControlName="role"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Odaberi rolu"
+        [appendTo]="'body'">
+      </p-select>
+
+      @if (form.controls.role.touched && form.controls.role.errors?.['required']) {
+          <small class="error-text">
+            Rola je obavezna.
+          </small>
+      }
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Odustani"
+      severity="secondary"
+      [outlined]="true"
+      (click)="cancel()">
+    </button>
+
+    <button
+      pButton
+      type="button"
+      label="Pošalji"
+      icon="pi pi-send"
+      [loading]="submitting"
+      [disabled]="form.invalid || checkingEmail"
+      (click)="submit()">
+    </button>
+  </ng-template>
+</p-dialog>

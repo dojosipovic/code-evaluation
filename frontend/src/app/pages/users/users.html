@@ -7,16 +7,33 @@
     </div>
   </div>
 
+  <p-confirmDialog></p-confirmDialog>
+
+  <app-invite-create-dialog
+    [(visible)]="createInviteDialogVisible"
+    (created)="onInviteCreated()">
+  </app-invite-create-dialog>
+
   <p-card class="main-card">
-    <div class="view-switcher">
-      <p-selectButton
-        [options]="viewOptions"
-        [(ngModel)]="currentView"
-        [allowEmpty]="false"
-        optionLabel="label"
-        optionValue="value"
-        (onChange)="onViewChange($event)">
-      </p-selectButton>
+    <div class="top-actions">
+      <div class="view-switcher">
+        <p-selectButton
+          [options]="viewOptions"
+          [(ngModel)]="currentView"
+          [allowEmpty]="false"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="onViewChange($event)">
+        </p-selectButton>
+      </div>
+  
+      <button
+        pButton
+        type="button"
+        icon="pi pi-plus"
+        label="Novi invite"
+        (click)="openCreateInviteDialog()">
+      </button>
     </div>
 
     @if (currentView() === 'invites') {
@@ -150,6 +167,7 @@
                   Created at
                   <p-sortIcon field="createdAt"></p-sortIcon>
                 </th>
+                <th>Akcije</th>
               </tr>
             </ng-template>
     
@@ -171,6 +189,20 @@
                 </td>
                 <td>
                   {{ invite.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                </td>
+                
+                <td>
+                  @if (invite.status === 'PENDING') {
+                    <button
+                      pButton
+                      icon="pi pi-times"
+                      severity="danger"
+                      size="small"
+                      label="Opozovi"
+                      iconPos="right"
+                      (click)="onRevokeInvite(invite.id)">
+                    </button>
+                  }
                 </td>
               </tr>
             </ng-template>

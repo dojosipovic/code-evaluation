@@ -16,6 +16,7 @@
         <insert tableName="app_user">
             <column name="username" value="admin"/>
             <column name="password_hash" value="$2a$12$SQT9pSlb0gb9LQXh9k44ve81KeAJXmmkMz48.8SenGf7a7hFBt5tu"/>
+            <column name="email" value="admin@email.com"/>
             <column name="role" value="ADMIN"/>
         </insert>
     </changeSet>

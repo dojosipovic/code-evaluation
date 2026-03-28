@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 
-@Path("/test-mail")
+@Path("/api/test-mail")
 @RequiredArgsConstructor
 public class MailResource {
 

@@ -10,7 +10,7 @@ public class CookieUtil {
     public static NewCookie buildRefreshCookie(String refreshPlain) {
         return new NewCookie.Builder("refresh_token")
                 .value(refreshPlain)
-                .path("/auth")
+                .path("/api/auth")
                 .httpOnly(true)
                 .secure(false) // <-- u PRODUCTION: true (HTTPS)
                 .sameSite(NewCookie.SameSite.LAX)
@@ -21,7 +21,7 @@ public class CookieUtil {
     public static NewCookie deleteRefreshCookie() {
         return new NewCookie.Builder("refresh_token")
                 .value("")
-                .path("/auth")
+                .path("/api/auth")
                 .httpOnly(true)
                 .secure(false) // <-- u PRODUCTION: true
                 .sameSite(NewCookie.SameSite.LAX)

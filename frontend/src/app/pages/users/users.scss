@@ -127,3 +127,19 @@
     flex-direction: column;
   }
 }
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.view-switcher {
+  margin-bottom: 0;
+}
+
+.top-actions .p-button {
+  height: 100%;
+}

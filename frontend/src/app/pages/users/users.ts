@@ -21,6 +21,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
+import { InviteCreateDialog } from '../../components/invite-create-dialog/invite-create-dialog';
 
 type ViewMode = 'users' | 'invites';
 
@@ -38,8 +41,11 @@ type ViewMode = 'users' | 'invites';
     SelectModule,
     TagModule,
     DividerModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    ConfirmDialogModule,
+    InviteCreateDialog
   ],
+  providers: [ConfirmationService],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -50,6 +56,7 @@ export class Users implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private confirmationService = inject(ConfirmationService);
 
   private emailInput$ = new Subject<string>();
   private applyFilters$ = new Subject<void>();
@@ -91,6 +98,17 @@ export class Users implements OnInit {
         this.first = 0;
         this.loadInvites();
       });
+  }
+
+  createInviteDialogVisible = false;
+
+  openCreateInviteDialog(): void {
+    this.createInviteDialogVisible = true;
+  }
+
+  onInviteCreated(): void {
+    this.createInviteDialogVisible = false;
+    this.loadInvites();
   }
 
   onEmailInput(value: string): void {
@@ -204,6 +222,38 @@ export class Users implements OnInit {
     }
 
     this.loadInvites();
+  }
+
+  onRevokeInvite(id: number): void {
+    this.confirmationService.confirm({
+      message: 'Jesi siguran da želiš opozvati ovaj invite?',
+      header: 'Potvrda',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Opozovi',
+      rejectLabel: 'Odustani',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.inviteService.revokeInvite(id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Uspjeh',
+              detail: 'Invite je opozvan'
+            });
+
+            this.loadInvites();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Greška',
+              detail: 'Nije moguće opozvati invite'
+            });
+          }
+        });
+      }
+    });
   }
 
   private buildInviteParams(): IInviteQueryParams {

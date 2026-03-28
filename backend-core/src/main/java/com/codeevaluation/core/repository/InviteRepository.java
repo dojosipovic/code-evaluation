@@ -3,11 +3,14 @@ package com.codeevaluation.core.repository;
 import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.Invite;
+import com.codeevaluation.core.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +37,16 @@ public class InviteRepository implements PanacheRepository<Invite> {
         return list(
                 "email = ?1 and status = ?2 and expiresAt <= ?3",
                 normalizedEmail,
+                InviteStatus.PENDING,
+                Instant.now()
+        );
+    }
+
+    @Transactional
+    public long expirePendingInvites() {
+        return update(
+                "status = ?1 where status = ?2 and expiresAt <= ?3",
+                InviteStatus.EXPIRED,
                 InviteStatus.PENDING,
                 Instant.now()
         );
@@ -69,8 +82,8 @@ public class InviteRepository implements PanacheRepository<Invite> {
         Map<String, Object> params = new HashMap<>();
 
         if (email != null && !email.isBlank()) {
-            query.append(" and i.email = :email");
-            params.put("email", normalizeEmail(email));
+            query.append(" and i.email LIKE :email");
+            params.put("email", "%" + normalizeEmail(email) + "%");
         }
 
         if (status != null) {

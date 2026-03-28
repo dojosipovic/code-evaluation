@@ -51,7 +51,7 @@ export class AuthService {
   });
 
   login(req: ILoginRequest, remember: boolean) {
-    return this.http.post<ILoginResponse>(`${this.apiBase}/auth/login`, req).pipe(
+    return this.http.post<ILoginResponse>(`${this.apiBase}/api/auth/login`, req).pipe(
       tap((res) => {
         this.setToken(res.accessToken, remember);
       }),
@@ -62,7 +62,7 @@ export class AuthService {
 
   refresh() {
     return this.http
-      .post<IRefreshResponse>(`${this.apiBase}/auth/refresh`, {}, { withCredentials: true })
+      .post<IRefreshResponse>(`${this.apiBase}/api/auth/refresh`, {}, { withCredentials: true })
       .pipe(
         tap((res) => this.setToken(res.accessToken)),
         map(() => true),
@@ -71,7 +71,7 @@ export class AuthService {
   }
 
   logout() {
-    return this.http.post(`${this.apiBase}/auth/logout`, {}, { withCredentials: true }).pipe(
+    return this.http.post(`${this.apiBase}/api/auth/logout`, {}, { withCredentials: true }).pipe(
       tap(() => this.setToken(null)),
       map(() => true),
       catchError(() => {

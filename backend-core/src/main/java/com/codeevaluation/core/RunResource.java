@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
-@Path("/run-cpp")
+@Path("/api/run-cpp")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor

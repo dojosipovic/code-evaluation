@@ -7,10 +7,12 @@ import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.Invite;
 import com.codeevaluation.core.repository.InviteRepository;
+import com.codeevaluation.core.repository.UserRepository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -30,6 +32,7 @@ public class InviteService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final InviteRepository inviteRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public InviteResponseDto createInvite(String email, Role role, String username) {
@@ -41,6 +44,11 @@ public class InviteService {
                 .ifPresent(existing -> {
                     existing.setStatus(InviteStatus.REVOKED);
                     existing.setRevokedAt(Instant.now());
+                });
+
+        userRepository.findByEmail(normalizedEmail)
+                .ifPresent(user -> {
+                    throw new BadRequestException("User already exists");
                 });
 
         String rawToken = generateRawToken();
@@ -115,6 +123,10 @@ public class InviteService {
         }
 
         return expired.size();
+    }
+
+    public long expirePendingInvites() {
+        return inviteRepository.expirePendingInvites();
     }
 
     // ovo se treba maknuti u neki validator

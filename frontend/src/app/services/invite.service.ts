@@ -6,11 +6,12 @@ import { IPagedResponse } from "../models/IPagedResponse";
 import { IInviteResponse } from "../models/invite/IInviteResponse";
 import { InviteQueryParamEnum } from "../models/enum/InviteQueryParamEnum";
 import { SortDirection } from "../config/app-types";
+import { IInviteCreate } from "../models/invite/IInviteCreate";
 
 @Injectable({ providedIn: 'root' })
 export class InviteService {
     private http = inject(HttpClient);
-    private readonly baseUrl = 'http://localhost:8080/invites';
+    private readonly baseUrl = '/api/invites';
 
     getInvites(params: IInviteQueryParams): Observable<IPagedResponse<IInviteResponse>> {
         const defaultSortDirection: SortDirection = 'desc';
@@ -26,5 +27,13 @@ export class InviteService {
         if (params.createdByAdminId) httpParams = httpParams.set(InviteQueryParamEnum.CREATED_BY_ADMIN_ID, params.createdByAdminId);
 
         return this.http.get<IPagedResponse<IInviteResponse>>(this.baseUrl, { params: httpParams });
+    }
+
+    revokeInvite(id: number): Observable<void> {
+        return this.http.post<void>(`${this.baseUrl}/${id}/revoke`, {});
+    }
+
+    createInvite(payload: IInviteCreate): Observable<IInviteResponse> {
+        return this.http.post<IInviteResponse>(this.baseUrl, payload);
     }
 }

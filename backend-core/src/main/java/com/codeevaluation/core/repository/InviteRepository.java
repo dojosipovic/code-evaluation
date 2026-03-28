@@ -3,22 +3,25 @@ package com.codeevaluation.core.repository;
 import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.Invite;
-import com.codeevaluation.core.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
+@RequiredArgsConstructor
 public class InviteRepository implements PanacheRepository<Invite> {
+
+    private final EntityManager em;
 
     public Optional<Invite> findActivePendingByEmail(String email) {
         String normalizedEmail = normalizeEmail(email);
@@ -102,5 +105,15 @@ public class InviteRepository implements PanacheRepository<Invite> {
         }
 
         return find(query.toString(), sort, params).page(Page.of(page, size));
+    }
+
+    @Transactional
+    public Invite markAccepted(Invite invite) {
+        Invite managedInvite = em.merge(invite);
+
+        managedInvite.setStatus(InviteStatus.ACCEPTED);
+        managedInvite.setAcceptedAt(Instant.now());
+
+        return managedInvite;
     }
 }

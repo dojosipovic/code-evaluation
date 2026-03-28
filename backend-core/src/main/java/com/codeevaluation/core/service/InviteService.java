@@ -8,19 +8,15 @@ import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.Invite;
 import com.codeevaluation.core.repository.InviteRepository;
 import com.codeevaluation.core.repository.UserRepository;
+import com.codeevaluation.core.util.TokenUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class InviteService {
 
     private static final int DEFAULT_EXPIRY_DAYS = 7;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final InviteRepository inviteRepository;
     private final UserRepository userRepository;
@@ -51,8 +46,8 @@ public class InviteService {
                     throw new BadRequestException("User already exists");
                 });
 
-        String rawToken = generateRawToken();
-        String tokenHash = sha256(rawToken);
+        String rawToken = TokenUtil.generateToken();
+        String tokenHash = TokenUtil.sha256(rawToken);
 
         Invite invite = new Invite();
         invite.setEmail(normalizedEmail);
@@ -68,7 +63,7 @@ public class InviteService {
     }
 
     public InviteValidateDto validateToken(String rawToken) {
-        String tokenHash = sha256(rawToken);
+        String tokenHash = TokenUtil.sha256(rawToken);
 
         return inviteRepository.findByTokenHash(tokenHash)
                 .map(invite -> {
@@ -92,7 +87,7 @@ public class InviteService {
 
     @Transactional
     public Invite markAccepted(String rawToken) {
-        String tokenHash = sha256(rawToken);
+        String tokenHash = TokenUtil.sha256(rawToken);
 
         Invite invite = inviteRepository.findValidByTokenHash(tokenHash)
                 .orElseThrow(NotFoundException::new);
@@ -135,23 +130,6 @@ public class InviteService {
             throw new IllegalArgumentException("Email is required");
         }
         return email.trim().toLowerCase();
-    }
-
-    // ovo dolje imas vec u tokenUtil
-    private String generateRawToken() {
-        byte[] bytes = new byte[32];
-        SECURE_RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private String sha256(String value) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = digest.digest(value.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hashed);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to hash token", e);
-        }
     }
 
     public PagedResponse<InviteResponseDto> getInvites(

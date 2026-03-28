@@ -3,6 +3,8 @@ package com.codeevaluation.core;
 import com.codeevaluation.core.api.dto.auth.LoginRequestDto;
 import com.codeevaluation.core.api.dto.auth.LoginResponseDto;
 import com.codeevaluation.core.api.dto.auth.RefreshResponseDto;
+import com.codeevaluation.core.api.dto.auth.RegisterRequestDto;
+import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.service.AuthService;
 import com.codeevaluation.core.util.CookieUtil;
@@ -44,6 +46,20 @@ public class AuthResource {
     }
 
     @POST
+    @Path("/register")
+    public Response register(RegisterRequestDto request) {
+        UserDto user = authService.register(
+                request.token(),
+                request.username(),
+                request.password()
+        );
+
+        return Response.status(Response.Status.CREATED)
+                .entity(user)
+                .build();
+    }
+
+    @POST
     @Path("/refresh")
     public Response refresh(@CookieParam("refresh_token") String refreshPlain) {
         var res = authService.refresh(refreshPlain);
@@ -58,7 +74,7 @@ public class AuthResource {
     @Path("/logout")
     public Response logout(@CookieParam("refresh_token") String refreshPlain) {
         if (refreshPlain != null && !refreshPlain.isBlank()) {
-            authService.revokeByHash(TokenUtil.sha256Hex(refreshPlain));
+            authService.revokeByHash(TokenUtil.sha256(refreshPlain));
         }
         return Response.noContent()
                 .cookie(CookieUtil.deleteRefreshCookie())

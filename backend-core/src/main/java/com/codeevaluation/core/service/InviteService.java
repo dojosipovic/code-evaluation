@@ -177,7 +177,8 @@ public class InviteService {
 
     private Sort buildSort(String sortBy, String sortDirection) {
         String safeSortBy = (sortBy == null || sortBy.isBlank()) ? "createdAt" : sortBy;
-        String safeSortDirection = (sortDirection == null || sortDirection.isBlank()) ? "desc" : sortDirection;
+        String safeSortDirection = (sortDirection == null || sortDirection.isBlank())
+                ? "desc" : sortDirection;
 
         String mappedField = switch (safeSortBy) {
             case "createdAt" -> "createdAt";
@@ -191,7 +192,8 @@ public class InviteService {
         return switch (safeSortDirection.toLowerCase()) {
             case "asc" -> Sort.ascending(mappedField);
             case "desc" -> Sort.descending(mappedField);
-            default -> throw new IllegalArgumentException("Unsupported sortDirection: " + safeSortDirection);
+            default -> throw new IllegalArgumentException(
+                    "Unsupported sortDirection: " + safeSortDirection);
         };
     }
 }

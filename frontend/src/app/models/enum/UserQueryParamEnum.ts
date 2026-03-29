@@ -1,3 +1,4 @@
 export enum UserQueryParamEnum {
-    EMAIL = 'email'
+    EMAIL = 'email',
+    USERNAME = 'username'
 }

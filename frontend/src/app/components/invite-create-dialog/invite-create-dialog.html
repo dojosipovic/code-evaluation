@@ -17,19 +17,19 @@
         formControlName="email"
         placeholder="Unesi email" />
 
-        @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+        @if ((form.controls.email.dirty || form.controls.email.touched) && form.controls.email.errors?.['required']) {
             <small class="error-text">
               Email je obavezan.
             </small>
         }
 
-        @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+        @if ((form.controls.email.dirty || form.controls.email.touched) && form.controls.email.errors?.['email']) {
             <small class="error-text">
               Email nije ispravan.
             </small>
         }
 
-        @if (form.controls.email.touched && form.controls.email.errors?.['emailExists']) {
+        @if ((form.controls.email.dirty || form.controls.email.touched) && form.controls.email.errors?.['emailExists']) {
             <small class="error-text">
               Korisnik s tim emailom već postoji.
             </small>
@@ -39,6 +39,7 @@
         @if (checkingEmail) {
             <div class="inline-status">
               <p-progressSpinner
+                styleClass="email-spinner"
                 strokeWidth="6"
                 [style]="{ width: '18px', height: '18px' }">
               </p-progressSpinner>
@@ -83,7 +84,7 @@
       label="Pošalji"
       icon="pi pi-send"
       [loading]="submitting"
-      [disabled]="form.invalid || checkingEmail"
+      [disabled]="form.invalid || form.pending"
       (click)="submit()">
     </button>
   </ng-template>

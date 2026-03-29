@@ -7,6 +7,7 @@ import com.codeevaluation.core.api.dto.invite.InviteValidateDto;
 import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.service.InviteService;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;

@@ -27,9 +27,27 @@ label {
 }
 
 .inline-status {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   color: var(--p-text-muted-color);
   font-size: 0.875rem;
+}
+
+:host ::ng-deep .email-spinner {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 0 !important;
+  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .email-spinner svg {
+  width: 18px !important;
+  height: 18px !important;
+  display: block;
 }

@@ -1,0 +1,118 @@
+<div class="bg">
+  <div class="shell">
+    <p-card styleClass="card">
+      <div class="header">
+        <div class="brand">
+          <i class="pi pi-user-plus"></i>
+          <span>Registracija</span>
+        </div>
+        <div class="sub">
+          Unesi korisničko ime i lozinku za dovršetak registracije.
+        </div>
+      </div>
+
+        @if (isRegisterSuccessful) {
+            <div class="success-box">
+                Registracija uspješna. <a href="/login">Prijavite se</a>
+            </div>
+        }
+
+        @if (!token) {
+            <div class="error-box">
+            Nedostaje token za registraciju. Otvori registracijski link iz emaila.
+            </div>
+        }
+
+        @if (token && !isRegisterSuccessful) {
+            <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+                    <div class="field">
+                    <label for="username">Username</label>
+                    <input
+                        id="username"
+                        pInputText
+                        type="text"
+                        formControlName="username"
+                        placeholder="johndoe" />
+
+                    @if (usernameControl?.hasError('required') && (usernameControl?.dirty || usernameControl?.touched)) {
+                        <small class="error">Username je obavezan.</small>
+                    }
+
+                    @if (usernameControl?.hasError('minlength') && (usernameControl?.dirty || usernameControl?.touched)) {
+                        <small class="error">Username mora imati barem 3 znaka.</small>
+                    }
+
+                    @if (usernameControl?.hasError('maxlength') && (usernameControl?.dirty || usernameControl?.touched)) {
+                        <small class="error">Username može imati najviše 50 znakova.</small>
+                    }
+
+                    @if (usernameControl?.pending) {
+                        <small class="info">Provjera dostupnosti usernamea...</small>
+                    }
+
+                    @if (usernameControl?.hasError('usernameTaken') && !usernameControl?.pending) {
+                        <small class="error">Ovaj username je već zauzet.</small>
+                    }
+
+                    @if (usernameControl?.hasError('usernameCheckFailed') && !usernameControl?.pending) {
+                        <small class="error">Provjera usernamea trenutno nije dostupna.</small>
+                    }
+
+                    @if (
+                        usernameControl?.value &&
+                        !usernameControl?.pending &&
+                        !usernameControl?.errors &&
+                        usernameControl?.dirty
+                    ) {
+                        <small class="success">Username je dostupan.</small>
+                    }
+                    </div>
+
+                    <div class="field">
+                    <label for="password">Lozinka</label>
+                    <p-password
+                        inputId="password"
+                        formControlName="password"
+                        [feedback]="false"
+                        [toggleMask]="true"
+                        placeholder="Lozinka">
+                    </p-password>
+
+                    @if (isInvalid('password')) {
+                        <small class="error">Lozinka je obavezna i mora imati barem 8 znakova.</small>
+                    }
+                    </div>
+
+                    <div class="field">
+                    <label for="repeatPassword">Ponovi lozinku</label>
+                    <p-password
+                        inputId="repeatPassword"
+                        formControlName="repeatPassword"
+                        [feedback]="false"
+                        [toggleMask]="true"
+                        placeholder="Ponovi lozinku">
+                    </p-password>
+
+                    @if (isInvalid('repeatPassword')) {
+                        <small class="error">Ponovno unošenje lozinke je obavezno.</small>
+                    }
+
+                    @if (form.hasError('passwordMismatch') && (form.get('repeatPassword')?.dirty || form.get('repeatPassword')?.touched)) {
+                        <small class="error">Lozinke se ne podudaraju.</small>
+                    }
+                    </div>
+
+                <p-button
+                    type="submit"
+                    label="Registriraj se"
+                    icon="pi pi-check"
+                    styleClass="w-full"
+                    [disabled]="form.invalid || form.pending || loading || !token"
+                    [loading]="loading">
+                </p-button>
+            </form>
+        }
+
+    </p-card>
+  </div>
+</div>

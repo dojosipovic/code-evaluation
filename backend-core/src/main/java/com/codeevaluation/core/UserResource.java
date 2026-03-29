@@ -9,7 +9,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 
 @Path("/api/users")
@@ -26,5 +25,13 @@ public class UserResource {
             @QueryParam("email") String email
     ) {
         return userService.findByEmail(email);
+    }
+
+    @GET
+    @Path("/search-username")
+    public UserDto getUserByUsername(
+            @QueryParam("username") String username
+    ) {
+        return userService.findByUsername(username);
     }
 }

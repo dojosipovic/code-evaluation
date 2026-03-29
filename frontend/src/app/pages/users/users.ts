@@ -141,17 +141,17 @@ export class Users implements OnInit {
 
   roleOptions = [
     { label: 'Sve role', value: null },
-    { label: 'ADMIN', value: RoleEnum.ADMIN },
-    { label: 'USER', value: RoleEnum.USER },
-    { label: 'MANAGER', value: RoleEnum.MANAGER }
+    { label: RoleEnum.ADMIN, value: RoleEnum.ADMIN },
+    { label: RoleEnum.STUDENT, value: RoleEnum.STUDENT },
+    { label: RoleEnum.PROF, value: RoleEnum.PROF }
   ];
 
   inviteStatusOptions = [
     { label: 'Svi statusi', value: null },
-    { label: 'PENDING', value: InviteStatusEnum.PENDING },
-    { label: 'ACCEPTED', value: InviteStatusEnum.ACCEPTED },
-    { label: 'EXPIRED', value: InviteStatusEnum.EXPIRED },
-    { label: 'REVOKED', value: InviteStatusEnum.REVOKED }
+    { label: InviteStatusEnum.PENDING, value: InviteStatusEnum.PENDING },
+    { label: InviteStatusEnum.ACCEPTED, value: InviteStatusEnum.ACCEPTED },
+    { label: InviteStatusEnum.EXPIRED, value: InviteStatusEnum.EXPIRED },
+    { label: InviteStatusEnum.REVOKED, value: InviteStatusEnum.REVOKED }
   ];
 
   inviteSortByOptions = [

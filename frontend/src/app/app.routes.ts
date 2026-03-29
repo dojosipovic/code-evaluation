@@ -6,9 +6,11 @@ import { guestGuard } from './services/auth/guest.guard';
 import { AppLayout } from './layout/app-layout';
 import { getRolesForPath } from './config/app-navigation.config';
 import { Users } from './pages/users/users';
+import { Register } from './pages/register/register';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
+    { path: 'register', canActivate: [guestGuard], component: Register },
     {
         path: '',
         component: AppLayout,

@@ -1,7 +1,6 @@
 package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.user.UserDto;
-import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.repository.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BadRequestException;
@@ -22,6 +21,17 @@ public class UserService {
         }
 
         return userRepository.findByEmail(email)
+                .map(UserDto::from)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public UserDto findByUsername(String username) {
+
+        if (StringUtils.isBlank(username)) {
+            throw new BadRequestException("Username is mandatory");
+        }
+
+        return userRepository.findByUsername(username)
                 .map(UserDto::from)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }

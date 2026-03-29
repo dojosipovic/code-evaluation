@@ -7,18 +7,14 @@ import {
   model
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import {
-  debounceTime,
-  distinctUntilChanged,
-  filter,
   finalize,
   switchMap,
-  tap,
   of,
   map,
-  catchError
+  catchError,
+  timer
 } from 'rxjs';
 
 import { DialogModule } from 'primeng/dialog';
@@ -64,54 +60,21 @@ export class InviteCreateDialog {
   emailExists = false;
 
   roleOptions = [
-    { label: 'ADMIN', value: RoleEnum.ADMIN },
-    { label: 'USER', value: RoleEnum.USER },
-    { label: 'MANAGER', value: RoleEnum.MANAGER }
+    { label: RoleEnum.ADMIN, value: RoleEnum.ADMIN },
+    { label: RoleEnum.PROF, value: RoleEnum.PROF },
+    { label: RoleEnum.STUDENT, value: RoleEnum.STUDENT }
   ];
 
   form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    role: [null as RoleEnum | null, [Validators.required]]
+    email: this.fb.control('', {
+      validators: [Validators.required, Validators.email],
+      asyncValidators: [this.emailExistsValidator()],
+      updateOn: 'change'
+    }),
+    role: this.fb.control<RoleEnum | null>(null, {
+      validators: [Validators.required]
+    })
   });
-
-  constructor() {
-    this.form.controls.email.valueChanges
-      .pipe(
-        debounceTime(1500),
-        distinctUntilChanged(),
-        filter((email): email is string => !!email && this.form.controls.email.valid),
-        tap(() => {
-          this.checkingEmail = true;
-          this.emailExists = false;
-        }),
-        switchMap(email =>
-          this.userService.getUserByEmail(email).pipe(
-            map(() => true),
-            catchError(() => of(false)),
-            finalize(() => (this.checkingEmail = false))
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: exists => {
-          this.emailExists = exists;
-
-          if (exists) {
-            this.form.controls.email.setErrors({ emailExists: true });
-          } else {
-            const errors = this.form.controls.email.errors;
-            if (errors?.['emailExists']) {
-              delete errors['emailExists'];
-              this.form.controls.email.setErrors(Object.keys(errors).length ? errors : null);
-            }
-          }
-        },
-        error: () => {
-          this.checkingEmail = false;
-        }
-      });
-  }
 
   onVisibleChange(isVisible: boolean): void {
     this.visible.set(isVisible);
@@ -179,5 +142,30 @@ export class InviteCreateDialog {
   cancel(): void {
     this.resetFormState();
     this.visible.set(false);
+  }
+
+  private emailExistsValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const email = control.value;
+
+      if (!email) {
+        return of(null);
+      }
+
+      if (control.invalid) {
+        return of(null);
+      }
+
+      this.checkingEmail = true;
+
+      return timer(1500).pipe(
+        switchMap(() => this.userService.getUserByEmail(email)),
+        map((): ValidationErrors | null => ({ emailExists: true })),
+        catchError(() => of(null)),
+        finalize(() => {
+          this.checkingEmail = false;
+        })
+      );
+    };
   }
 }

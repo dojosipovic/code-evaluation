@@ -7,6 +7,7 @@ import { IInviteResponse } from "../models/invite/IInviteResponse";
 import { InviteQueryParamEnum } from "../models/enum/InviteQueryParamEnum";
 import { SortDirection } from "../config/app-types";
 import { IInviteCreate } from "../models/invite/IInviteCreate";
+import { IInviteValidate } from "../models/invite/IInviteValidate";
 
 @Injectable({ providedIn: 'root' })
 export class InviteService {
@@ -35,5 +36,9 @@ export class InviteService {
 
     createInvite(payload: IInviteCreate): Observable<IInviteResponse> {
         return this.http.post<IInviteResponse>(this.baseUrl, payload);
+    }
+
+    validateInvite(token: string): Observable<IInviteValidate> {
+        return this.http.post<IInviteValidate>(`${this.baseUrl}/validate`, { params: token });
     }
 }

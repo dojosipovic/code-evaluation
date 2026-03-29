@@ -15,4 +15,9 @@ export class UserService {
     const httpParams = new HttpParams().set(UserQueryParamEnum.EMAIL, email);
     return this.http.get<IUserResponse>(this.baseUrl, { params: httpParams });
   }
+
+  getUserByUsername(username: string): Observable<IUserResponse> {
+    const httpParams = new HttpParams().set(UserQueryParamEnum.USERNAME, username);
+    return this.http.get<IUserResponse>(`${this.baseUrl}/search-username`, { params: httpParams });
+  }
 }

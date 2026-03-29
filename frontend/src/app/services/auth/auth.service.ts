@@ -2,9 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ILoginRequest } from '../../models/auth/ILoginRequest';
 import { ILoginResponse } from '../../models/auth/ILoginResponse';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { IRefreshResponse } from '../../models/auth/IRefreshResponse';
 import { AppRole } from '../../config/app-types';
+import { IRegisterRequest } from '../../models/auth/IRegisterRequest';
+import { IUserResponse } from '../../models/user/IUserResponse';
 
 export interface JwtPayload {
   sub?: string;
@@ -134,5 +136,9 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  register(payload: IRegisterRequest): Observable<IUserResponse> {
+    return this.http.post<IUserResponse>(`${this.apiBase}/api/auth/register`, payload);
   }
 }

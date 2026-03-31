@@ -14,6 +14,7 @@ public class UserDto {
     private String username;
     private String email;
     private Role role;
+    private Boolean enabled;
 
     public static UserDto from(User user) {
         UserDto userDto = new UserDto();
@@ -21,6 +22,7 @@ public class UserDto {
         userDto.setUsername(user.getUsername());
         userDto.setEmail(user.getEmail());
         userDto.setRole(user.getRole());
+        userDto.setEnabled(user.getEnabled());
 
         return userDto;
     }

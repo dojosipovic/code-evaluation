@@ -35,7 +35,7 @@ public class AuthService {
     private final InviteRepository inviteRepository;
 
     public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findEnabledByUsername(username)
                 .orElseThrow(() -> new NotAuthorizedException("Invalid credentials", "Bearer"));
 
         if (!PasswordUtil.verify(password, user.getPasswordHash())) {

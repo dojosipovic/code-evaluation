@@ -8,5 +8,6 @@
 
     <include file="db/changelog/001-init-schema.xml"/>
     <include file="db/changelog/002-seed-data.xml"/>
+    <include file="db/changelog/003-user-enabled-column-add.xml"/>
 
 </databaseChangeLog>

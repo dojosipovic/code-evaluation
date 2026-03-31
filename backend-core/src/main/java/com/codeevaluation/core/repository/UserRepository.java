@@ -14,6 +14,11 @@ public class UserRepository implements PanacheRepository<User> {
         return find("username", username).firstResultOptional();
     }
 
+    public Optional<User> findEnabledByUsername(String username) {
+        return find("username = ?1 and enabled = true", username)
+                .firstResultOptional();
+    }
+
     public Optional<User> findByEmail(String email) {
         return find("email", email).firstResultOptional();
     }
@@ -25,6 +30,7 @@ public class UserRepository implements PanacheRepository<User> {
         user.setEmail(email);
         user.setPasswordHash(passwordHash);
         user.setRole(role);
+        user.setEnabled(true);
 
         persist(user);
         return user;

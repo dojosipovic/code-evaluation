@@ -26,15 +26,13 @@
         </p-selectButton>
       </div>
 
-      @if (currentView() === 'invites') {
-        <button
-          pButton
-          type="button"
-          icon="pi pi-plus"
-          label="Novi invite"
-          (click)="openCreateInviteDialog()">
-        </button>
-      }
+      <button
+        pButton
+        type="button"
+        icon="pi pi-plus"
+        label="Novi invite"
+        (click)="openCreateInviteDialog()">
+      </button>
     </div>
 
     @if (currentView() === 'invites') {

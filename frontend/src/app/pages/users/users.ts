@@ -71,24 +71,27 @@ export class Users implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      const tab = params.get('tab');
+        const tab = params.get('tab');
 
-      if (tab === 'users' || tab === 'invites') {
-        this.currentView.set(tab);
+        if (tab === 'users' || tab === 'invites') {
+          this.currentView.set(tab);
+          this.first = 0;
 
-        this.first = 0;
+          if (tab === 'invites') {
+            this.inviteSortField = 'createdAt';
+            this.inviteSortOrder = -1;
+            // this.loadInvites(); causing double get request on tab change
+          } else {
+            this.userSortField = 'username';
+            this.userSortOrder = 1;
+            // this.loadUsers();
+          }
 
-        if (tab === 'invites') {
-          this.loadInvites();
-        } else {
-          this.loadUsers();
+          return;
         }
 
-        return;
-      }
-
-      this.currentView.set('users');
-      this.router.navigate(['/users/users'], { replaceUrl: true });
+        this.currentView.set('users');
+        this.router.navigate(['/users/users'], { replaceUrl: true });
     });
 
     this.emailInput$
@@ -178,8 +181,11 @@ export class Users implements OnInit {
     role: null as RoleEnum | null
   };
 
-  sortField = 'createdAt';
-  sortOrder: 1 | -1 = -1;
+  inviteSortField = 'createdAt';
+  inviteSortOrder: 1 | -1 = -1;
+
+  userSortField = 'username';
+  userSortOrder: 1 | -1 = 1;
 
   roleOptions = [
     { label: 'Sve role', value: null },
@@ -239,8 +245,8 @@ export class Users implements OnInit {
       role: null
     };
 
-    this.sortField = 'createdAt';
-    this.sortOrder = -1;
+    this.inviteSortField = 'createdAt';
+    this.inviteSortOrder = -1;
     this.first = 0;
 
     this.applyFilters$.next();
@@ -253,8 +259,8 @@ export class Users implements OnInit {
       role: null
     };
 
-    this.sortField = 'username';
-    this.sortOrder = 1;
+    this.userSortField = 'username';
+    this.userSortOrder = 1;
     this.first = 0;
 
     this.applyFilters$.next();
@@ -264,19 +270,28 @@ export class Users implements OnInit {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
 
+    if (this.currentView() === 'invites') {
+      if (typeof event.sortField === 'string' && event.sortField) {
+        this.inviteSortField = event.sortField;
+      }
+
+      if (event.sortOrder === 1 || event.sortOrder === -1) {
+        this.inviteSortOrder = event.sortOrder;
+      }
+
+      this.loadInvites();
+      return;
+    }
+
     if (typeof event.sortField === 'string' && event.sortField) {
-      this.sortField = event.sortField;
+      this.userSortField = event.sortField;
     }
 
     if (event.sortOrder === 1 || event.sortOrder === -1) {
-      this.sortOrder = event.sortOrder;
+      this.userSortOrder = event.sortOrder;
     }
 
-    if (this.currentView() === 'invites') {
-      this.loadInvites();
-    } else {
-      this.loadUsers();
-    }
+    this.loadUsers();
   }
 
   onRevokeInvite(id: number): void {
@@ -360,8 +375,8 @@ export class Users implements OnInit {
       email: this.inviteFilters.email?.trim() || null,
       status: this.inviteFilters.status,
       role: this.inviteFilters.role,
-      sortBy: this.sortField,
-      sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
+      sortBy: this.inviteSortField,
+      sortDirection: this.inviteSortOrder === 1 ? 'asc' : 'desc'
     };
   }
 
@@ -372,8 +387,8 @@ export class Users implements OnInit {
       search: this.userFilters.search?.trim() || null,
       role: this.userFilters.role,
       enabled: this.userFilters.enabled,
-      sortBy: this.sortField,
-      sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
+      sortBy: this.userSortField,
+      sortDirection: this.userSortOrder === 1 ? 'asc' : 'desc'
     };
   }
 

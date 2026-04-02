@@ -1,6 +1,8 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { InviteService } from '../../services/invite.service';
+import { UserService } from '../../services/user.service';
 import { IInviteResponse } from '../../models/invite/IInviteResponse';
+import { IUserResponse } from '../../models/user/IUserResponse';
 import { InviteStatusEnum } from '../../models/enum/InviteStatusEnum';
 import { RoleEnum } from '../../models/enum/RoleEnum';
 import { SortDirection } from '../../config/app-types';
@@ -24,6 +26,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { InviteCreateDialog } from '../../components/invite-create-dialog/invite-create-dialog';
+import { IUserQueryParams } from '../../models/user/IUserQueryParams';
 
 type ViewMode = 'users' | 'invites';
 
@@ -52,6 +55,7 @@ type ViewMode = 'users' | 'invites';
 export class Users implements OnInit {
 
   private inviteService = inject(InviteService);
+  private userService = inject(UserService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -59,6 +63,7 @@ export class Users implements OnInit {
   private confirmationService = inject(ConfirmationService);
 
   private emailInput$ = new Subject<string>();
+  private userSearchInput$ = new Subject<string>();
   private applyFilters$ = new Subject<void>();
 
   readonly currentView = signal<ViewMode>('users');
@@ -70,6 +75,15 @@ export class Users implements OnInit {
 
       if (tab === 'users' || tab === 'invites') {
         this.currentView.set(tab);
+
+        this.first = 0;
+
+        if (tab === 'invites') {
+          this.loadInvites();
+        } else {
+          this.loadUsers();
+        }
+
         return;
       }
 
@@ -89,6 +103,18 @@ export class Users implements OnInit {
         this.loadInvites();
       });
 
+    this.userSearchInput$
+      .pipe(
+        debounceTime(1500),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(value => {
+        this.userFilters.search = value;
+        this.first = 0;
+        this.loadUsers();
+      });
+
     this.applyFilters$
       .pipe(
         throttleTime(2000, undefined, { leading: true, trailing: false }),
@@ -96,7 +122,12 @@ export class Users implements OnInit {
       )
       .subscribe(() => {
         this.first = 0;
-        this.loadInvites();
+
+        if (this.currentView() === 'invites') {
+          this.loadInvites();
+        } else {
+          this.loadUsers();
+        }
       });
   }
 
@@ -115,6 +146,10 @@ export class Users implements OnInit {
     this.emailInput$.next(value);
   }
 
+  onUserSearchInput(value: string): void {
+    this.userSearchInput$.next(value);
+  }
+
   onApplyFilters(): void {
     this.applyFilters$.next();
   }
@@ -125,6 +160,7 @@ export class Users implements OnInit {
   ];
 
   invites: IInviteResponse[] = [];
+  users: IUserResponse[] = [];
   totalRecords = 0;
 
   rows = 10;
@@ -136,14 +172,26 @@ export class Users implements OnInit {
     role: null as RoleEnum | null
   };
 
+  userFilters = {
+    search: '',
+    enabled: null as boolean | null,
+    role: null as RoleEnum | null
+  };
+
   sortField = 'createdAt';
-  sortOrder: 1 | -1 = -1; // desc
+  sortOrder: 1 | -1 = -1;
 
   roleOptions = [
     { label: 'Sve role', value: null },
     { label: RoleEnum.ADMIN, value: RoleEnum.ADMIN },
     { label: RoleEnum.STUDENT, value: RoleEnum.STUDENT },
     { label: RoleEnum.PROF, value: RoleEnum.PROF }
+  ];
+
+  enabledOptions = [
+    { label: 'Svi statusi', value: null },
+    { label: 'Enabled', value: true },
+    { label: 'Disabled', value: false }
   ];
 
   inviteStatusOptions = [
@@ -154,25 +202,10 @@ export class Users implements OnInit {
     { label: InviteStatusEnum.REVOKED, value: InviteStatusEnum.REVOKED }
   ];
 
-  inviteSortByOptions = [
-    { label: 'Datum kreiranja', value: 'createdAt' },
-    { label: 'Datum isteka', value: 'expiresAt' },
-    { label: 'Email', value: 'email' },
-    { label: 'Status', value: 'status' },
-    { label: 'Rola', value: 'role' }
-  ];
-
   sortDirectionOptions = [
     { label: 'Silazno', value: 'desc' as SortDirection },
     { label: 'Uzlazno', value: 'asc' as SortDirection }
   ];
-
-  // samo primjer da se filteri razlikuju od invite pogleda
-  userFilters = {
-    search: '',
-    active: null,
-    role: null
-  };
 
   onViewChange(event: SelectButtonChangeEvent): void {
     const view: ViewMode = event?.value;
@@ -194,6 +227,11 @@ export class Users implements OnInit {
     this.loadInvites();
   }
 
+  onUserFiltersChange(): void {
+    this.first = 0;
+    this.loadUsers();
+  }
+
   resetInviteFilters(): void {
     this.inviteFilters = {
       email: '',
@@ -202,9 +240,22 @@ export class Users implements OnInit {
     };
 
     this.sortField = 'createdAt';
-    this.sortOrder = -1; // desc
+    this.sortOrder = -1;
     this.first = 0;
-    //this.loadInvites();
+
+    this.applyFilters$.next();
+  }
+
+  resetUserFilters(): void {
+    this.userFilters = {
+      search: '',
+      enabled: null,
+      role: null
+    };
+
+    this.sortField = 'username';
+    this.sortOrder = 1;
+    this.first = 0;
 
     this.applyFilters$.next();
   }
@@ -221,7 +272,11 @@ export class Users implements OnInit {
       this.sortOrder = event.sortOrder;
     }
 
-    this.loadInvites();
+    if (this.currentView() === 'invites') {
+      this.loadInvites();
+    } else {
+      this.loadUsers();
+    }
   }
 
   onRevokeInvite(id: number): void {
@@ -256,6 +311,48 @@ export class Users implements OnInit {
     });
   }
 
+  onToggleUserStatus(user: IUserResponse): void {
+    const isEnabled = user.enabled;
+    const actionLabel = isEnabled ? 'deaktivirati' : 'aktivirati';
+    const successLabel = isEnabled ? 'deaktiviran' : 'aktiviran';
+
+    this.confirmationService.confirm({
+      message: `Jesi siguran da želiš ${actionLabel} korisnika ${user.username}?`,
+      header: 'Potvrda',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: isEnabled ? 'Deaktiviraj' : 'Aktiviraj',
+      rejectLabel: 'Odustani',
+      acceptButtonStyleClass: isEnabled
+        ? 'p-button-danger'
+        : 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        const request$ = isEnabled
+          ? this.userService.disableUser(user.id)
+          : this.userService.enableUser(user.id);
+
+        request$.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Uspjeh',
+              detail: `Korisnik je ${successLabel}`
+            });
+
+            this.loadUsers();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Greška',
+              detail: `Nije moguće ${actionLabel} korisnika`
+            });
+          }
+        });
+      }
+    });
+  }
+
   private buildInviteParams(): IInviteQueryParams {
     return {
       page: Math.floor(this.first / this.rows),
@@ -263,6 +360,18 @@ export class Users implements OnInit {
       email: this.inviteFilters.email?.trim() || null,
       status: this.inviteFilters.status,
       role: this.inviteFilters.role,
+      sortBy: this.sortField,
+      sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
+    };
+  }
+
+  private buildUserParams(): IUserQueryParams {
+    return {
+      page: Math.floor(this.first / this.rows),
+      size: this.rows,
+      search: this.userFilters.search?.trim() || null,
+      role: this.userFilters.role,
+      enabled: this.userFilters.enabled,
       sortBy: this.sortField,
       sortDirection: this.sortOrder === 1 ? 'asc' : 'desc'
     };
@@ -285,6 +394,28 @@ export class Users implements OnInit {
             detail: 'Nije moguće dohvatiti podatke'
           });
           this.invites = [];
+          this.totalRecords = 0;
+        }
+      });
+  }
+
+  private loadUsers(): void {
+    this.loading.set(true);
+
+    this.userService.getUsers(this.buildUserParams())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.users = response.items;
+          this.totalRecords = response.totalItems;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Greška',
+            detail: 'Nije moguće dohvatiti korisnike'
+          });
+          this.users = [];
           this.totalRecords = 0;
         }
       });

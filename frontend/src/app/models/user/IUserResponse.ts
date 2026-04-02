@@ -5,4 +5,5 @@ export interface IUserResponse {
     username: string;
     email: string;
     role: RoleEnum;
+    enabled: boolean;
 }

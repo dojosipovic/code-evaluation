@@ -1,5 +1,6 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.api.dto.auth.RegisterRequestDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.InviteStatus;
 import com.codeevaluation.core.model.Invite;
@@ -46,7 +47,13 @@ public class AuthService {
     }
 
     @Transactional
-    public UserDto register(String rawToken, String username, String password) {
+    public UserDto register(RegisterRequestDto request) {
+        String rawToken = request.token();
+        String username = request.username();
+        String password = request.password();
+        String firstname = request.firstname();
+        String lastname = request.lastname();
+
         String tokenHash = TokenUtil.sha256(rawToken);
 
         Invite invite = inviteRepository.findByTokenHash(tokenHash)
@@ -71,6 +78,8 @@ public class AuthService {
 
         String normalizedUsername = normalizeUsername(username);
         String normalizedEmail = invite.getEmail();
+        String normalizedFirstname = normalizeFirstname(firstname);
+        String normalizedLastname = normalizeLastnam(lastname);
 
         if (userRepository.findByEmail(normalizedEmail).isPresent()) {
             throw new BadRequestException("User with this email already exists");
@@ -83,8 +92,8 @@ public class AuthService {
         validatePasswordPolicy(password);
         String passwordHash = PasswordUtil.hash(password);
 
-        User user = userRepository.createUser(
-                normalizedUsername, normalizedEmail, passwordHash, invite.getRole());
+        User user = userRepository.createUser(normalizedUsername, normalizedFirstname,
+                normalizedLastname, normalizedEmail, passwordHash, invite.getRole());
 
         inviteRepository.markAccepted(invite);
 
@@ -103,6 +112,34 @@ public class AuthService {
         }
 
         return username;
+    }
+
+    private String normalizeFirstname(String firstname) {
+        if (StringUtils.isBlank(firstname)) {
+            throw new BadRequestException("Firstname is required");
+        }
+
+        firstname = firstname.trim();
+
+        if (firstname.length() > User.FIRSTNAME_MAX_LENGTH) {
+            throw new BadRequestException(String.format("Firstname max length is %s", User.FIRSTNAME_MAX_LENGTH));
+        }
+
+        return firstname;
+    }
+
+    private String normalizeLastnam(String lastname) {
+        if (StringUtils.isBlank(lastname)) {
+            throw new BadRequestException("Lastname is required");
+        }
+
+        lastname = lastname.trim();
+
+        if (lastname.length() > User.LASTNAME_MAX_LENGTH) {
+            throw new BadRequestException(String.format("Lastname max length is %s", User.LASTNAME_MAX_LENGTH));
+        }
+
+        return lastname;
     }
 
     private void validatePasswordPolicy(String password) {

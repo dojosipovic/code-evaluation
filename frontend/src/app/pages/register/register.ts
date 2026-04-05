@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
@@ -35,7 +35,6 @@ export class Register implements OnInit {
 
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private messageService = inject(MessageService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
@@ -43,6 +42,12 @@ export class Register implements OnInit {
 
   form = this.fb.group(
     {
+      firstname: this.fb.control('', {
+        validators: [Validators.required, Validators.maxLength(30)]
+      }),
+      lastname: this.fb.control('', {
+        validators: [Validators.required, Validators.maxLength(40)]
+      }),
       username: this.fb.control(
         '',
         {
@@ -67,7 +72,7 @@ export class Register implements OnInit {
     return this.form.get('username');
   }
 
-  isInvalid(name: 'username' | 'password' | 'repeatPassword') {
+  isInvalid(name: 'firstname' | 'lastname' | 'username' | 'password' | 'repeatPassword') {
     const c = this.form.get(name);
     return !!c && c.invalid && (c.dirty || c.touched);
   }
@@ -102,13 +107,15 @@ export class Register implements OnInit {
       return;
     }
 
-    const { username, password } = this.form.getRawValue();
+    const { username, password, firstname, lastname } = this.form.getRawValue();
 
     this.loading = true;
 
     this.authService.register({
       token: this.token,
       username: username!,
+      firstname: firstname!,
+      lastname: lastname!,
       password: password!
     }).pipe(
       finalize(() => {

@@ -25,7 +25,39 @@
 
         @if (token && !isRegisterSuccessful) {
             <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-                    <div class="field">
+                <div class="field">
+                    <label for="firstname">Ime</label>
+                    <input
+                        id="firstname"
+                        pInputText
+                        type="text"
+                        formControlName="firstname"
+                        placeholder="Ivan" />
+
+                    @if (isInvalid('firstname')) {
+                        <small class="error">
+                        Ime je obavezno i može imati najviše 30 znakova.
+                        </small>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="lastname">Prezime</label>
+                    <input
+                        id="lastname"
+                        pInputText
+                        type="text"
+                        formControlName="lastname"
+                        placeholder="Horvat" />
+
+                    @if (isInvalid('lastname')) {
+                        <small class="error">
+                        Prezime je obavezno i može imati najviše 40 znakova.
+                        </small>
+                    }
+                </div>
+
+                <div class="field">
                     <label for="username">Username</label>
                     <input
                         id="username"
@@ -66,9 +98,9 @@
                     ) {
                         <small class="success">Username je dostupan.</small>
                     }
-                    </div>
+                </div>
 
-                    <div class="field">
+                <div class="field">
                     <label for="password">Lozinka</label>
                     <p-password
                         inputId="password"
@@ -81,9 +113,9 @@
                     @if (isInvalid('password')) {
                         <small class="error">Lozinka je obavezna i mora imati barem 8 znakova.</small>
                     }
-                    </div>
+                </div>
 
-                    <div class="field">
+                <div class="field">
                     <label for="repeatPassword">Ponovi lozinku</label>
                     <p-password
                         inputId="repeatPassword"
@@ -100,7 +132,7 @@
                     @if (form.hasError('passwordMismatch') && (form.get('repeatPassword')?.dirty || form.get('repeatPassword')?.touched)) {
                         <small class="error">Lozinke se ne podudaraju.</small>
                     }
-                    </div>
+                </div>
 
                 <p-button
                     type="submit"

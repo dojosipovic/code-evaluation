@@ -35,9 +35,12 @@ public class UserRepository implements PanacheRepository<User> {
     }
 
     @Transactional
-    public User createUser(String username, String email, String passwordHash, Role role) {
+    public User createUser(String username, String firstname, String lastname, String email,
+                           String passwordHash, Role role) {
         User user = new User();
         user.setUsername(username);
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
         user.setEmail(email);
         user.setPasswordHash(passwordHash);
         user.setRole(role);

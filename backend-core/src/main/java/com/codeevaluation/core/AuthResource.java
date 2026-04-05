@@ -48,11 +48,7 @@ public class AuthResource {
     @POST
     @Path("/register")
     public Response register(RegisterRequestDto request) {
-        UserDto user = authService.register(
-                request.token(),
-                request.username(),
-                request.password()
-        );
+        UserDto user = authService.register(request);
 
         return Response.status(Response.Status.CREATED)
                 .entity(user)

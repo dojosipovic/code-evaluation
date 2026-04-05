@@ -67,7 +67,11 @@ export class InviteCreateDialog {
 
   form = this.fb.group({
     email: this.fb.control('', {
-      validators: [Validators.required, Validators.email],
+      validators: [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(100)
+      ],
       asyncValidators: [this.emailExistsValidator()],
       updateOn: 'change'
     }),

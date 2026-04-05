@@ -35,6 +35,12 @@
             </small>
         }
 
+        @if ((form.controls.email.dirty || form.controls.email.touched) && form.controls.email.errors?.['maxlength']) {
+            <small class="error-text">
+              Email može imati maksimalno 100 znakova.
+            </small>
+        }
+
 
         @if (checkingEmail) {
             <div class="inline-status">

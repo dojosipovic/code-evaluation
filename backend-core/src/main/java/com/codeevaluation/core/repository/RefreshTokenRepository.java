@@ -12,10 +12,11 @@ import java.util.Optional;
 public class RefreshTokenRepository implements PanacheRepository<RefreshToken> {
 
     public Optional<RefreshToken> findActiveByHash(String tokenHash) {
-        return find("""
-                    tokenHash = ?1
-                    and user.enabled = true
-                """, tokenHash)
+        return find(
+                    """
+                        tokenHash = ?1
+                        and user.enabled = true
+                    """, tokenHash)
                 .firstResultOptional()
                 .filter(RefreshToken::isActive);
     }

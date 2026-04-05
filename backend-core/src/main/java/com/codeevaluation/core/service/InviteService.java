@@ -134,7 +134,8 @@ public class InviteService {
         email = email.trim();
 
         if (email.length() > Invite.EMAIL_MAX_LENGTH) {
-            throw new BadRequestException(String.format("Email max length is %s", Invite.EMAIL_MAX_LENGTH));
+            throw new BadRequestException(
+                    String.format("Email max length is %s", Invite.EMAIL_MAX_LENGTH));
         }
 
         return email.toLowerCase();

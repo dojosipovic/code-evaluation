@@ -108,7 +108,8 @@ public class AuthService {
         username = username.trim();
 
         if (username.length() > User.USERNAME_MAX_LENGTH) {
-            throw new BadRequestException(String.format("Username max length is %s", User.USERNAME_MAX_LENGTH));
+            throw new BadRequestException(
+                    String.format("Username max length is %s", User.USERNAME_MAX_LENGTH));
         }
 
         return username;
@@ -122,7 +123,8 @@ public class AuthService {
         firstname = firstname.trim();
 
         if (firstname.length() > User.FIRSTNAME_MAX_LENGTH) {
-            throw new BadRequestException(String.format("Firstname max length is %s", User.FIRSTNAME_MAX_LENGTH));
+            throw new BadRequestException(
+                    String.format("Firstname max length is %s", User.FIRSTNAME_MAX_LENGTH));
         }
 
         return firstname;
@@ -136,7 +138,8 @@ public class AuthService {
         lastname = lastname.trim();
 
         if (lastname.length() > User.LASTNAME_MAX_LENGTH) {
-            throw new BadRequestException(String.format("Lastname max length is %s", User.LASTNAME_MAX_LENGTH));
+            throw new BadRequestException(
+                    String.format("Lastname max length is %s", User.LASTNAME_MAX_LENGTH));
         }
 
         return lastname;

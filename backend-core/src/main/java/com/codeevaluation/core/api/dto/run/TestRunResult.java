@@ -1,4 +1,4 @@
-package com.codeevaluation.core.api.dto;
+package com.codeevaluation.core.api.dto.run;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -18,7 +18,7 @@ export class Dashboard {
   private messageService = inject(MessageService);
 
   loadMe() {
-    this.http.get<string>('/auth/me').subscribe({
+    this.http.get('/api/auth/me', { responseType: 'text' }).subscribe({
       next: (data: string) => {
         this.me = data;
 

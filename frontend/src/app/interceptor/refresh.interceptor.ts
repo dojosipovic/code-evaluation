@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { AuthService } from './auth.service';
+import { AuthService } from '../services/auth/auth.service';
 import { catchError, shareReplay, switchMap, throwError } from 'rxjs';
 
 let refreshInFlight$: ReturnType<AuthService['refresh']> | null = null;

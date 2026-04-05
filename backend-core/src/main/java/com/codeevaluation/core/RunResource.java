@@ -1,8 +1,8 @@
 package com.codeevaluation.core;
 
-import com.codeevaluation.core.api.dto.RunBatchRequestDto;
-import com.codeevaluation.core.api.dto.RunBatchResponseDto;
-import com.codeevaluation.core.api.dto.RunRequestDto;
+import com.codeevaluation.core.api.dto.run.RunBatchRequestDto;
+import com.codeevaluation.core.api.dto.run.RunBatchResponseDto;
+import com.codeevaluation.core.api.dto.run.RunRequestDto;
 import com.codeevaluation.core.service.CppDockerSandboxService;
 import com.codeevaluation.core.service.dto.RunResult;
 import com.codeevaluation.core.util.SandboxLimiter;
@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
-@Path("/run-cpp")
+@Path("/api/run-cpp")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor

@@ -1,7 +1,7 @@
 package com.codeevaluation.core.service;
 
-import com.codeevaluation.core.api.dto.RunBatchResponseDto;
-import com.codeevaluation.core.api.dto.TestRunResult;
+import com.codeevaluation.core.api.dto.run.RunBatchResponseDto;
+import com.codeevaluation.core.api.dto.run.TestRunResult;
 import com.codeevaluation.core.service.dto.RunResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;

@@ -19,12 +19,25 @@ import lombok.Setter;
 @Setter
 public class User extends PanacheEntityBase {
 
+    public static final int USERNAME_MAX_LENGTH = 100;
+    public static final int FIRSTNAME_MAX_LENGTH = 30;
+    public static final int LASTNAME_MAX_LENGTH = 40;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = USERNAME_MAX_LENGTH)
     private String username;
+
+    @Column(nullable = false, length = FIRSTNAME_MAX_LENGTH)
+    private String firstname;
+
+    @Column(nullable = false, length = LASTNAME_MAX_LENGTH)
+    private String lastname;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
@@ -32,4 +45,7 @@ public class User extends PanacheEntityBase {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
+
+    @Column(nullable = false)
+    private Boolean enabled;
 }

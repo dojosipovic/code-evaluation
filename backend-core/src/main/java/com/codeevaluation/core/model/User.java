@@ -19,11 +19,13 @@ import lombok.Setter;
 @Setter
 public class User extends PanacheEntityBase {
 
+    public static final int USERNAME_MAX_LENGTH = 100;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = USERNAME_MAX_LENGTH)
     private String username;
 
     @Column(nullable = false, unique = true)

@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -126,10 +127,17 @@ public class InviteService {
 
     // ovo se treba maknuti u neki validator
     private String normalizeEmail(String email) {
-        if (email == null || email.isBlank()) {
+        if (StringUtils.isBlank(email)) {
             throw new IllegalArgumentException("Email is required");
         }
-        return email.trim().toLowerCase();
+
+        email = email.trim();
+
+        if (email.length() > Invite.EMAIL_MAX_LENGTH) {
+            throw new BadRequestException(String.format("Email max length is %s", Invite.EMAIL_MAX_LENGTH));
+        }
+
+        return email.toLowerCase();
     }
 
     public PagedResponse<InviteResponseDto> getInvites(

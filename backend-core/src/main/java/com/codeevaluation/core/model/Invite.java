@@ -23,11 +23,13 @@ import lombok.Setter;
 @Setter
 public class Invite extends PanacheEntityBase {
 
+    public static final int EMAIL_MAX_LENGTH = 250;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", nullable = false, length = 320)
+    @Column(name = "email", nullable = false, length = EMAIL_MAX_LENGTH)
     private String email;
 
     @Enumerated(EnumType.STRING)

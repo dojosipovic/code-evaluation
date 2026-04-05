@@ -95,7 +95,14 @@ public class AuthService {
         if (StringUtils.isBlank(username)) {
             throw new BadRequestException("Username is required");
         }
-        return username.trim();
+
+        username = username.trim();
+
+        if (username.length() > User.USERNAME_MAX_LENGTH) {
+            throw new BadRequestException(String.format("Username max length is %s", User.USERNAME_MAX_LENGTH));
+        }
+
+        return username;
     }
 
     private void validatePasswordPolicy(String password) {

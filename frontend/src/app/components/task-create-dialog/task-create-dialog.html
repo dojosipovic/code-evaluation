@@ -1,0 +1,170 @@
+<div class="editor-overlay" [class.closing]="isClosing">
+  <div class="editor-shell" [class.closing]="isClosing">
+    <div class="editor-header">
+      <div class="editor-title-group">
+        <label for="taskTitle" class="field-label">Task title</label>
+        <input
+          id="taskTitle"
+          type="text"
+          [(ngModel)]="model.title"
+          placeholder="Unesi naziv zadatka"
+          class="task-title-input" />
+      </div>
+
+      <div class="header-actions">
+        <button pButton type="button" (click)="onSave()">
+          Save
+        </button>
+
+        <button pButton type="button" severity="secondary" (click)="onClose()">
+          Close
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-body">
+      <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
+        <p-tablist>
+          <p-tab value="preview">Preview</p-tab>
+          <p-tab value="public">Public tests</p-tab>
+          <p-tab value="private">Private tests</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <p-tabpanel value="preview">
+            <div class="preview-layout">
+              <div class="markdown-pane">
+                <div class="pane-header">Markdown</div>
+
+                <textarea
+                  [(ngModel)]="model.statementMd"
+                  class="markdown-textarea"
+                  placeholder="Piši markdown ovdje..."></textarea>
+              </div>
+
+              <div class="preview-pane">
+                <div class="pane-header">Rendered preview</div>
+
+                <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="public">
+            <div class="tests-tab">
+              <div class="tests-tab-header">
+                <div>
+                  <h3>Public tests</h3>
+                  <p>Ovi testovi mogu biti vidljivi korisniku.</p>
+                </div>
+
+                <button pButton type="button" (click)="addPublicTest()">
+                  Add public test
+                </button>
+              </div>
+
+              <div class="tests-list">
+                @for (test of model.publicTests; track $index) {
+                    <div class="test-card">
+                      <div class="test-card-header">
+                        <span>Test #{{ test.id }}</span>
+
+                        <button
+                          pButton
+                          type="button"
+                          severity="danger"
+                          (click)="removePublicTest(test.id)">
+                          Delete
+                        </button>
+                      </div>
+
+                      <div class="test-grid">
+                        <div class="test-field">
+                          <label [for]="'public-input-' + test.id">Input</label>
+                          <textarea
+                            [id]="'public-input-' + test.id"
+                            [(ngModel)]="test.input"
+                            placeholder="Unesi input"></textarea>
+                        </div>
+
+                        <div class="test-field">
+                          <label [for]="'public-output-' + test.id">Output</label>
+                          <textarea
+                            [id]="'public-output-' + test.id"
+                            [(ngModel)]="test.output"
+                            placeholder="Unesi expected output"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                }
+
+                @if (model.publicTests.length === 0) {
+                    <div class="empty-state">
+                      Nema public testova.
+                    </div>
+                }
+              </div>
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="private">
+            <div class="tests-tab">
+              <div class="tests-tab-header">
+                <div>
+                  <h3>Private tests</h3>
+                  <p>Ovi testovi ostaju skriveni korisniku.</p>
+                </div>
+
+                <button pButton type="button" (click)="addPrivateTest()">
+                  Add private test
+                </button>
+              </div>
+
+              <div class="tests-list">
+                @for (test of model.privateTests; track $index) {
+                    <div class="test-card">
+                      <div class="test-card-header">
+                        <span>Test #{{ test.id }}</span>
+
+                        <button
+                          pButton
+                          type="button"
+                          severity="danger"
+                          (click)="removePrivateTest(test.id)">
+                          Delete
+                        </button>
+                      </div>
+
+                      <div class="test-grid">
+                        <div class="test-field">
+                          <label [for]="'private-input-' + test.id">Input</label>
+                          <textarea
+                            [id]="'private-input-' + test.id"
+                            [(ngModel)]="test.input"
+                            placeholder="Unesi input"></textarea>
+                        </div>
+
+                        <div class="test-field">
+                          <label [for]="'private-output-' + test.id">Output</label>
+                          <textarea
+                            [id]="'private-output-' + test.id"
+                            [(ngModel)]="test.output"
+                            placeholder="Unesi expected output"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                }
+
+                @if (model.privateTests.length === 0) {
+                    <div class="empty-state">
+                      Nema private testova.
+                    </div>
+                }
+              </div>
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+  </div>
+</div>

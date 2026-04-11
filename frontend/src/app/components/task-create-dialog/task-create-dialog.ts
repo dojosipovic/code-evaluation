@@ -6,6 +6,9 @@ import { marked } from 'marked';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { InputText } from "primeng/inputtext";
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { SelectModule } from 'primeng/select';
 
 interface TestCase {
   id: number;
@@ -36,8 +39,11 @@ type ActiveTab = 'preview' | 'public' | 'private';
     FormsModule,
     ButtonModule,
     TabsModule,
-    MonacoEditorModule
-  ],
+    MonacoEditorModule,
+    InputText,
+    ToggleSwitchModule,
+    SelectModule
+],
   templateUrl: './task-create-dialog.html',
   styleUrl: './task-create-dialog.scss',
 })
@@ -57,6 +63,10 @@ export class TaskCreateDialog {
     automaticLayout: true,
     minimap: { enabled: false }
   };
+
+  languageOptions = [
+    { label: 'C++', value: 'cpp' }
+  ];
 
   model: TaskModel = {
     title: '',

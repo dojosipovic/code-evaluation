@@ -4,6 +4,7 @@
       <div class="editor-title-group">
         <label for="taskTitle" class="field-label">Task title</label>
         <input
+          pInputText
           id="taskTitle"
           type="text"
           [(ngModel)]="model.title"
@@ -174,21 +175,23 @@
 
                 <div class="left-controls">
                     <label for="language">Language</label>
-                    <select
-                    id="language"
-                    [(ngModel)]="model.starterCode.language"
-                    (change)="onLanguageChange(model.starterCode.language)">
-
-                    <option value="cpp" selected>C++</option>
-                    </select>
+                    <p-select
+                      inputId="language"
+                      [options]="languageOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      [(ngModel)]="model.starterCode.language"
+                      (onChange)="onLanguageChange(model.starterCode.language)"
+                      styleClass="language-select">
+                    </p-select>
                 </div>
 
                 <div class="right-controls">
                     <label for="includeStarter">Include starter code</label>
-                    <input
-                    type="checkbox"
-                    id="includeStarter"
-                    [(ngModel)]="model.includeStarterCode" />
+                    <p-toggleswitch
+                      inputId="includeStarter"
+                      [(ngModel)]="model.includeStarterCode">
+                    </p-toggleswitch>
                 </div>
 
                 </div>

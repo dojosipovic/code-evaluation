@@ -28,6 +28,7 @@
           <p-tab value="preview">Preview</p-tab>
           <p-tab value="public">Public tests</p-tab>
           <p-tab value="private">Private tests</p-tab>
+          <p-tab value="code">Starter Code</p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -163,6 +164,47 @@
               </div>
             </div>
           </p-tabpanel>
+
+          <p-tabpanel value="code">
+
+            <div class="code-tab">
+
+                <!-- HEADER -->
+                <div class="code-header">
+
+                <div class="left-controls">
+                    <label for="language">Language</label>
+                    <select
+                    id="language"
+                    [(ngModel)]="model.starterCode.language"
+                    (change)="onLanguageChange(model.starterCode.language)">
+
+                    <option value="cpp" selected>C++</option>
+                    </select>
+                </div>
+
+                <div class="right-controls">
+                    <label for="includeStarter">Include starter code</label>
+                    <input
+                    type="checkbox"
+                    id="includeStarter"
+                    [(ngModel)]="model.includeStarterCode" />
+                </div>
+
+                </div>
+
+                <!-- EDITOR -->
+                <div class="monaco-wrapper">
+                    <ngx-monaco-editor
+                        class="monaco-editor-host"
+                        [(ngModel)]="model.starterCode.code"
+                        [options]="editorOptions">
+                    </ngx-monaco-editor>
+                </div>
+
+            </div>
+
+            </p-tabpanel>
         </p-tabpanels>
       </p-tabs>
     </div>

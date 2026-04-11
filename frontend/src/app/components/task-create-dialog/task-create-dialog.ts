@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 interface TestCase {
   id: number;
@@ -12,9 +13,16 @@ interface TestCase {
   output: string;
 }
 
+interface StarterCode {
+  language: string;
+  code: string;
+}
+
 interface TaskModel {
   title: string;
   statementMd: string;
+  starterCode: StarterCode;
+  includeStarterCode: boolean;
   publicTests: TestCase[];
   privateTests: TestCase[];
 }
@@ -27,7 +35,8 @@ type ActiveTab = 'preview' | 'public' | 'private';
     CommonModule,
     FormsModule,
     ButtonModule,
-    TabsModule
+    TabsModule,
+    MonacoEditorModule
   ],
   templateUrl: './task-create-dialog.html',
   styleUrl: './task-create-dialog.scss',
@@ -42,37 +51,71 @@ export class TaskCreateDialog {
   private nextTestId = 1;
   private sanitizer = inject(DomSanitizer);
 
+  editorOptions = {
+    theme: 'vs-dark',
+    language: 'cpp',
+    automaticLayout: true,
+    minimap: { enabled: false }
+  };
+
   model: TaskModel = {
     title: '',
     statementMd: `# Naziv zadatka
 
-## Opis
-Ovdje napiši opis zadatka.
+      ## Opis
+      Ovdje napiši opis zadatka.
 
-## Ulaz
-Opiši ulaz.
+      ## Ulaz
+      Opiši ulaz.
 
-## Izlaz
-Opiši izlaz.
+      ## Izlaz
+      Opiši izlaz.
 
-## Ograničenja
-- 1 <= n <= 1000
+      ## Ograničenja
+      - 1 <= n <= 1000
 
-## Primjer
-**Ulaz**
-\`\`\`
-5
-\`\`\`
+      ## Primjer
+      **Ulaz**
+      \`\`\`
+      5
+      \`\`\`
 
-**Izlaz**
-\`\`\`
-10
-\`\`\`
-`,
-    publicTests: [
-      { id: 1, input: '5', output: '10' }
-    ],
+      **Izlaz**
+      \`\`\`
+      10
+      \`\`\`
+      `,
+    starterCode: {
+      language: 'cpp',
+      code: `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // input
+    
+
+
+    // output
+    
+
+
+    return 0;
+}`
+    },
+    includeStarterCode: true, // ✅ default ON
+    publicTests: [],
     privateTests: []
+  };
+
+  monacoOptions = {
+    theme: 'vs-dark',
+    language: 'cpp',
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontSize: 14
   };
 
   constructor() {
@@ -135,5 +178,10 @@ Opiši izlaz.
     }
   }
 
-
+  onLanguageChange(lang: string) {
+    this.editorOptions = {
+      ...this.editorOptions,
+      language: lang
+    };
+  }
 }

@@ -10,6 +10,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bearerInterceptor } from './interceptor/bearer.interceptor';
 import { credentialsInterceptor } from './interceptor/credentials.interceptor';
 import { refreshInterceptor } from './interceptor/refresh.interceptor';
+import { NGX_MONACO_EDITOR_CONFIG } from 'ngx-monaco-editor-v2';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,6 +28,18 @@ export const appConfig: ApplicationConfig = {
         preset: Lara
       }
     }),
-    MessageService
+    MessageService,
+    {
+      provide: NGX_MONACO_EDITOR_CONFIG,
+      useValue: {
+        baseUrl: 'assets/monaco',
+        defaultOptions: {
+          scrollBeyondLastLine: false,
+          minimap: {
+            enabled: false
+          }
+        }
+      }
+    }
   ]
 };

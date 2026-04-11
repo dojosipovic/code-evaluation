@@ -9,6 +9,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { InputText } from "primeng/inputtext";
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { SelectModule } from 'primeng/select';
+import { CPP_STARTER_TEMPLATE, TASK_MARKDOWN_TEMPLATE } from '../../config/task-templates';
 
 interface TestCase {
   id: number;
@@ -30,7 +31,7 @@ interface TaskModel {
   privateTests: TestCase[];
 }
 
-type ActiveTab = 'preview' | 'public' | 'private';
+type ActiveTab = 'preview' | 'public' | 'private' | 'code';
 
 @Component({
   selector: 'app-task-create-dialog',
@@ -57,76 +58,43 @@ export class TaskCreateDialog {
   private nextTestId = 1;
   private sanitizer = inject(DomSanitizer);
 
-  editorOptions = {
-    theme: 'vs-dark',
-    language: 'cpp',
-    automaticLayout: true,
-    minimap: { enabled: false }
-  };
-
   languageOptions = [
     { label: 'C++', value: 'cpp' }
   ];
 
   model: TaskModel = {
     title: '',
-    statementMd: `# Naziv zadatka
-
-      ## Opis
-      Ovdje napiši opis zadatka.
-
-      ## Ulaz
-      Opiši ulaz.
-
-      ## Izlaz
-      Opiši izlaz.
-
-      ## Ograničenja
-      - 1 <= n <= 1000
-
-      ## Primjer
-      **Ulaz**
-      \`\`\`
-      5
-      \`\`\`
-
-      **Izlaz**
-      \`\`\`
-      10
-      \`\`\`
-      `,
+    statementMd: TASK_MARKDOWN_TEMPLATE,
     starterCode: {
       language: 'cpp',
-      code: `#include <bits/stdc++.h>
-using namespace std;
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    // input
-    
-
-
-    // output
-    
-
-
-    return 0;
-}`
+      code: CPP_STARTER_TEMPLATE
     },
     includeStarterCode: true, // ✅ default ON
     publicTests: [],
     privateTests: []
   };
 
-  monacoOptions = {
+  editorOptions = {
     theme: 'vs-dark',
     language: 'cpp',
     automaticLayout: true,
     minimap: { enabled: false },
-    fontSize: 14
+    readOnly: false,
+    domReadOnly: false
   };
+
+  private updateEditorOptions(): void {
+    this.editorOptions = {
+      ...this.editorOptions,
+      readOnly: !this.model.includeStarterCode,
+      domReadOnly: !this.model.includeStarterCode
+    };
+  }
+
+  onIncludeStarterCodeChange(value: boolean): void {
+    this.model.includeStarterCode = value;
+    this.updateEditorOptions();
+  }
 
   constructor() {
     this.nextTestId = 2;
@@ -134,6 +102,8 @@ int main() {
       breaks: true,
       gfm: true
     });
+
+    this.updateEditorOptions();
   }
 
   get renderedMarkdown(): SafeHtml {
@@ -183,15 +153,8 @@ int main() {
   }
 
   onTabChange(value: string | number | undefined): void {
-    if (value === 'preview' || value === 'public' || value === 'private') {
+    if (value === 'preview' || value === 'public' || value === 'private' || value === 'code') {
       this.activeTab = value;
     }
-  }
-
-  onLanguageChange(lang: string) {
-    this.editorOptions = {
-      ...this.editorOptions,
-      language: lang
-    };
   }
 }

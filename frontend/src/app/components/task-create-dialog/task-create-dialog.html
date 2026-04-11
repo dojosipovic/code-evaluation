@@ -2,7 +2,7 @@
   <div class="editor-shell" [class.closing]="isClosing">
     <div class="editor-header">
       <div class="editor-title-group">
-        <label for="taskTitle" class="field-label">Task title</label>
+        <label for="taskTitle" class="field-label">Naziv zadatka</label>
         <input
           pInputText
           id="taskTitle"
@@ -26,10 +26,10 @@
     <div class="editor-body">
       <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
         <p-tablist>
-          <p-tab value="preview">Preview</p-tab>
-          <p-tab value="public">Public tests</p-tab>
-          <p-tab value="private">Private tests</p-tab>
-          <p-tab value="code">Starter Code</p-tab>
+          <p-tab value="preview">Pregled</p-tab>
+          <p-tab value="public">Javni testovi</p-tab>
+          <p-tab value="private">Skriveni testovi</p-tab>
+          <p-tab value="code">Početni kod</p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -45,7 +45,7 @@
               </div>
 
               <div class="preview-pane">
-                <div class="pane-header">Rendered preview</div>
+                <div class="pane-header">Pregled</div>
 
                 <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
               </div>
@@ -56,12 +56,12 @@
             <div class="tests-tab">
               <div class="tests-tab-header">
                 <div>
-                  <h3>Public tests</h3>
+                  <h3>Javni testovi</h3>
                   <p>Ovi testovi mogu biti vidljivi korisniku.</p>
                 </div>
 
                 <button pButton type="button" (click)="addPublicTest()">
-                  Add public test
+                  Dodaj javan test
                 </button>
               </div>
 
@@ -102,7 +102,7 @@
 
                 @if (model.publicTests.length === 0) {
                     <div class="empty-state">
-                      Nema public testova.
+                      Nema javnih testova.
                     </div>
                 }
               </div>
@@ -113,12 +113,12 @@
             <div class="tests-tab">
               <div class="tests-tab-header">
                 <div>
-                  <h3>Private tests</h3>
+                  <h3>Skriveni testovi</h3>
                   <p>Ovi testovi ostaju skriveni korisniku.</p>
                 </div>
 
                 <button pButton type="button" (click)="addPrivateTest()">
-                  Add private test
+                  Dodaj skriveni test
                 </button>
               </div>
 
@@ -159,7 +159,7 @@
 
                 @if (model.privateTests.length === 0) {
                     <div class="empty-state">
-                      Nema private testova.
+                      Nema skrivenih testova.
                     </div>
                 }
               </div>
@@ -174,35 +174,33 @@
                 <div class="code-header">
 
                 <div class="left-controls">
-                    <label for="language">Language</label>
-                    <p-select
-                      inputId="language"
-                      [options]="languageOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      [(ngModel)]="model.starterCode.language"
-                      (onChange)="onLanguageChange(model.starterCode.language)"
-                      styleClass="language-select">
-                    </p-select>
+                  <label for="includeStarter">Uključi početni kod</label>
+                  <p-toggleswitch
+                    inputId="includeStarter"
+                    [(ngModel)]="model.includeStarterCode"
+                    (ngModelChange)="onIncludeStarterCodeChange($event)">
+                  </p-toggleswitch>
                 </div>
 
                 <div class="right-controls">
-                    <label for="includeStarter">Include starter code</label>
-                    <p-toggleswitch
-                      inputId="includeStarter"
-                      [(ngModel)]="model.includeStarterCode">
-                    </p-toggleswitch>
+                  <p>Kod će biti izuzet u računanju plagijata</p>
                 </div>
 
                 </div>
 
                 <!-- EDITOR -->
-                <div class="monaco-wrapper">
+                <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
                     <ngx-monaco-editor
                         class="monaco-editor-host"
                         [(ngModel)]="model.starterCode.code"
                         [options]="editorOptions">
                     </ngx-monaco-editor>
+
+                    @if (!model.includeStarterCode) {
+                      <div class="monaco-disabled-overlay">
+                        Početni kod nije uključen
+                      </div>
+                    }
                 </div>
 
             </div>

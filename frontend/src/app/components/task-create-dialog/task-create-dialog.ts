@@ -24,11 +24,11 @@ interface StarterCode {
 
 interface TaskModel {
   title: string;
-  statementMd: string;
+  description: string;
   starterCode: StarterCode;
   includeStarterCode: boolean;
   publicTests: TestCase[];
-  privateTests: TestCase[];
+  hiddenTests: TestCase[];
 }
 
 type ActiveTab = 'preview' | 'public' | 'private' | 'code';
@@ -64,14 +64,14 @@ export class TaskCreateDialog {
 
   model: TaskModel = {
     title: '',
-    statementMd: TASK_MARKDOWN_TEMPLATE,
+    description: TASK_MARKDOWN_TEMPLATE,
     starterCode: {
       language: 'cpp',
       code: CPP_STARTER_TEMPLATE
     },
     includeStarterCode: true, // ✅ default ON
     publicTests: [],
-    privateTests: []
+    hiddenTests: []
   };
 
   editorOptions = {
@@ -107,7 +107,7 @@ export class TaskCreateDialog {
   }
 
   get renderedMarkdown(): SafeHtml {
-    const rawHtml = marked.parse(this.model.statementMd) as string;
+    const rawHtml = marked.parse(this.model.description) as string;
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   }
 
@@ -133,7 +133,7 @@ export class TaskCreateDialog {
   }
 
   addPrivateTest(): void {
-    this.model.privateTests.push({
+    this.model.hiddenTests.push({
       id: this.nextTestId++,
       input: '',
       output: ''
@@ -145,7 +145,7 @@ export class TaskCreateDialog {
   }
 
   removePrivateTest(id: number): void {
-    this.model.privateTests = this.model.privateTests.filter(test => test.id !== id);
+    this.model.hiddenTests = this.model.hiddenTests.filter(test => test.id !== id);
   }
 
   trackByTestId(_index: number, test: TestCase): number {

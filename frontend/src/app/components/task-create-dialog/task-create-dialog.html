@@ -39,7 +39,7 @@
                 <div class="pane-header">Markdown</div>
 
                 <textarea
-                  [(ngModel)]="model.statementMd"
+                  [(ngModel)]="model.description"
                   class="markdown-textarea"
                   placeholder="Piši markdown ovdje..."></textarea>
               </div>
@@ -123,7 +123,7 @@
               </div>
 
               <div class="tests-list">
-                @for (test of model.privateTests; track $index) {
+                @for (test of model.hiddenTests; track $index) {
                     <div class="test-card">
                       <div class="test-card-header">
                         <span>Test #{{ test.id }}</span>
@@ -157,7 +157,7 @@
                     </div>
                 }
 
-                @if (model.privateTests.length === 0) {
+                @if (model.hiddenTests.length === 0) {
                     <div class="empty-state">
                       Nema skrivenih testova.
                     </div>

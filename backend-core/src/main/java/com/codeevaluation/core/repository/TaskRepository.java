@@ -10,6 +10,7 @@ import com.codeevaluation.core.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,7 +27,7 @@ public class TaskRepository implements PanacheRepository<Task> {
 
         if (Boolean.TRUE.equals(taskCreateDto.includeStarterCode())) {
             task.setStarterCode(taskCreateDto.starterCode().code().trim());
-        } // provjeri jel nakon ovog starter code null ako nije true
+        }
 
         task.setEnabled(true);
         task.setShared(Boolean.TRUE.equals(taskCreateDto.shared()));
@@ -57,5 +58,16 @@ public class TaskRepository implements PanacheRepository<Task> {
         task.persist();
 
         return task;
+    }
+
+    public Optional<Task> getTask(Long id) {
+        return find("""
+                    select distinct t from Task t
+                    left join fetch t.tests
+                    left join fetch t.user
+                    where t.id = ?1
+                """,
+                id
+        ).firstResultOptional();
     }
 }

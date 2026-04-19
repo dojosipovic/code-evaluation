@@ -4,6 +4,7 @@ import com.codeevaluation.core.api.dto.task.StarterCodeDto;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TestDto;
+import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.enumeration.TestVisibility;
 import com.codeevaluation.core.model.Task;
 import com.codeevaluation.core.model.TaskTest;
@@ -36,6 +37,25 @@ public class TaskService {
 
         Task task = taskRepository.create(taskCreateDto, user);
         return TaskResponseDto.from(task);
+    }
+
+    public TaskResponseDto getTask(Long id, String username) {
+        Task task = taskRepository.getTask(id)
+                .orElseThrow(() -> new NotFoundException("Task not found."));
+
+        boolean isUserOwner = username.equals(task.getUser().getUsername());
+        boolean isShared = Boolean.TRUE.equals(task.getShared());
+        boolean isPublished = task.getStatus() == TaskStatus.PUBLISHED;
+
+        if (isUserOwner || isShared && isPublished) {
+            return TaskResponseDto.from(task);
+        }
+
+        if (!isShared) {
+            throw new BadRequestException("Task is not shared");
+        }
+
+        throw new BadRequestException("Task is not in status " + TaskStatus.PUBLISHED);
     }
 
     private void validateTask(TaskCreateDto taskCreateDto) {

@@ -26,7 +26,7 @@ import lombok.Setter;
 @Setter
 public class Task extends PanacheEntityBase {
 
-    private static final int TITLE_MAX_LENGTH = 50;
+    public static final int TITLE_MAX_LENGTH = 50;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

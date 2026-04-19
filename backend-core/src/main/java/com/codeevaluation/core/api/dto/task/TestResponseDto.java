@@ -16,7 +16,7 @@ public class TestResponseDto {
     private String output;
     private TestVisibility visibility;
 
-    public static TestResponseDto from (TaskTest taskTest) {
+    public static TestResponseDto from(TaskTest taskTest) {
         TestResponseDto testResponseDto = new TestResponseDto();
 
         testResponseDto.setInput(taskTest.getInput());

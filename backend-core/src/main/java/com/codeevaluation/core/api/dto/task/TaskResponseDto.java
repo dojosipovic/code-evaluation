@@ -1,5 +1,6 @@
 package com.codeevaluation.core.api.dto.task;
 
+import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.model.Task;
 import java.util.List;
@@ -21,6 +22,7 @@ public class TaskResponseDto {
     private Boolean enabled;
     private TaskStatus status;
     private List<TestResponseDto> tests;
+    private UserDto user;
 
     public static TaskResponseDto from(Task task) {
         TaskResponseDto taskResponseDto = new TaskResponseDto();
@@ -33,6 +35,7 @@ public class TaskResponseDto {
         taskResponseDto.setEnabled(task.getEnabled());
         taskResponseDto.setStatus(task.getStatus());
         taskResponseDto.setTests(TestResponseDto.from(task.getTests()));
+        taskResponseDto.setUser(UserDto.from(task.getUser()));
 
         return taskResponseDto;
     }

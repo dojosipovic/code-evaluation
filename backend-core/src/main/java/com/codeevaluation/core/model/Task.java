@@ -67,4 +67,9 @@ public class Task extends PanacheEntityBase {
         tests.remove(test);
         test.setTask(null);
     }
+
+    public void removeAllTests() {
+        tests.forEach(test -> test.setTask(null));
+        tests.clear();
+    }
 }

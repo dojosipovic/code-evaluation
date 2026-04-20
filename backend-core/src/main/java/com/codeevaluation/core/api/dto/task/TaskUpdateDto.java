@@ -2,7 +2,7 @@ package com.codeevaluation.core.api.dto.task;
 
 import java.util.List;
 
-public record TaskCreateDto(
+public record TaskUpdateDto(
         String title,
         String description,
         StarterCodeDto starterCode,

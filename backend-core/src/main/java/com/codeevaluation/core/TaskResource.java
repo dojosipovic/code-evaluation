@@ -7,6 +7,7 @@ import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
@@ -39,24 +40,22 @@ public class TaskResource {
     @PUT
     @RolesAllowed({ "ADMIN", "PROF" })
     @Path("/{id}")
-    public Response updateTask(TaskUpdateDto taskUpdateDto, @PathParam("id") Long id) {
-        return Response
-                .ok(taskService.updateTask(taskUpdateDto, id))
-                .build();
+    public TaskResponseDto updateTask(TaskUpdateDto taskUpdateDto, @PathParam("id") Long id) {
+        return taskService.updateTask(taskUpdateDto, id);
     }
 
     @POST
     @RolesAllowed({ "ADMIN", "PROF" })
     @Path("/{id}/publish")
-    public Response publishTask(@PathParam("id") Long id) {
-        return Response.ok(taskService.publishTask(id)).build();
+    public TaskResponseDto publishTask(@PathParam("id") Long id) {
+        return taskService.publishTask(id);
     }
 
     @PATCH
     @RolesAllowed({ "ADMIN", "PROF" })
     @Path("/{id}")
-    public Response patchTask(TaskPatchDto taskPatchDto, @PathParam("id") Long id) {
-        return Response.ok(taskService.patchTask(taskPatchDto, id)).build();
+    public TaskResponseDto patchTask(TaskPatchDto taskPatchDto, @PathParam("id") Long id) {
+        return taskService.patchTask(taskPatchDto, id);
     }
 
     @GET
@@ -64,5 +63,13 @@ public class TaskResource {
     @Path("/{id}")
     public TaskResponseDto getTask(@PathParam("id") Long id) {
         return taskService.getTask(id);
+    }
+
+    @DELETE
+    @RolesAllowed({ "ADMIN", "PROF" })
+    @Path("/{id}")
+    public Response deleteTask(@PathParam("id") Long id) {
+        taskService.deleteTask(id);
+        return Response.noContent().build();
     }
 }

@@ -104,6 +104,22 @@ public class TaskService {
         throw new BadRequestException("Task is not in status " + TaskStatus.PUBLISHED);
     }
 
+    @Transactional
+    public void deleteTask(Long id) {
+        Task task = taskRepository.getTask(id)
+                .orElseThrow(() -> new NotFoundException("Task not found."));
+
+        if (task.getStatus() == TaskStatus.PUBLISHED) {
+            throw new BadRequestException("Task in status " + TaskStatus.PUBLISHED + " cannot be deleted");
+        }
+
+        if (!canModifyTask(task)) {
+            throw new ForbiddenException("You cannot delete someone else task");
+        }
+
+        taskRepository.delete(task);
+    }
+
     private boolean canModifyTask(Task task) {
         User currentUser = currentUserProvider.getCurrentUser();
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;

@@ -1,6 +1,7 @@
 package com.codeevaluation.core.repository;
 
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
+import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.api.dto.task.TestDto;
 import com.codeevaluation.core.enumeration.TaskStatus;
@@ -109,5 +110,17 @@ public class TaskRepository implements PanacheRepository<Task> {
                 """,
                 id
         ).firstResultOptional();
+    }
+
+    public Task publish(Task task) {
+        task.setStatus(TaskStatus.PUBLISHED);
+        task.persist();
+        return task;
+    }
+
+    @Transactional
+    public Task patch(TaskPatchDto taskPatchDto, Task task) {
+        task.setEnabled(Boolean.TRUE.equals(taskPatchDto.enabled()));
+        return task;
     }
 }

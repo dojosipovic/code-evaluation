@@ -1,12 +1,14 @@
 package com.codeevaluation.core;
 
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
+import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -41,6 +43,20 @@ public class TaskResource {
         return Response
                 .ok(taskService.updateTask(taskUpdateDto, id))
                 .build();
+    }
+
+    @POST
+    @RolesAllowed({ "ADMIN", "PROF" })
+    @Path("/{id}/publish")
+    public Response publishTask(@PathParam("id") Long id) {
+        return Response.ok(taskService.publishTask(id)).build();
+    }
+
+    @PATCH
+    @RolesAllowed({ "ADMIN", "PROF" })
+    @Path("/{id}")
+    public Response patchTask(TaskPatchDto taskPatchDto, @PathParam("id") Long id) {
+        return Response.ok(taskService.patchTask(taskPatchDto, id)).build();
     }
 
     @GET

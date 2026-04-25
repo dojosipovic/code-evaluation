@@ -26,6 +26,7 @@ public class TaskListItemDto {
         taskListItemDto.setTitle(task.getTitle());
         taskListItemDto.setStatus(task.getStatus());
         taskListItemDto.setEnabled(task.getEnabled());
+        taskListItemDto.setShared(task.getShared());
         taskListItemDto.setUser(UserDto.from(task.getUser()));
 
         return taskListItemDto;

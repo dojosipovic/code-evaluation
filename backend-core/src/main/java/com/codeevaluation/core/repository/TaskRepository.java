@@ -128,7 +128,12 @@ public class TaskRepository implements PanacheRepository<Task> {
 
     @Transactional
     public Task patch(TaskPatchDto taskPatchDto, Task task) {
-        task.setEnabled(Boolean.TRUE.equals(taskPatchDto.enabled()));
+        if (taskPatchDto.enabled() != null) {
+            task.setEnabled(taskPatchDto.enabled());
+        }
+        if (taskPatchDto.shared() != null) {
+            task.setShared(taskPatchDto.shared());
+        }
         return task;
     }
 

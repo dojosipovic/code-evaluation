@@ -151,7 +151,7 @@ export class Tasks implements OnInit {
     };
 
     this.taskSortField = 'id';
-    this.taskSortOrder = -1;
+    this.taskSortOrder = 1;
     this.first = 0;
 
     this.applyFilters$.next();

@@ -1,13 +1,17 @@
 .layout {
   display: flex;
   min-height: 100vh;
+  overflow: hidden;
   background: var(--surface-ground);
 }
 
 /* DESKTOP SIDEBAR */
 .sidebar {
   width: 270px;
+  height: 100vh;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
   padding: 1rem 0.75rem;
@@ -33,6 +37,14 @@
   padding: 0 0.25rem;
 }
 
+.sidebar .nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-right: 0.25rem;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -55,12 +67,16 @@
 .main {
   flex: 1;
   min-width: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .content {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 1.25rem;
   background: var(--surface-ground);
 }
@@ -217,6 +233,9 @@
 /* MOBILE SIDEBAR */
 .mobile-sidebar {
   position: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   inset: 0 auto 0 0;
   width: 300px;
   max-width: 86vw;
@@ -256,10 +275,18 @@
 }
 
 .mobile-header {
+  flex: 0 0 auto;
   margin-bottom: 1rem;
 }
 
 /* MOBILE NAV */
+.mobile-sidebar .nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .mobile-sidebar .nav-link {
   background: color-mix(in srgb, var(--surface-card) 35%, transparent);
   border: 1px solid transparent;

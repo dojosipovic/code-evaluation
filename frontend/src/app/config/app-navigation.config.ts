@@ -27,6 +27,13 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     showInNavbar: true
   },
   {
+    label: 'Zadaci',
+    path: '/tasks',
+    icon: 'pi pi-receipt',
+    roles: ['PROF', 'ADMIN'],
+    showInNavbar: true
+  },
+  {
     label: 'Profil',
     path: '/profile',
     icon: 'pi pi-user',

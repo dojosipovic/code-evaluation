@@ -20,6 +20,7 @@ public class PagedSearchTaskImpl extends PagedSearchHelper {
                         allowPrivateFilters ? taskListQueryParams.getStatus() : TaskStatus.PUBLISHED
                 )
                 .enabled(taskListQueryParams.getEnabled())
+                .excludeUser(taskListQueryParams.getExcludeCurrentUser())
                 .shared(allowPrivateFilters ? taskListQueryParams.getShared() : Boolean.TRUE);
     }
 

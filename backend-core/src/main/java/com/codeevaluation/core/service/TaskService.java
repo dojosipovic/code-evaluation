@@ -143,32 +143,13 @@ public class TaskService {
         return user.getRole() == Role.ADMIN;
     }
 
-    public PagedResponse<TaskListItemDto> getMyTasks(TaskListQueryParams taskListQueryParams) {
-        User currentUser = currentUserProvider.getCurrentUser();
-        PagedContext pagedContext = pagedSearchTask.generateFrom(taskListQueryParams);
-        TaskFilterParams taskFilterParams =
-                pagedSearchTask.generateFilterParams(taskListQueryParams, true)
-                .user(currentUser)
-                .excludeUser(false)
-                .build();
-
-        PanacheQuery<Task> query = taskRepository.findTasks(pagedContext, taskFilterParams);
-        List<TaskListItemDto> items = TaskListItemDto.from(query.list());
-        long totalItems = query.count();
-        int page = pagedContext.page();
-        int size = pagedContext.size();
-
-        return new PagedResponse<>(items, page, size, totalItems);
-    }
-
-    public PagedResponse<TaskListItemDto> getOtherTasks(TaskListQueryParams taskListQueryParams) {
+    public PagedResponse<TaskListItemDto> getTasks(TaskListQueryParams taskListQueryParams) {
         User currentUser = currentUserProvider.getCurrentUser();
         PagedContext pagedContext = pagedSearchTask.generateFrom(taskListQueryParams);
         TaskFilterParams taskFilterParams =
                 pagedSearchTask.generateFilterParams(taskListQueryParams, isAdmin(currentUser))
-                .user(currentUser)
-                .excludeUser(true)
-                .build();
+                        .user(currentUser)
+                        .build();
 
         PanacheQuery<Task> query = taskRepository.findTasks(pagedContext, taskFilterParams);
         List<TaskListItemDto> items = TaskListItemDto.from(query.list());

@@ -77,18 +77,9 @@ public class TaskResource {
     }
 
     @GET
-    @Path("/me")
     @RolesAllowed({ "ADMIN", "PROF" })
-    public PagedResponse<TaskListItemDto> getMyTasks(
+    public PagedResponse<TaskListItemDto> getTasks(
             @BeanParam TaskListQueryParams taskListQueryParams) {
-        return taskService.getMyTasks(taskListQueryParams);
-    }
-
-    @GET
-    @Path("/others")
-    @RolesAllowed({ "ADMIN", "PROF" })
-    public PagedResponse<TaskListItemDto> getOtherTasks(
-            @BeanParam TaskListQueryParams taskListQueryParams) {
-        return taskService.getOtherTasks(taskListQueryParams);
+        return taskService.getTasks(taskListQueryParams);
     }
 }

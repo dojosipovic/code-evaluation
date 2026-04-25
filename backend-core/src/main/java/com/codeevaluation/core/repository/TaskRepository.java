@@ -152,12 +152,14 @@ public class TaskRepository implements PanacheRepository<Task> {
             params.put("search", "%" + pagedContext.search().toLowerCase().trim() + "%");
         }
 
-        if (Boolean.TRUE.equals(taskFilterParams.excludeUser())) {
-            query.append(" and t.user.id != :userId");
-        } else {
-            query.append(" and t.user.id = :userId");
+        if (taskFilterParams.excludeUser() != null) {
+            if (taskFilterParams.excludeUser()) {
+                query.append(" and t.user.id != :userId");
+            } else {
+                query.append(" and t.user.id = :userId");
+            }
+            params.put("userId", taskFilterParams.user().getId());
         }
-        params.put("userId", taskFilterParams.user().getId());
 
         if (taskFilterParams.status() != null) {
             query.append(" and t.status = :status");

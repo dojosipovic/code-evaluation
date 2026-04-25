@@ -19,4 +19,7 @@ public class TaskListQueryParams extends PagedParams {
     @QueryParam("shared")
     private Boolean shared;
 
+    @QueryParam("excludeCurrentUser")
+    private Boolean excludeCurrentUser;
+
 }

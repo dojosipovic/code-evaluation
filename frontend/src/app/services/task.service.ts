@@ -21,6 +21,14 @@ export class TaskService {
         return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: true });
     }
 
+    shareTask(id: number): Observable<void> {
+        return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: true });
+    }
+
+    stopShareTask(id: number): Observable<void> {
+        return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: false });
+    }
+
     disableTask(id: number): Observable<void> {
         return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: false });
     }

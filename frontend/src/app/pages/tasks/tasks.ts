@@ -193,42 +193,6 @@ export class Tasks implements OnInit {
     this.selectedTask = null;
   }
 
-  buildTaskMenuItems(task: ITaskListItem): MenuItem[] {
-    return [
-      {
-        label: 'Pregledaj',
-        icon: 'pi pi-eye',
-        visible: task.status === TaskStatusEnum.PUBLISHED,
-        command: () => this.openTaskDetails(task)
-      },
-      {
-        label: 'Uredi',
-        icon: 'pi pi-pencil',
-        visible: task.status === TaskStatusEnum.DRAFT,
-        command: () => this.editTask(task)
-      },
-      {
-        label: 'Objavi',
-        icon: 'pi pi-send',
-        visible: task.status === TaskStatusEnum.DRAFT,
-        command: () => this.onToggleTaskStatus(task)
-      },
-      {
-        label: task.enabled ? 'Deaktiviraj' : 'Aktiviraj',
-        icon: task.enabled ? 'pi pi-times' : 'pi pi-check',
-        visible: task.status === TaskStatusEnum.PUBLISHED,
-        command: () => this.onToggleTaskEnabled(task)
-      },
-      {
-        label: 'Obriši',
-        icon: 'pi pi-trash',
-        visible: task.status === TaskStatusEnum.DRAFT,
-        styleClass: 'danger-menu-item',
-        command: () => this.onDeleteTask(task)
-      }
-    ];
-  }
-
   openTaskDetails(task: ITaskListItem): void {
     this.router.navigate(['/tasks', task.id]);
   }
@@ -253,6 +217,45 @@ export class Tasks implements OnInit {
         const request$ = task.enabled
           ? this.taskService.disableTask(task.id)
           : this.taskService.enableTask(task.id);
+
+        request$.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Uspjeh',
+              detail: `Zadatak je ${successLabel}`
+            });
+
+            this.loadTasks();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Greška',
+              detail: `Nije moguće ${actionLabel} zadatak`
+            });
+          }
+        });
+      }
+    });
+  }
+
+  onToggleTaskShared(task: ITaskListItem): void {
+    const actionLabel = task.shared ? 'prestati dijelii' : 'podijeliti';
+    const successLabel = task.shared ? 'privatan' : 'podijeljen';
+
+    this.confirmationService.confirm({
+      message: `Jesi siguran da želiš ${actionLabel} zadatak "${task.title}"?`,
+      header: 'Potvrda',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: task.shared ? 'Sakrij' : 'Podijeli',
+      rejectLabel: 'Odustani',
+      acceptButtonStyleClass: task.shared ? 'p-button-danger' : 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        const request$ = task.shared
+          ? this.taskService.stopShareTask(task.id)
+          : this.taskService.shareTask(task.id);
 
         request$.subscribe({
           next: () => {

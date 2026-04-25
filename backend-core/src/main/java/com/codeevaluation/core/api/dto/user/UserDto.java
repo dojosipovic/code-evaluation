@@ -13,6 +13,8 @@ import lombok.Setter;
 public class UserDto {
     private Long id;
     private String username;
+    private String firstname;
+    private String lastname;
     private String email;
     private Role role;
     private Boolean enabled;
@@ -21,6 +23,8 @@ public class UserDto {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
         userDto.setUsername(user.getUsername());
+        userDto.setFirstname(user.getFirstname());
+        userDto.setLastname(user.getLastname());
         userDto.setEmail(user.getEmail());
         userDto.setRole(user.getRole());
         userDto.setEnabled(user.getEnabled());

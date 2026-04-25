@@ -157,3 +157,41 @@
     flex-direction: column;
   }
 }
+
+.task-actions-menu {
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.task-action-item {
+  border: 0;
+  background: transparent;
+  color: var(--p-text-color);
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+
+  &.danger {
+    color: var(--p-red-500);
+  }
+}
+
+:host ::ng-deep {
+  .p-popover {
+    border-radius: 12px;
+  }
+
+  .p-popover-content {
+    padding: 4px;
+  }
+}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -20,7 +20,7 @@ import { TaskStatusEnum } from '../../models/enum/TaskStatusEnum';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ITaskQueryParams } from '../../models/task/ITaskQueryParams';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
-import { Menu } from 'primeng/menu';
+import { PopoverModule, Popover } from 'primeng/popover';
 
 @Component({
   selector: 'app-tasks',
@@ -37,7 +37,8 @@ import { Menu } from 'primeng/menu';
     ConfirmDialogModule,
     MenuModule,
     CheckboxModule,
-    TaskCreateDialog
+    TaskCreateDialog,
+    PopoverModule
   ],
   providers: [ConfirmationService],
   templateUrl: './tasks.html',
@@ -50,17 +51,19 @@ export class Tasks implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
   private searchInput$ = new Subject<string>();
   private applyFilters$ = new Subject<void>();
 
   readonly loading = signal(false);
+  readonly TaskStatusEnum = TaskStatusEnum;
+
+  @ViewChild('taskActions') taskActions!: Popover;
 
   editorOpen = false;
 
   tasks: ITaskListItem[] = [];
-  selectedTaskId: number | null = null;
+  selectedTask: ITaskListItem | null = null;
   taskMenuItems: MenuItem[] = [];
   totalRecords = 0;
 
@@ -169,13 +172,25 @@ export class Tasks implements OnInit {
     this.loadTasks();
   }
 
-  openTaskMenu(event: MouseEvent, menu: Menu, task: ITaskListItem): void {
-    event.stopPropagation();
+  openTaskActions(event: Event, task: ITaskListItem): void {
 
-    this.selectedTaskId = task.id;
-    this.taskMenuItems = this.buildTaskMenuItems(task);
+    if (this.selectedTask?.id === task.id) {
+      this.taskActions.hide();
+      this.selectedTask = null;
+      return;
+    }
 
-    menu.toggle(event);
+    this.selectedTask = task;
+    this.taskActions.show(event);
+
+    if (this.taskActions.container) {
+      this.taskActions.align();
+    }
+  }
+
+  hideTaskActions(): void {
+    this.taskActions.hide();
+    this.selectedTask = null;
   }
 
   buildTaskMenuItems(task: ITaskListItem): MenuItem[] {

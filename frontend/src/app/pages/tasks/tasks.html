@@ -19,6 +19,41 @@
 
   </div>
 
+    <p-popover #taskActions (onHide)="selectedTask = null">
+        @if (selectedTask; as task) {
+            <div class="task-actions-menu">
+
+                @if (task.status === TaskStatusEnum.DRAFT) {
+                <button class="task-action-item" (click)="hideTaskActions(); editTask(task)">
+                    <i class="pi pi-pencil"></i>
+                    <span>Uredi</span>
+                </button>
+
+                <button class="task-action-item" (click)="hideTaskActions(); onToggleTaskStatus(task)">
+                    <i class="pi pi-send"></i>
+                    <span>Objavi</span>
+                </button>
+
+                <button class="task-action-item danger" (click)="hideTaskActions(); onDeleteTask(task)">
+                    <i class="pi pi-trash"></i>
+                    <span>Obriši</span>
+                </button>
+                } @else {
+                <button class="task-action-item" (click)="hideTaskActions(); openTaskDetails(task)">
+                    <i class="pi pi-eye"></i>
+                    <span>Pregledaj</span>
+                </button>
+                }
+
+                <button class="task-action-item" (click)="hideTaskActions(); onToggleTaskEnabled(task)">
+                <i class="pi" [ngClass]="task.enabled ? 'pi-times' : 'pi-check'"></i>
+                <span>{{ task.enabled ? 'Deaktiviraj' : 'Aktiviraj' }}</span>
+                </button>
+
+            </div>
+        }
+    </p-popover>
+
   <p-confirmDialog></p-confirmDialog>
 
   <p-card class="main-card">
@@ -209,7 +244,7 @@
                 type="button"
                 icon="pi pi-ellipsis-v"
                 class="p-button-text p-button-rounded"
-                (click)="openTaskMenu($event, taskMenu, task)">
+                (click)="openTaskActions($event, task)">
               </button>
             </td>
           </tr>

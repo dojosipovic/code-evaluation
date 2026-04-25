@@ -1,21 +1,29 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.TaskListQueryParams;
+import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
+import com.codeevaluation.core.api.dto.task.TaskFilterParams;
+import com.codeevaluation.core.api.dto.task.TaskListItemDto;
 import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.enumeration.TaskStatus;
+import com.codeevaluation.core.helper.PagedContext;
+import com.codeevaluation.core.helper.PagedSearchTaskImpl;
 import com.codeevaluation.core.model.Task;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.TaskRepository;
-import com.codeevaluation.core.validator.TaskValidator;
+import com.codeevaluation.core.helper.TaskValidator;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
@@ -25,6 +33,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final CurrentUserProvider currentUserProvider;
     private final TaskValidator taskValidator;
+    private final PagedSearchTaskImpl pagedSearchTask;
 
     public TaskResponseDto createTask(TaskCreateDto taskCreateDto) {
         User currentUser = currentUserProvider.getCurrentUser();
@@ -62,7 +71,8 @@ public class TaskService {
         }
 
         if (task.getStatus() != TaskStatus.PUBLISHED) {
-            throw new BadRequestException("Task must be in status " + TaskStatus.PUBLISHED + " to be patched");
+            throw new BadRequestException(
+                    "Task must be in status " + TaskStatus.PUBLISHED + " to be patched");
         }
 
         return TaskResponseDto.from(taskRepository.patch(taskPatchDto, task));
@@ -74,7 +84,8 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("Task not found."));
 
         if (task.getStatus() == TaskStatus.PUBLISHED) {
-            throw new BadRequestException("Task in status " + TaskStatus.PUBLISHED + " cannot be edited");
+            throw new BadRequestException(
+                    "Task in status " + TaskStatus.PUBLISHED + " cannot be edited");
         }
 
         taskValidator.validateTask(taskUpdateDto);
@@ -110,7 +121,8 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("Task not found."));
 
         if (task.getStatus() == TaskStatus.PUBLISHED) {
-            throw new BadRequestException("Task in status " + TaskStatus.PUBLISHED + " cannot be deleted");
+            throw new BadRequestException(
+                    "Task in status " + TaskStatus.PUBLISHED + " cannot be deleted");
         }
 
         if (!canModifyTask(task)) {
@@ -122,9 +134,48 @@ public class TaskService {
 
     private boolean canModifyTask(Task task) {
         User currentUser = currentUserProvider.getCurrentUser();
-        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
         boolean isUserOwner = currentUser.getUsername().equals(task.getUser().getUsername());
 
-        return isAdmin || isUserOwner;
+        return isAdmin(currentUser) || isUserOwner;
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getRole() == Role.ADMIN;
+    }
+
+    public PagedResponse<TaskListItemDto> getMyTasks(TaskListQueryParams taskListQueryParams) {
+        User currentUser = currentUserProvider.getCurrentUser();
+        PagedContext pagedContext = pagedSearchTask.generateFrom(taskListQueryParams);
+        TaskFilterParams taskFilterParams =
+                pagedSearchTask.generateFilterParams(taskListQueryParams, true)
+                .user(currentUser)
+                .excludeUser(false)
+                .build();
+
+        PanacheQuery<Task> query = taskRepository.findTasks(pagedContext, taskFilterParams);
+        List<TaskListItemDto> items = TaskListItemDto.from(query.list());
+        long totalItems = query.count();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    public PagedResponse<TaskListItemDto> getOtherTasks(TaskListQueryParams taskListQueryParams) {
+        User currentUser = currentUserProvider.getCurrentUser();
+        PagedContext pagedContext = pagedSearchTask.generateFrom(taskListQueryParams);
+        TaskFilterParams taskFilterParams =
+                pagedSearchTask.generateFilterParams(taskListQueryParams, isAdmin(currentUser))
+                .user(currentUser)
+                .excludeUser(true)
+                .build();
+
+        PanacheQuery<Task> query = taskRepository.findTasks(pagedContext, taskFilterParams);
+        List<TaskListItemDto> items = TaskListItemDto.from(query.list());
+        long totalItems = query.count();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return new PagedResponse<>(items, page, size, totalItems);
     }
 }

@@ -1,11 +1,14 @@
 package com.codeevaluation.core;
 
+import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
+import com.codeevaluation.core.api.dto.task.TaskListItemDto;
 import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -71,5 +74,21 @@ public class TaskResource {
     public Response deleteTask(@PathParam("id") Long id) {
         taskService.deleteTask(id);
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/me")
+    @RolesAllowed({ "ADMIN", "PROF" })
+    public PagedResponse<TaskListItemDto> getMyTasks(
+            @BeanParam TaskListQueryParams taskListQueryParams) {
+        return taskService.getMyTasks(taskListQueryParams);
+    }
+
+    @GET
+    @Path("/others")
+    @RolesAllowed({ "ADMIN", "PROF" })
+    public PagedResponse<TaskListItemDto> getOtherTasks(
+            @BeanParam TaskListQueryParams taskListQueryParams) {
+        return taskService.getOtherTasks(taskListQueryParams);
     }
 }

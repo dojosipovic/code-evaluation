@@ -1,17 +1,24 @@
 package com.codeevaluation.core.repository;
 
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
+import com.codeevaluation.core.api.dto.task.TaskFilterParams;
 import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.api.dto.task.TestDto;
 import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.enumeration.TestVisibility;
+import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Task;
 import com.codeevaluation.core.model.TaskTest;
 import com.codeevaluation.core.model.User;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
@@ -102,7 +109,8 @@ public class TaskRepository implements PanacheRepository<Task> {
     }
 
     public Optional<Task> getTask(Long id) {
-        return find("""
+        return find(
+                """
                     select distinct t from Task t
                     left join fetch t.tests
                     left join fetch t.user
@@ -122,5 +130,54 @@ public class TaskRepository implements PanacheRepository<Task> {
     public Task patch(TaskPatchDto taskPatchDto, Task task) {
         task.setEnabled(Boolean.TRUE.equals(taskPatchDto.enabled()));
         return task;
+    }
+
+    public PanacheQuery<Task> findTasks(
+            PagedContext pagedContext, TaskFilterParams taskFilterParams) {
+
+        StringBuilder query = new StringBuilder("from Task t join fetch t.user where 1=1");
+        Map<String, Object> params = new HashMap<>();
+
+        if (!StringUtils.isBlank(pagedContext.search())) {
+            query.append(
+                    """
+                    and (
+                            lower(t.title) like :search
+                            or lower(t.user.firstname) like :search
+                            or lower(t.user.lastname) like :search
+                            or lower(concat(t.user.firstname, ' ', t.user.lastname)) like :search
+                        )
+                    """);
+
+            params.put("search", "%" + pagedContext.search().toLowerCase().trim() + "%");
+        }
+
+        if (Boolean.TRUE.equals(taskFilterParams.excludeUser())) {
+            query.append(" and t.user.id != :userId");
+        } else {
+            query.append(" and t.user.id = :userId");
+        }
+        params.put("userId", taskFilterParams.user().getId());
+
+        if (taskFilterParams.status() != null) {
+            query.append(" and t.status = :status");
+            params.put("status", taskFilterParams.status());
+        }
+
+        if (taskFilterParams.enabled() != null) {
+            query.append(" and t.enabled = :enabled");
+            params.put("enabled", taskFilterParams.enabled());
+        }
+
+        if (taskFilterParams.shared() != null) {
+            query.append(" and t.shared = :shared");
+            params.put("shared", taskFilterParams.shared());
+        }
+
+        Sort sort = pagedContext.sort();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return find(query.toString(), sort, params).page(Page.of(page, size));
     }
 }

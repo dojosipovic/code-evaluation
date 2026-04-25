@@ -1,4 +1,4 @@
-package com.codeevaluation.core.validator;
+package com.codeevaluation.core.helper;
 
 import com.codeevaluation.core.api.dto.task.StarterCodeDto;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class TaskValidator {
-
 
     private static final int MIN_PUBLIC_TESTS = 3;
     private static final int MIN_HIDDEN_TESTS = 3;

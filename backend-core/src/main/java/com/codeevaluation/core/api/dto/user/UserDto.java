@@ -2,6 +2,7 @@ package com.codeevaluation.core.api.dto.user;
 
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.User;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,5 +26,9 @@ public class UserDto {
         userDto.setEnabled(user.getEnabled());
 
         return userDto;
+    }
+
+    public static List<UserDto> from(List<User> users) {
+        return users.stream().map(UserDto::from).toList();
     }
 }

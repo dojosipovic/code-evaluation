@@ -5,6 +5,7 @@ import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.repository.UserRepository;
+import com.codeevaluation.core.helper.PagedResponseValidator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PagedResponseValidator pagedResponseValidator;
 
     public UserDto findByEmail(String email) {
 
@@ -53,7 +55,7 @@ public class UserService {
             String sortBy,
             String sortDirection
     ) {
-        validatePageParams(page, size);
+        pagedResponseValidator.validatePageParams(page, size);
 
         Sort sort = buildSort(sortBy, sortDirection);
 
@@ -68,23 +70,10 @@ public class UserService {
                 size
         );
 
-        List<UserDto> items = query.list()
-                .stream()
-                .map(UserDto::from)
-                .toList();
-
+        List<UserDto> items = UserDto.from(query.list());
         long totalItems = query.count();
 
         return new PagedResponse<>(items, page, size, totalItems);
-    }
-
-    private void validatePageParams(int page, int size) {
-        if (page < 0) {
-            throw new IllegalArgumentException("page must be >= 0");
-        }
-        if (size < 1 || size > 100) {
-            throw new IllegalArgumentException("size must be between 1 and 100");
-        }
     }
 
     private Sort buildSort(String sortBy, String sortDirection) {

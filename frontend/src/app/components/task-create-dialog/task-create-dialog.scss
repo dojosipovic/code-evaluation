@@ -73,7 +73,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 260px);
   min-height: 0;
 }
 
@@ -122,7 +122,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 260px);
 }
 
 .tests-tab-header {
@@ -216,7 +216,7 @@
 .code-tab {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 260px);
   gap: 12px;
 }
 
@@ -267,70 +267,62 @@
   z-index: 2;
 }
 
-/* ================= TABS ================= */
+/* ================= STEPPER ================= */
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.step-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px; // da scrollbar ne reže content
+}
+
+.step-actions {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: right;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+  position: sticky;
+  bottom: 0;
+}
 
 :host ::ng-deep {
-  .p-tabs {
+  .task-stepper {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-height: 0;
     background: var(--p-content-background);
   }
 
-  .p-tablist {
+  .p-step-list {
     flex-shrink: 0;
-    background: transparent;
-    border-bottom: 1px solid var(--p-content-border-color);
     margin-bottom: 1rem;
   }
 
-  .p-tablist-tab-list {
-    display: flex;
-    gap: 0.25rem;
-    align-items: stretch;
-    background: transparent;
-  }
-
-  .p-tab {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem 1.25rem;
-    min-height: 3.5rem;
-    border: 1px solid transparent;
-    border-bottom: none;
-    border-radius: 0.75rem 0.75rem 0 0;
-    background: var(--p-content-background);
-    color: var(--p-text-muted-color);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .p-tab:hover {
-    color: var(--p-text-color);
-  }
-
-  .p-tab-active {
-    color: var(--p-primary-color);
-    border-color: var(--p-content-border-color);
-    background: var(--p-content-background);
-  }
-
-  .p-tabpanels {
+  .p-step-panels {
     flex: 1;
     min-height: 0;
     padding: 0;
     background: var(--p-content-background);
-    border: none;
   }
 
-  .p-tabpanel {
+  .p-step-panel {
     height: 100%;
     min-height: 0;
     background: var(--p-content-background);
-    color: var(--p-text-color);
+  }
+
+  .p-step {
+    cursor: pointer;
   }
 
   .p-inputtext,

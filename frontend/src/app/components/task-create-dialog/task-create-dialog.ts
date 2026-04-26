@@ -10,6 +10,7 @@ import { InputText } from "primeng/inputtext";
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { SelectModule } from 'primeng/select';
 import { CPP_STARTER_TEMPLATE, TASK_MARKDOWN_TEMPLATE } from '../../config/task-templates';
+import { StepperModule } from 'primeng/stepper';
 
 interface TestCase {
   id: number;
@@ -31,8 +32,6 @@ interface TaskModel {
   hiddenTests: TestCase[];
 }
 
-type ActiveTab = 'preview' | 'public' | 'private' | 'code';
-
 @Component({
   selector: 'app-task-create-dialog',
   imports: [
@@ -43,7 +42,8 @@ type ActiveTab = 'preview' | 'public' | 'private' | 'code';
     MonacoEditorModule,
     InputText,
     ToggleSwitchModule,
-    SelectModule
+    SelectModule,
+    StepperModule
 ],
   templateUrl: './task-create-dialog.html',
   styleUrl: './task-create-dialog.scss',
@@ -51,7 +51,7 @@ type ActiveTab = 'preview' | 'public' | 'private' | 'code';
 export class TaskCreateDialog {
   @Output() closed = new EventEmitter<void>();
 
-  activeTab: ActiveTab = 'preview';
+  activeStep = 1;
   isClosing = false;
 
 
@@ -150,11 +150,5 @@ export class TaskCreateDialog {
 
   trackByTestId(_index: number, test: TestCase): number {
     return test.id;
-  }
-
-  onTabChange(value: string | number | undefined): void {
-    if (value === 'preview' || value === 'public' || value === 'private' || value === 'code') {
-      this.activeTab = value;
-    }
   }
 }

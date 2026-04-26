@@ -21,6 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ITaskQueryParams } from '../../models/task/ITaskQueryParams';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 import { PopoverModule, Popover } from 'primeng/popover';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-tasks',
@@ -51,6 +52,7 @@ export class Tasks implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   private searchInput$ = new Subject<string>();
   private applyFilters$ = new Subject<void>();
@@ -101,7 +103,8 @@ export class Tasks implements OnInit {
 
   excludeCurrentUserOptions = [
     { label: 'Svi autori', value: null },
-    { label: 'Bez mojih zadataka', value: true }
+    { label: 'Bez mojih zadataka', value: true },
+    { label: 'Samo moji zadaci', value: false }
   ];
 
   ngOnInit(): void {
@@ -126,6 +129,14 @@ export class Tasks implements OnInit {
         this.first = 0;
         this.loadTasks();
       });
+  }
+
+  canEditTask(task: ITaskListItem): boolean {
+    return this.authService.isAdmin() || this.isOwner(task);
+  }
+
+  private isOwner(task: ITaskListItem): boolean {
+    return task.user.username == this.authService.username()
   }
 
   onSearchInput(value: string): void {

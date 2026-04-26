@@ -35,6 +35,10 @@ export class AuthService {
     return roles as AppRole[];
   });
 
+  username = computed<string>(() => {
+    return this.payload()?.sub ?? "";
+  });
+
   isAdmin = computed(() => this.roles().includes('ADMIN'));
   isProf = computed(() => this.roles().includes('PROF'));
   isUser = computed(() => this.roles().includes('STUDENT'));

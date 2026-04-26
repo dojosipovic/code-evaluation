@@ -2,7 +2,6 @@ package com.codeevaluation.core.helper;
 
 import com.codeevaluation.core.TaskListQueryParams;
 import com.codeevaluation.core.api.dto.task.TaskFilterParams;
-import com.codeevaluation.core.enumeration.TaskStatus;
 import jakarta.inject.Singleton;
 import java.util.Map;
 
@@ -14,14 +13,12 @@ public class PagedSearchTaskImpl extends PagedSearchHelper {
     }
 
     public TaskFilterParams.TaskFilterParamsBuilder generateFilterParams(
-            TaskListQueryParams taskListQueryParams, boolean allowPrivateFilters) {
+            TaskListQueryParams taskListQueryParams) {
         return TaskFilterParams.builder()
-                .status(
-                        allowPrivateFilters ? taskListQueryParams.getStatus() : TaskStatus.PUBLISHED
-                )
+                .status(taskListQueryParams.getStatus())
                 .enabled(taskListQueryParams.getEnabled())
                 .excludeUser(taskListQueryParams.getExcludeCurrentUser())
-                .shared(allowPrivateFilters ? taskListQueryParams.getShared() : Boolean.TRUE);
+                .shared(taskListQueryParams.getShared());
     }
 
     @Override

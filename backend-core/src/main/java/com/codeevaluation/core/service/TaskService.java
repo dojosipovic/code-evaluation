@@ -8,7 +8,6 @@ import com.codeevaluation.core.api.dto.task.TaskListItemDto;
 import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
-import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.helper.PagedSearchTaskImpl;
@@ -136,18 +135,14 @@ public class TaskService {
         User currentUser = currentUserProvider.getCurrentUser();
         boolean isUserOwner = currentUser.getUsername().equals(task.getUser().getUsername());
 
-        return isAdmin(currentUser) || isUserOwner;
-    }
-
-    private boolean isAdmin(User user) {
-        return user.getRole() == Role.ADMIN;
+        return currentUser.isAdmin() || isUserOwner;
     }
 
     public PagedResponse<TaskListItemDto> getTasks(TaskListQueryParams taskListQueryParams) {
         User currentUser = currentUserProvider.getCurrentUser();
         PagedContext pagedContext = pagedSearchTask.generateFrom(taskListQueryParams);
         TaskFilterParams taskFilterParams =
-                pagedSearchTask.generateFilterParams(taskListQueryParams, isAdmin(currentUser))
+                pagedSearchTask.generateFilterParams(taskListQueryParams)
                         .user(currentUser)
                         .build();
 

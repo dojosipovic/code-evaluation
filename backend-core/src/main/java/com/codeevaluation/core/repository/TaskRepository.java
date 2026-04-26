@@ -169,6 +169,19 @@ public class TaskRepository implements PanacheRepository<Task> {
         if (taskFilterParams.status() != null) {
             query.append(" and t.status = :status");
             params.put("status", taskFilterParams.status());
+        } else if (!taskFilterParams.user().isAdmin()) {
+            query.append(
+                    """
+                     and (
+                        t.user.id = :currentUserId
+                        or (
+                            t.user.id != :currentUserId
+                            and t.status = :publishedStatus
+                        )
+                    )
+                    """);
+            params.put("currentUserId", taskFilterParams.user().getId());
+            params.put("publishedStatus", TaskStatus.PUBLISHED);
         }
 
         if (taskFilterParams.enabled() != null) {
@@ -179,6 +192,18 @@ public class TaskRepository implements PanacheRepository<Task> {
         if (taskFilterParams.shared() != null) {
             query.append(" and t.shared = :shared");
             params.put("shared", taskFilterParams.shared());
+        } else if (!taskFilterParams.user().isAdmin()) {
+            query.append(
+                    """
+                     and (
+                        t.user.id = :currentUserId
+                        or (
+                            t.user.id != :currentUserId
+                            and t.shared = true
+                        )
+                    )
+                    """);
+            params.put("currentUserId", taskFilterParams.user().getId());
         }
 
         Sort sort = pagedContext.sort();

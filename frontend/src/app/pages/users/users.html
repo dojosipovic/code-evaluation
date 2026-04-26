@@ -140,13 +140,12 @@
     @if (currentView() === 'invites') {
       <div class="table-wrapper">
         <p-table
-          [value]="invites"
+          [value]="loading() ? skeletonRows : invites"
           [lazy]="true"
           [paginator]="true"
           [rows]="rows"
           [first]="first"
           [totalRecords]="totalRecords"
-          [loading]="loading()"
           [rowsPerPageOptions]="[10, 20, 50]"
           (onLazyLoad)="onLazyLoad($event)"
           class="p-datatable-sm invites-table">
@@ -212,6 +211,17 @@
             </tr>
           </ng-template>
 
+          <ng-template pTemplate="loadingbody">
+            <tr>
+              <td><p-skeleton width="13rem" height="1.2rem"></p-skeleton></td>
+              <td><p-skeleton width="5rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+              <td><p-skeleton width="6rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+              <td><p-skeleton width="9rem" height="1.2rem"></p-skeleton></td>
+              <td><p-skeleton width="9rem" height="1.2rem"></p-skeleton></td>
+              <td><p-skeleton width="6rem" height="2.2rem" borderRadius="10px"></p-skeleton></td>
+            </tr>
+          </ng-template>
+
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="6">Nema inviteova za zadane filtere.</td>
@@ -224,13 +234,12 @@
     @if (currentView() === 'users') {
       <div class="table-wrapper">
         <p-table
-          [value]="users"
+          [value]="loading() ? skeletonRows : users"
           [lazy]="true"
           [paginator]="true"
           [rows]="rows"
           [first]="first"
           [totalRecords]="totalRecords"
-          [loading]="loading()"
           [rowsPerPageOptions]="[10, 20, 50]"
           (onLazyLoad)="onLazyLoad($event)"
           class="p-datatable-sm users-table">
@@ -282,6 +291,16 @@
                   (click)="onToggleUserStatus(user)">
                 </button>
               </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="loadingbody">
+            <tr>
+              <td><p-skeleton width="7rem" height="1.2rem"></p-skeleton></td>
+              <td><p-skeleton width="12rem" height="1.2rem"></p-skeleton></td>
+              <td><p-skeleton width="5rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+              <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+              <td><p-skeleton width="7rem" height="2.2rem" borderRadius="10px"></p-skeleton></td>
             </tr>
           </ng-template>
 

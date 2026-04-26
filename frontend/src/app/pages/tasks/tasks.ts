@@ -22,6 +22,7 @@ import { ITaskQueryParams } from '../../models/task/ITaskQueryParams';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 import { PopoverModule, Popover } from 'primeng/popover';
 import { AuthService } from '../../services/auth/auth.service';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-tasks',
@@ -39,7 +40,8 @@ import { AuthService } from '../../services/auth/auth.service';
     MenuModule,
     CheckboxModule,
     TaskCreateDialog,
-    PopoverModule
+    PopoverModule,
+    SkeletonModule
   ],
   providers: [ConfirmationService],
   templateUrl: './tasks.html',
@@ -61,6 +63,8 @@ export class Tasks implements OnInit {
   readonly TaskStatusEnum = TaskStatusEnum;
 
   @ViewChild('taskActions') taskActions!: Popover;
+
+  skeletonRows = Array.from({ length: 5 });
 
   editorOpen = false;
 

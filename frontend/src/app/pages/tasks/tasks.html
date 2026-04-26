@@ -161,13 +161,12 @@
 
     <div class="table-wrapper">
       <p-table
-        [value]="tasks"
+        [value]="loading() ? skeletonRows : tasks"
         [lazy]="true"
         [paginator]="true"
         [rows]="rows"
         [first]="first"
         [totalRecords]="totalRecords"
-        [loading]="loading()"
         [rowsPerPageOptions]="[10, 20, 50]"
         (onLazyLoad)="onLazyLoad($event)"
         class="p-datatable-sm tasks-table">
@@ -230,7 +229,7 @@
             <td>
               <i
                 class="pi"
-                [ngClass]="task.shared ? 'pi-check enabled-icon' : 'pi-times disabled-icon'">
+                [ngClass]="task.shared ? 'pi-globe shared-icon' : 'pi-lock private-icon'">
               </i>
             </td>
 
@@ -249,6 +248,23 @@
                 class="p-button-text p-button-rounded"
                 (click)="openTaskActions($event, task)">
               </button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+          <tr>
+            <td><p-skeleton width="2rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="8rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="6rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+            <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+            <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+            <td>
+              <p-skeleton width="8rem" height="1.1rem"></p-skeleton>
+              <p-skeleton width="9rem" height="0.9rem" styleClass="mt-2"></p-skeleton>
+            </td>
+            <td class="actions-column">
+              <p-skeleton width="2rem" height="2rem" borderRadius="50%"></p-skeleton>
             </td>
           </tr>
         </ng-template>

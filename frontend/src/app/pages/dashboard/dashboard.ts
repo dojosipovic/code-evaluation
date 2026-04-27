@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { TaskCreateDialog } from "../../components/task-create-dialog/task-create-dialog";
+import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 
 @Component({
   selector: 'app-dashboard',

@@ -13,10 +13,6 @@
       </div>
 
       <div class="header-actions">
-        <button pButton type="button" (click)="onSave()">
-          Save
-        </button>
-
         <button pButton type="button" severity="secondary" (click)="onClose()">
           Close
         </button>
@@ -24,12 +20,59 @@
     </div>
 
     <div class="editor-body">
-      <p-stepper [value]="activeStep" class="task-stepper">
-        <p-step-list>
-          <p-step [value]="1">Opis zadatka</p-step>
-          <p-step [value]="2">Javni testovi</p-step>
-          <p-step [value]="3">Skriveni testovi</p-step>
-          <p-step [value]="4">Početni kod</p-step>
+      <p-stepper [value]="activeStep" class="task-stepper" [linear]="true">
+        <p-step-list class="task-step-list">
+          <p-step [value]="1" class="task-step-item">
+            <ng-template #content let-activateCallback="activateCallback" let-value="value">
+              <button class="step-icon-button" type="button" (click)="activateCallback()">
+                <span
+                  class="step-icon"
+                  [class.completed]="value <= activeStep">
+                  <i class="pi pi-file-edit"></i>
+                </span>
+                <span class="step-label">Opis zadatka</span>
+              </button>
+            </ng-template>
+          </p-step>
+
+          <p-step [value]="2" class="task-step-item">
+            <ng-template #content let-activateCallback="activateCallback" let-value="value">
+              <button class="step-icon-button" type="button" (click)="activateCallback()">
+                <span
+                  class="step-icon"
+                  [class.completed]="value <= activeStep">
+                  <i class="pi pi-eye"></i>
+                </span>
+                <span class="step-label">Javni testovi</span>
+              </button>
+            </ng-template>
+          </p-step>
+
+          <p-step [value]="3" class="task-step-item">
+            <ng-template #content let-activateCallback="activateCallback" let-value="value">
+              <button class="step-icon-button" type="button" (click)="activateCallback()">
+                <span
+                  class="step-icon"
+                  [class.completed]="value <= activeStep">
+                  <i class="pi pi-lock"></i>
+                </span>
+                <span class="step-label">Skriveni testovi</span>
+              </button>
+            </ng-template>
+          </p-step>
+
+          <p-step [value]="4" class="task-step-item">
+            <ng-template #content let-activateCallback="activateCallback" let-value="value">
+              <button class="step-icon-button" type="button" (click)="activateCallback()">
+                <span
+                  class="step-icon"
+                  [class.completed]="value <= activeStep">
+                  <i class="pi pi-code"></i>
+                </span>
+                <span class="step-label">Početni kod</span>
+              </button>
+            </ng-template>
+          </p-step>
         </p-step-list>
 
         <p-step-panels>

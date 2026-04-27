@@ -19,10 +19,10 @@ import { ITaskListItem } from '../../models/task/ITaskListItem';
 import { TaskStatusEnum } from '../../models/enum/TaskStatusEnum';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ITaskQueryParams } from '../../models/task/ITaskQueryParams';
-import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 import { PopoverModule, Popover } from 'primeng/popover';
 import { AuthService } from '../../services/auth/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 
 @Component({
   selector: 'app-tasks',

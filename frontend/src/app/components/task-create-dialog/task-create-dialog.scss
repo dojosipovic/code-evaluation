@@ -389,3 +389,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.field-error {
+  color: var(--p-red-400);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}

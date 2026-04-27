@@ -12,6 +12,10 @@
           class="task-title-input" />
       </div>
 
+      @if (submitted && !isTitleValid) {
+        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Naziv zadatka mora imati najmanje {{ MIN_TITLE_LENGTH }} znaka i sadržavati tekst.</p-message>
+      }
+
       <div class="header-actions">
         <button pButton type="button" severity="secondary" (click)="onClose()">
           Close
@@ -24,7 +28,7 @@
         <p-step-list class="task-step-list">
           <p-step [value]="1" class="task-step-item">
             <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="activateCallback()">
+              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
                 <span
                   class="step-icon"
                   [class.completed]="value <= activeStep">
@@ -37,7 +41,7 @@
 
           <p-step [value]="2" class="task-step-item">
             <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="activateCallback()">
+              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
                 <span
                   class="step-icon"
                   [class.completed]="value <= activeStep">
@@ -50,7 +54,7 @@
 
           <p-step [value]="3" class="task-step-item">
             <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="activateCallback()">
+              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
                 <span
                   class="step-icon"
                   [class.completed]="value <= activeStep">
@@ -63,7 +67,7 @@
 
           <p-step [value]="4" class="task-step-item">
             <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="activateCallback()">
+              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
                 <span
                   class="step-icon"
                   [class.completed]="value <= activeStep">
@@ -82,7 +86,12 @@
                 <div class="step-body">
                   <div class="preview-layout">
                     <div class="markdown-pane">
-                      <div class="pane-header">Markdown</div>
+                      <div class="pane-header">
+                        Markdown
+                        @if (submitted && !isDescriptionValid) {
+                          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Opis zadatka mora imati najmanje {{ MIN_DESCRIPTION_LENGTH }} znakova.</p-message>
+                        }
+                      </div>
   
                       <textarea
                         [(ngModel)]="model.description"
@@ -98,7 +107,7 @@
                 </div>
                 <div class="step-actions">
                   <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
-                    (click)="activeStep = 2">
+                    (click)="goToStep(2)">
                   </button>
                 </div>
               </div>
@@ -112,6 +121,9 @@
                   <div class="tests-tab-header">
                     <div>
                       <h3>Javni testovi</h3>
+                      @if (submitted && !arePublicTestsValid) {
+                        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PUBLIC_TESTS }} javna testa.</p-message>
+                      }
                       <p>Ovi testovi mogu biti vidljivi korisniku.</p>
                     </div>
 
@@ -169,7 +181,7 @@
                   </button>
 
                   <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
-                    (click)="activeStep = 3">
+                    (click)="goToStep(3)">
                   </button>
                 </div>
               </div>
@@ -183,6 +195,9 @@
                   <div class="tests-tab-header">
                     <div>
                       <h3>Skriveni testovi</h3>
+                      @if (submitted && !arePrivateTestsValid) {
+                        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PRIVATE_TESTS }} skrivenih testova.</p-message>
+                      }
                       <p>Ovi testovi ostaju skriveni korisniku.</p>
                     </div>
 
@@ -235,12 +250,22 @@
                 </div>
 
                 <div class="step-actions">
-                  <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
+                  <button
+                    pButton
+                    type="button"
+                    severity="secondary"
+                    label="Nazad"
+                    icon="pi pi-arrow-left"
                     (click)="activeStep = 2">
                   </button>
 
-                  <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
-                    (click)="activeStep = 4">
+                  <button
+                    pButton
+                    type="button"
+                    label="Dalje"
+                    icon="pi pi-arrow-right"
+                    iconPos="right"
+                    (click)="goToStep(4)">
                   </button>
                 </div>
               </div>

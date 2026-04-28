@@ -5,43 +5,48 @@ import { Observable } from "rxjs";
 import { IPagedResponse } from "../models/IPagedResponse";
 import { ITaskListItem } from "../models/task/ITaskListItem";
 import { TaskQueryParamEnum } from "../models/enum/TaskQueryParamEnum";
+import { ITaskCreate } from "../models/task/ITaskCreate";
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-    private http = inject(HttpClient);
-    private readonly baseUrl = '/api/tasks';
+  private http = inject(HttpClient);
+  private readonly baseUrl = '/api/tasks';
 
-    getTasks(params: ITaskQueryParams): Observable<IPagedResponse<ITaskListItem>> {
-        return this.http.get<IPagedResponse<ITaskListItem>>(this.baseUrl, {
-            params: this.buildParams(params)
-        });
-    }
+  getTasks(params: ITaskQueryParams): Observable<IPagedResponse<ITaskListItem>> {
+    return this.http.get<IPagedResponse<ITaskListItem>>(this.baseUrl, {
+      params: this.buildParams(params)
+    });
+  }
 
-    enableTask(id: number): Observable<void> {
-        return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: true });
-    }
+  createTask(task: ITaskCreate): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}`, task);
+  }
 
-    shareTask(id: number): Observable<void> {
-        return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: true });
-    }
+  enableTask(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: true });
+  }
 
-    stopShareTask(id: number): Observable<void> {
-        return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: false });
-    }
+  shareTask(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: true });
+  }
 
-    disableTask(id: number): Observable<void> {
-        return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: false });
-    }
+  stopShareTask(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${id}`, { shared: false });
+  }
 
-    publishTask(id: number): Observable<void> {
-        return this.http.post<void>(`${this.baseUrl}/${id}/publish`, {});
-    }
+  disableTask(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${id}`, { enabled: false });
+  }
 
-    deleteTask(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.baseUrl}/${id}`);
-    }
+  publishTask(id: number): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${id}/publish`, {});
+  }
 
-    private buildParams(params: ITaskQueryParams): HttpParams {
+  deleteTask(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  private buildParams(params: ITaskQueryParams): HttpParams {
     let httpParams = new HttpParams()
       .set('page', params.page)
       .set('size', params.size);

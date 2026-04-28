@@ -1,4 +1,5 @@
 import { TaskStatusEnum } from "../enum/TaskStatusEnum";
+import { IUserResponse } from "../user/IUserResponse";
 import { IStarterCode } from "./IStarterCode";
 import { ITestResponse } from "./ITestResponse";
 
@@ -12,4 +13,5 @@ export interface ITaskResponse {
     enabled: boolean;
     status: TaskStatusEnum;
     tests: ITestResponse[];
+    user: IUserResponse;
 }

@@ -6,6 +6,7 @@ import { IPagedResponse } from "../models/IPagedResponse";
 import { ITaskListItem } from "../models/task/ITaskListItem";
 import { TaskQueryParamEnum } from "../models/enum/TaskQueryParamEnum";
 import { ITaskCreate } from "../models/task/ITaskCreate";
+import { ITaskResponse } from "../models/task/ITaskResponse";
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
@@ -18,8 +19,16 @@ export class TaskService {
     });
   }
 
-  createTask(task: ITaskCreate): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}`, task);
+  getTask(id: number): Observable<ITaskResponse> {
+    return this.http.get<ITaskResponse>(`${this.baseUrl}/${id}`);
+  }
+
+  createTask(task: ITaskCreate): Observable<ITaskResponse> {
+    return this.http.post<ITaskResponse>(`${this.baseUrl}`, task);
+  }
+
+  updateTask(task: ITaskCreate): Observable<ITaskResponse> {
+    return this.http.put<ITaskResponse>(`${this.baseUrl}/${task.id}`, task);
   }
 
   enableTask(id: number): Observable<void> {

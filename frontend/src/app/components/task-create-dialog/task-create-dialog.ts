@@ -12,26 +12,8 @@ import { SelectModule } from 'primeng/select';
 import { CPP_STARTER_TEMPLATE, TASK_MARKDOWN_TEMPLATE } from '../../config/task-templates';
 import { StepperModule } from 'primeng/stepper';
 import { MessageModule } from 'primeng/message';
-
-interface TestCase {
-  id: number;
-  input: string;
-  output: string;
-}
-
-interface StarterCode {
-  language: string;
-  code: string;
-}
-
-interface TaskModel {
-  title: string;
-  description: string;
-  starterCode: StarterCode;
-  includeStarterCode: boolean;
-  publicTests: TestCase[];
-  hiddenTests: TestCase[];
-}
+import { ITaskCreate } from '../../models/task/ITaskCreate';
+import { ITestCase } from '../../models/task/ITestCase';
 
 @Component({
   selector: 'app-task-create-dialog',
@@ -70,7 +52,7 @@ export class TaskCreateDialog {
     { label: 'C++', value: 'cpp' }
   ];
 
-  model: TaskModel = {
+  model: ITaskCreate = {
     title: '',
     description: TASK_MARKDOWN_TEMPLATE,
     starterCode: {
@@ -151,7 +133,7 @@ export class TaskCreateDialog {
     this.model.hiddenTests = this.model.hiddenTests.filter(test => test.id !== id);
   }
 
-  trackByTestId(_index: number, test: TestCase): number {
+  trackByTestId(_index: number, test: ITestCase): number {
     return test.id;
   }
 

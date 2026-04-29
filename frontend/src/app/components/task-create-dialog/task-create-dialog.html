@@ -1,325 +1,334 @@
-<div class="editor-overlay" [class.closing]="isClosing">
-  <div class="editor-shell" [class.closing]="isClosing">
-    <div class="editor-header">
-      <div class="editor-title-group">
-        <label for="taskTitle" class="field-label">Naziv zadatka</label>
-        <input
-          pInputText
-          id="taskTitle"
-          type="text"
-          [(ngModel)]="model.title"
-          placeholder="Unesi naziv zadatka"
-          class="task-title-input" />
-      </div>
-
-      @if (submitted && !isTitleValid) {
-        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Naziv zadatka mora imati najmanje {{ MIN_TITLE_LENGTH }} znaka i sadržavati tekst.</p-message>
-      }
-
-      <div class="header-actions">
-        <button pButton type="button" severity="secondary" (click)="onClose()">
-          Close
-        </button>
-      </div>
-    </div>
-
-    <div class="editor-body">
-      <p-stepper [value]="activeStep" class="task-stepper" [linear]="true">
-        <p-step-list class="task-step-list">
-          <p-step [value]="1" class="task-step-item">
-            <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
-                <span
-                  class="step-icon"
-                  [class.completed]="value <= activeStep">
-                  <i class="pi pi-file-edit"></i>
-                </span>
-                <span class="step-label">Opis zadatka</span>
-              </button>
-            </ng-template>
-          </p-step>
-
-          <p-step [value]="2" class="task-step-item">
-            <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
-                <span
-                  class="step-icon"
-                  [class.completed]="value <= activeStep">
-                  <i class="pi pi-eye"></i>
-                </span>
-                <span class="step-label">Javni testovi</span>
-              </button>
-            </ng-template>
-          </p-step>
-
-          <p-step [value]="3" class="task-step-item">
-            <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
-                <span
-                  class="step-icon"
-                  [class.completed]="value <= activeStep">
-                  <i class="pi pi-lock"></i>
-                </span>
-                <span class="step-label">Skriveni testovi</span>
-              </button>
-            </ng-template>
-          </p-step>
-
-          <p-step [value]="4" class="task-step-item">
-            <ng-template #content let-activateCallback="activateCallback" let-value="value">
-              <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
-                <span
-                  class="step-icon"
-                  [class.completed]="value <= activeStep">
-                  <i class="pi pi-code"></i>
-                </span>
-                <span class="step-label">Početni kod</span>
-              </button>
-            </ng-template>
-          </p-step>
-        </p-step-list>
-
-        <p-step-panels>
-          <p-step-panel [value]="1">
-            <ng-template pTemplate="content">
-              <div class="step-content">
-                <div class="step-body">
-                  <div class="preview-layout">
-                    <div class="markdown-pane">
-                      <div class="pane-header">
-                        Markdown
-                        @if (submitted && !isDescriptionValid) {
-                          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Opis zadatka mora imati najmanje {{ MIN_DESCRIPTION_LENGTH }} znakova.</p-message>
-                        }
-                      </div>
-  
-                      <textarea
-                        [(ngModel)]="model.description"
-                        class="markdown-textarea"
-                        placeholder="Piši markdown ovdje..."></textarea>
-                    </div>
-  
-                    <div class="preview-pane">
-                      <div class="pane-header">Pregled</div>
-                      <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="step-actions">
-                  <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
-                    (click)="goToStep(2)">
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </p-step-panel>
-
-          <p-step-panel [value]="2">
-            <ng-template pTemplate="content">
-              <div class="step-content">
-                <div class="tests-tab">
-                  <div class="tests-tab-header">
-                    <div>
-                      <h3>Javni testovi</h3>
-                      @if (submitted && !arePublicTestsValid) {
-                        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PUBLIC_TESTS }} javna testa.</p-message>
-                      }
-                      <p>Ovi testovi mogu biti vidljivi korisniku.</p>
-                    </div>
-
-                    <button pButton type="button" (click)="addPublicTest()">
-                      Dodaj javan test
-                    </button>
-                  </div>
-
-                  <div class="tests-list">
-                    @for (test of model.publicTests; track test.id) {
-                      <div class="test-card">
-                        <div class="test-card-header">
-                          <span>Test #{{ test.id }}</span>
-
-                          <button
-                            pButton
-                            type="button"
-                            severity="danger"
-                            (click)="removePublicTest(test.id)">
-                            Delete
-                          </button>
-                        </div>
-
-                        <div class="test-grid">
-                          <div class="test-field">
-                            <label [for]="'public-input-' + test.id">Input</label>
-                            <textarea
-                              [id]="'public-input-' + test.id"
-                              [(ngModel)]="test.input"
-                              placeholder="Unesi input"></textarea>
-                          </div>
-
-                          <div class="test-field">
-                            <label [for]="'public-output-' + test.id">Output</label>
-                            <textarea
-                              [id]="'public-output-' + test.id"
-                              [(ngModel)]="test.output"
-                              placeholder="Unesi expected output"></textarea>
-                          </div>
-                        </div>
-                      </div>
-                    }
-
-                    @if (model.publicTests.length === 0) {
-                      <div class="empty-state">
-                        Nema javnih testova.
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <div class="step-actions">
-                  <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
-                    (click)="activeStep = 1">
-                  </button>
-
-                  <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
-                    (click)="goToStep(3)">
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </p-step-panel>
-
-          <p-step-panel [value]="3">
-            <ng-template pTemplate="content">
-              <div class="step-content">
-                <div class="tests-tab">
-                  <div class="tests-tab-header">
-                    <div>
-                      <h3>Skriveni testovi</h3>
-                      @if (submitted && !arePrivateTestsValid) {
-                        <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PRIVATE_TESTS }} skrivenih testova.</p-message>
-                      }
-                      <p>Ovi testovi ostaju skriveni korisniku.</p>
-                    </div>
-
-                    <button pButton type="button" (click)="addPrivateTest()">
-                      Dodaj skriveni test
-                    </button>
-                  </div>
-
-                  <div class="tests-list">
-                    @for (test of model.hiddenTests; track test.id) {
-                      <div class="test-card">
-                        <div class="test-card-header">
-                          <span>Test #{{ test.id }}</span>
-
-                          <button
-                            pButton
-                            type="button"
-                            severity="danger"
-                            (click)="removePrivateTest(test.id)">
-                            Delete
-                          </button>
-                        </div>
-
-                        <div class="test-grid">
-                          <div class="test-field">
-                            <label [for]="'private-input-' + test.id">Input</label>
-                            <textarea
-                              [id]="'private-input-' + test.id"
-                              [(ngModel)]="test.input"
-                              placeholder="Unesi input"></textarea>
-                          </div>
-
-                          <div class="test-field">
-                            <label [for]="'private-output-' + test.id">Output</label>
-                            <textarea
-                              [id]="'private-output-' + test.id"
-                              [(ngModel)]="test.output"
-                              placeholder="Unesi expected output"></textarea>
-                          </div>
-                        </div>
-                      </div>
-                    }
-
-                    @if (model.hiddenTests.length === 0) {
-                      <div class="empty-state">
-                        Nema skrivenih testova.
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <div class="step-actions">
-                  <button
-                    pButton
-                    type="button"
-                    severity="secondary"
-                    label="Nazad"
-                    icon="pi pi-arrow-left"
-                    (click)="activeStep = 2">
-                  </button>
-
-                  <button
-                    pButton
-                    type="button"
-                    label="Dalje"
-                    icon="pi pi-arrow-right"
-                    iconPos="right"
-                    (click)="goToStep(4)">
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </p-step-panel>
-
-          <p-step-panel [value]="4">
-            <ng-template pTemplate="content">
-              <div class="step-content">
-                <div class="code-tab">
-                  <div class="code-header">
-                    <div class="left-controls">
-                      <label for="includeStarter">Uključi početni kod</label>
-                      <p-toggleswitch
-                        inputId="includeStarter"
-                        [(ngModel)]="model.includeStarterCode"
-                        (ngModelChange)="onIncludeStarterCodeChange($event)">
-                      </p-toggleswitch>
-                    </div>
-
-                    <div class="right-controls">
-                      <p>Kod će biti izuzet u računanju plagijata</p>
-                    </div>
-                  </div>
-
-                  <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
-                    <ngx-monaco-editor
-                      class="monaco-editor-host"
-                      [(ngModel)]="model.starterCode.code"
-                      [options]="editorOptions">
-                    </ngx-monaco-editor>
-
-                    @if (!model.includeStarterCode) {
-                      <div class="monaco-disabled-overlay">
-                        Početni kod nije uključen
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <div class="step-actions">
-                  <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
-                    (click)="activeStep = 3">
-                  </button>
-
-                  <button pButton type="button" label="Spremi zadatak" icon="pi pi-check"
-                    (click)="onSave()">
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </p-step-panel>
-        </p-step-panels>
-      </p-stepper>
+@if (!modelReady) {
+  <div class="editor-overlay">
+    <div class="editor-shell loading-shell">
+      <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+      <div class="loading-text">Učitavanje zadatka...</div>
     </div>
   </div>
-</div>
+} @else {
+  <div class="editor-overlay" [class.closing]="isClosing">
+    <div class="editor-shell" [class.closing]="isClosing">
+      <div class="editor-header">
+        <div class="editor-title-group">
+          <label for="taskTitle" class="field-label">Naziv zadatka</label>
+          <input
+            pInputText
+            id="taskTitle"
+            type="text"
+            [(ngModel)]="model.title"
+            placeholder="Unesi naziv zadatka"
+            class="task-title-input" />
+        </div>
+  
+        @if (submitted && !isTitleValid) {
+          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Naziv zadatka mora imati najmanje {{ MIN_TITLE_LENGTH }} znaka i sadržavati tekst.</p-message>
+        }
+  
+        <div class="header-actions">
+          <button pButton type="button" severity="secondary" (click)="onClose()">
+            Close
+          </button>
+        </div>
+      </div>
+  
+      <div class="editor-body">
+        <p-stepper [value]="activeStep" class="task-stepper" [linear]="true">
+          <p-step-list class="task-step-list">
+            <p-step [value]="1" class="task-step-item">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                  <span
+                    class="step-icon"
+                    [class.completed]="value <= activeStep">
+                    <i class="pi pi-file-edit"></i>
+                  </span>
+                  <span class="step-label">Opis zadatka</span>
+                </button>
+              </ng-template>
+            </p-step>
+  
+            <p-step [value]="2" class="task-step-item">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                  <span
+                    class="step-icon"
+                    [class.completed]="value <= activeStep">
+                    <i class="pi pi-eye"></i>
+                  </span>
+                  <span class="step-label">Javni testovi</span>
+                </button>
+              </ng-template>
+            </p-step>
+  
+            <p-step [value]="3" class="task-step-item">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                  <span
+                    class="step-icon"
+                    [class.completed]="value <= activeStep">
+                    <i class="pi pi-lock"></i>
+                  </span>
+                  <span class="step-label">Skriveni testovi</span>
+                </button>
+              </ng-template>
+            </p-step>
+  
+            <p-step [value]="4" class="task-step-item">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                  <span
+                    class="step-icon"
+                    [class.completed]="value <= activeStep">
+                    <i class="pi pi-code"></i>
+                  </span>
+                  <span class="step-label">Početni kod</span>
+                </button>
+              </ng-template>
+            </p-step>
+          </p-step-list>
+  
+          <p-step-panels>
+            <p-step-panel [value]="1">
+              <ng-template pTemplate="content">
+                <div class="step-content">
+                  <div class="step-body">
+                    <div class="preview-layout">
+                      <div class="markdown-pane">
+                        <div class="pane-header">
+                          Markdown
+                          @if (submitted && !isDescriptionValid) {
+                            <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Opis zadatka mora imati najmanje {{ MIN_DESCRIPTION_LENGTH }} znakova.</p-message>
+                          }
+                        </div>
+    
+                        <textarea
+                          [(ngModel)]="model.description"
+                          class="markdown-textarea"
+                          placeholder="Piši markdown ovdje..."></textarea>
+                      </div>
+    
+                      <div class="preview-pane">
+                        <div class="pane-header">Pregled</div>
+                        <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="step-actions">
+                    <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
+                      (click)="goToStep(2)">
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+            </p-step-panel>
+  
+            <p-step-panel [value]="2">
+              <ng-template pTemplate="content">
+                <div class="step-content">
+                  <div class="tests-tab">
+                    <div class="tests-tab-header">
+                      <div>
+                        <h3>Javni testovi</h3>
+                        @if (submitted && !arePublicTestsValid) {
+                          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PUBLIC_TESTS }} javna testa.</p-message>
+                        }
+                        <p>Ovi testovi mogu biti vidljivi korisniku.</p>
+                      </div>
+  
+                      <button pButton type="button" (click)="addPublicTest()">
+                        Dodaj javan test
+                      </button>
+                    </div>
+  
+                    <div class="tests-list">
+                      @for (test of model.publicTests; track test.id) {
+                        <div class="test-card">
+                          <div class="test-card-header">
+                            <span>Test #{{ test.id }}</span>
+  
+                            <button
+                              pButton
+                              type="button"
+                              severity="danger"
+                              (click)="removePublicTest(test.id)">
+                              Delete
+                            </button>
+                          </div>
+  
+                          <div class="test-grid">
+                            <div class="test-field">
+                              <label [for]="'public-input-' + test.id">Input</label>
+                              <textarea
+                                [id]="'public-input-' + test.id"
+                                [(ngModel)]="test.input"
+                                placeholder="Unesi input"></textarea>
+                            </div>
+  
+                            <div class="test-field">
+                              <label [for]="'public-output-' + test.id">Output</label>
+                              <textarea
+                                [id]="'public-output-' + test.id"
+                                [(ngModel)]="test.output"
+                                placeholder="Unesi expected output"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      }
+  
+                      @if (model.publicTests.length === 0) {
+                        <div class="empty-state">
+                          Nema javnih testova.
+                        </div>
+                      }
+                    </div>
+                  </div>
+  
+                  <div class="step-actions">
+                    <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
+                      (click)="activeStep = 1">
+                    </button>
+  
+                    <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
+                      (click)="goToStep(3)">
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+            </p-step-panel>
+  
+            <p-step-panel [value]="3">
+              <ng-template pTemplate="content">
+                <div class="step-content">
+                  <div class="tests-tab">
+                    <div class="tests-tab-header">
+                      <div>
+                        <h3>Skriveni testovi</h3>
+                        @if (submitted && !arePrivateTestsValid) {
+                          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Dodaj barem {{ MIN_PRIVATE_TESTS }} skrivenih testova.</p-message>
+                        }
+                        <p>Ovi testovi ostaju skriveni korisniku.</p>
+                      </div>
+  
+                      <button pButton type="button" (click)="addPrivateTest()">
+                        Dodaj skriveni test
+                      </button>
+                    </div>
+  
+                    <div class="tests-list">
+                      @for (test of model.hiddenTests; track test.id) {
+                        <div class="test-card">
+                          <div class="test-card-header">
+                            <span>Test #{{ test.id }}</span>
+  
+                            <button
+                              pButton
+                              type="button"
+                              severity="danger"
+                              (click)="removePrivateTest(test.id)">
+                              Delete
+                            </button>
+                          </div>
+  
+                          <div class="test-grid">
+                            <div class="test-field">
+                              <label [for]="'private-input-' + test.id">Input</label>
+                              <textarea
+                                [id]="'private-input-' + test.id"
+                                [(ngModel)]="test.input"
+                                placeholder="Unesi input"></textarea>
+                            </div>
+  
+                            <div class="test-field">
+                              <label [for]="'private-output-' + test.id">Output</label>
+                              <textarea
+                                [id]="'private-output-' + test.id"
+                                [(ngModel)]="test.output"
+                                placeholder="Unesi expected output"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      }
+  
+                      @if (model.hiddenTests.length === 0) {
+                        <div class="empty-state">
+                          Nema skrivenih testova.
+                        </div>
+                      }
+                    </div>
+                  </div>
+  
+                  <div class="step-actions">
+                    <button
+                      pButton
+                      type="button"
+                      severity="secondary"
+                      label="Nazad"
+                      icon="pi pi-arrow-left"
+                      (click)="activeStep = 2">
+                    </button>
+  
+                    <button
+                      pButton
+                      type="button"
+                      label="Dalje"
+                      icon="pi pi-arrow-right"
+                      iconPos="right"
+                      (click)="goToStep(4)">
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+            </p-step-panel>
+  
+            <p-step-panel [value]="4">
+              <ng-template pTemplate="content">
+                <div class="step-content">
+                  <div class="code-tab">
+                    <div class="code-header">
+                      <div class="left-controls">
+                        <label for="includeStarter">Uključi početni kod</label>
+                        <p-toggleswitch
+                          inputId="includeStarter"
+                          [(ngModel)]="model.includeStarterCode"
+                          (ngModelChange)="onIncludeStarterCodeChange($event)">
+                        </p-toggleswitch>
+                      </div>
+  
+                      <div class="right-controls">
+                        <p>Kod će biti izuzet u računanju plagijata</p>
+                      </div>
+                    </div>
+  
+                    <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
+                      <ngx-monaco-editor
+                        class="monaco-editor-host"
+                        [(ngModel)]="model.starterCode.code"
+                        [options]="editorOptions">
+                      </ngx-monaco-editor>
+  
+                      @if (!model.includeStarterCode) {
+                        <div class="monaco-disabled-overlay">
+                          Početni kod nije uključen
+                        </div>
+                      }
+                    </div>
+                  </div>
+  
+                  <div class="step-actions">
+                    <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
+                      (click)="activeStep = 3">
+                    </button>
+  
+                    <button pButton type="button" label="Spremi zadatak" icon="pi pi-check"
+                      (click)="onSave()">
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+            </p-step-panel>
+          </p-step-panels>
+        </p-stepper>
+      </div>
+    </div>
+  </div>
+}

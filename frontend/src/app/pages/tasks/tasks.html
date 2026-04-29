@@ -12,22 +12,13 @@
       label="Novi zadatak"
       (click)="openCreateTaskDialog()">
     </button>
-
-    @if (editorOpen) {
-      <app-task-create-dialog
-        [selectedTask]="editorTask"
-        (closed)="onTaskEditorClosed()"
-        (saved)="onTaskEditorSaved()">
-      </app-task-create-dialog>
-    }
-
   </div>
 
-  <p-popover #taskActions (onHide)="selectedTask = null">
+  <p-popover #taskActions>
     @if (selectedTask; as task) {
         <div class="task-actions-menu">
           @if (task.status === TaskStatusEnum.DRAFT) {
-              <button class="task-action-item" (click)="hideTaskActions(); editTask(task)">
+              <button class="task-action-item" (click)="editTask(task)">
                   <i class="pi pi-pencil"></i>
                   <span>Uredi</span>
               </button>
@@ -60,6 +51,14 @@
         </div>
     }
   </p-popover>
+
+  @if (editorOpen) {
+    <app-task-create-dialog
+      [taskId]="editorTaskId"
+      (closed)="onTaskEditorClosed()"
+      (saved)="onTaskEditorSaved()">
+    </app-task-create-dialog>
+  }
 
   <p-confirmDialog></p-confirmDialog>
 

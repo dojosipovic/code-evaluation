@@ -396,3 +396,23 @@
   font-weight: 600;
   margin-top: 0.35rem;
 }
+
+.loading-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading-text {
+  color: var(--p-text-muted-color);
+  font-weight: 600;
+}
+
+:host ::ng-deep .p-progressspinner {
+  --p-progressspinner-color-one: var(--p-primary-color);
+  --p-progressspinner-color-two: var(--p-primary-color);
+  --p-progressspinner-color-three: var(--p-primary-color);
+  --p-progressspinner-color-four: var(--p-primary-color);
+}

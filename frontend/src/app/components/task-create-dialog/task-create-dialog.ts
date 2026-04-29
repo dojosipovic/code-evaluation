@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -14,9 +13,13 @@ import { StepperModule } from 'primeng/stepper';
 import { MessageModule } from 'primeng/message';
 import { ITaskCreate } from '../../models/task/ITaskCreate';
 import { ITestCase } from '../../models/task/ITestCase';
-import { Input } from '@angular/core';
 import { TaskService } from '../../services/task.service';
 import { ConfirmationService } from 'primeng/api';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { ITaskResponse } from '../../models/task/ITaskResponse';
+import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
+import { ChangeDetectorRef } from '@angular/core';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-task-create-dialog',
@@ -30,12 +33,13 @@ import { ConfirmationService } from 'primeng/api';
     ToggleSwitchModule,
     SelectModule,
     StepperModule,
-    MessageModule
+    MessageModule,
+    ProgressSpinnerModule
 ],
   templateUrl: './task-create-dialog.html',
   styleUrl: './task-create-dialog.scss',
 })
-export class TaskCreateDialog {
+export class TaskCreateDialog implements OnInit {
   @Output() closed = new EventEmitter<void>();
 
   activeStep = 1;
@@ -52,24 +56,12 @@ export class TaskCreateDialog {
   private sanitizer = inject(DomSanitizer);
   private taskService = inject(TaskService);
   private confirmationService = inject(ConfirmationService);
+  private cdr = inject(ChangeDetectorRef);
 
-  @Input() task: ITaskCreate | null = null;
+  @Input() taskId: number | null = null;
   @Output() saved = new EventEmitter<void>();
-  @Input() set selectedTask(task: ITaskCreate | null) {
-    this.activeStep = 1;
-    this.submitted = false;
 
-    if (!task) {
-      this.model = this.createEmptyModel();
-      this.nextTestId = 1;
-      this.updateEditorOptions();
-      return;
-    }
-
-    this.model = structuredClone(task);
-    this.nextTestId = this.getNextTestId();
-    this.updateEditorOptions();
-  }
+  modelReady = false;
 
   languageOptions = [
     { label: 'C++', value: 'cpp' }
@@ -107,6 +99,77 @@ export class TaskCreateDialog {
     });
 
     this.updateEditorOptions();
+  }
+
+  ngOnInit(): void {
+    this.activeStep = 1;
+    this.submitted = false;
+    this.modelReady = false;
+
+    if (this.taskId == null) {
+      this.model = this.createEmptyModel();
+      this.nextTestId = this.getNextTestId();
+      this.updateEditorOptions();
+
+      setTimeout(() => {
+        this.modelReady = true;
+        this.cdr.detectChanges();
+      });
+      return;
+    }
+
+    this.taskService.getTask(this.taskId).subscribe({
+      next: task => {
+        try {
+          this.model = this.mapTaskResponseToEditorModel(task);
+          this.nextTestId = this.getNextTestId();
+          this.updateEditorOptions();
+
+          setTimeout(() => {
+            this.modelReady = true;
+            this.cdr.detectChanges();
+          });
+        } catch (e) {
+          console.error('Map task failed:', e, task);
+          this.closed.emit();
+        }
+      },
+      error: error => {
+        console.error('Get task failed:', error);
+        this.closed.emit();
+      }
+    });
+  }
+
+  private mapTaskResponseToEditorModel(task: ITaskResponse): ITaskCreate {
+    let nextTestId = 1;
+
+    return {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      starterCode: {
+        language: task.starterCode.language,
+        code: task.starterCode.code
+      },
+      includeStarterCode: task.includeStarterCode,
+
+      publicTests: task.tests
+        .filter(test => test.visibility === TestVisibilityEnum.PUBLIC)
+        .map(test => ({
+          id: nextTestId++,
+          input: test.input,
+          output: test.output
+        })),
+
+      hiddenTests: task.tests
+        .filter(test => test.visibility === TestVisibilityEnum.HIDDEN)
+        .map(test => ({
+          id: nextTestId++,
+          input: test.input,
+          output: test.output
+        }))
+    };
   }
 
   get isEditMode(): boolean {

@@ -23,9 +23,6 @@ import { PopoverModule, Popover } from 'primeng/popover';
 import { AuthService } from '../../services/auth/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
-import { ITaskCreate } from '../../models/task/ITaskCreate';
-import { ITaskResponse } from '../../models/task/ITaskResponse';
-import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 
 @Component({
   selector: 'app-tasks',
@@ -71,7 +68,9 @@ export class Tasks implements OnInit {
 
   editorOpen = false;
 
-  editorTask: ITaskCreate | null = null;
+  editorTaskId: number | null = null;
+
+  activeActionsTaskId: number | null = null;
 
   tasks: ITaskListItem[] = [];
   selectedTask: ITaskListItem | null = null;
@@ -193,24 +192,20 @@ export class Tasks implements OnInit {
   }
 
   openTaskActions(event: Event, task: ITaskListItem): void {
-
-    if (this.selectedTask?.id === task.id) {
+    if (this.activeActionsTaskId === task.id) {
       this.taskActions.hide();
-      this.selectedTask = null;
+      this.activeActionsTaskId = null;
       return;
     }
 
     this.selectedTask = task;
-    this.taskActions.show(event);
+    this.activeActionsTaskId = task.id;
 
-    if (this.taskActions.container) {
-      this.taskActions.align();
-    }
-  }
-
-  hideTaskActions(): void {
     this.taskActions.hide();
-    this.selectedTask = null;
+
+    setTimeout(() => {
+      this.taskActions.show(event);
+    });
   }
 
   openTaskDetails(task: ITaskListItem): void {
@@ -218,65 +213,29 @@ export class Tasks implements OnInit {
   }
 
   editTask(task: ITaskListItem): void {
-    this.taskService.getTask(task.id).subscribe({
-      next: fullTask => {
-        this.editorTask = this.mapTaskResponseToEditorModel(fullTask);
-        this.editorOpen = true;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Greška',
-          detail: 'Nije moguće dohvatiti zadatak za uređivanje'
-        });
-      }
-    });
+    this.hideTaskActions();
+
+    this.editorTaskId = task.id;
+    this.editorOpen = true;
   }
 
-  private mapTaskResponseToEditorModel(task: ITaskResponse): ITaskCreate {
-    let nextTestId = 1;
-
-    return {
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      starterCode: {
-        language: task.starterCode.language,
-        code: task.starterCode.code
-      },
-      includeStarterCode: task.includeStarterCode,
-
-      publicTests: task.tests
-        .filter(test => test.visibility === TestVisibilityEnum.PUBLIC)
-        .map(test => ({
-          id: nextTestId++,
-          input: test.input,
-          output: test.output
-        })),
-
-      hiddenTests: task.tests
-        .filter(test => test.visibility === TestVisibilityEnum.HIDDEN)
-        .map(test => ({
-          id: nextTestId++,
-          input: test.input,
-          output: test.output
-        }))
-    };
+  hideTaskActions(): void {
+    this.taskActions.hide();
   }
 
   openCreateTaskDialog(): void {
-    this.editorTask = null;
+    this.editorTaskId = null;
     this.editorOpen = true;
   }
 
   onTaskEditorClosed(): void {
     this.editorOpen = false;
-    this.editorTask = null;
+    this.editorTaskId = null;
   }
 
   onTaskEditorSaved(): void {
     this.editorOpen = false;
-    this.editorTask = null;
+    this.editorTaskId = null;
     this.loadTasks();
   }
 

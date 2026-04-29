@@ -14,6 +14,9 @@ import { StepperModule } from 'primeng/stepper';
 import { MessageModule } from 'primeng/message';
 import { ITaskCreate } from '../../models/task/ITaskCreate';
 import { ITestCase } from '../../models/task/ITestCase';
+import { Input } from '@angular/core';
+import { TaskService } from '../../services/task.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-task-create-dialog',
@@ -47,22 +50,32 @@ export class TaskCreateDialog {
 
   private nextTestId = 1;
   private sanitizer = inject(DomSanitizer);
+  private taskService = inject(TaskService);
+  private confirmationService = inject(ConfirmationService);
+
+  @Input() task: ITaskCreate | null = null;
+  @Output() saved = new EventEmitter<void>();
+  @Input() set selectedTask(task: ITaskCreate | null) {
+    this.activeStep = 1;
+    this.submitted = false;
+
+    if (!task) {
+      this.model = this.createEmptyModel();
+      this.nextTestId = 1;
+      this.updateEditorOptions();
+      return;
+    }
+
+    this.model = structuredClone(task);
+    this.nextTestId = this.getNextTestId();
+    this.updateEditorOptions();
+  }
 
   languageOptions = [
     { label: 'C++', value: 'cpp' }
   ];
 
-  model: ITaskCreate = {
-    title: '',
-    description: TASK_MARKDOWN_TEMPLATE,
-    starterCode: {
-      language: 'cpp',
-      code: CPP_STARTER_TEMPLATE
-    },
-    includeStarterCode: true,
-    publicTests: [],
-    hiddenTests: []
-  };
+  model: ITaskCreate = this.createEmptyModel();
 
   editorOptions = {
     theme: 'vs-dark',
@@ -96,12 +109,37 @@ export class TaskCreateDialog {
     this.updateEditorOptions();
   }
 
+  get isEditMode(): boolean {
+    return !!this.model.id;
+  }
+
+  private getNextTestId(): number {
+    const allTests = [...this.model.publicTests, ...this.model.hiddenTests];
+    const maxId = allTests.length ? Math.max(...allTests.map(test => test.id)) : 0;
+    return maxId + 1;
+  }
+
   get renderedMarkdown(): SafeHtml {
     const rawHtml = marked.parse(this.model.description) as string;
     return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
   }
 
   onClose(): void {
+    this.confirmationService.confirm({
+      message: `Jesi siguran da želiš prekinuti kreiranje zadatka?`,
+      header: 'Potvrda',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Izlaz',
+      rejectLabel: 'Odustani',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.closeDialog();
+      }
+    });
+  }
+
+  private closeDialog(): void {
     this.isClosing = true;
 
     setTimeout(() => {
@@ -178,10 +216,32 @@ export class TaskCreateDialog {
       return;
     }
 
-    if (!this.arePrivateTestsValid) {
-      return;
-    }
+    const request$ = this.isEditMode
+      ? this.taskService.updateTask(this.model)
+      : this.taskService.createTask(this.model);
 
-    console.log('Task model:', this.model);
+    request$.subscribe({
+      next: () => {
+        this.saved.emit();
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('Task save failed:', error);
+      }
+    });
+  }
+
+  createEmptyModel(): ITaskCreate {
+    return {
+      title: '',
+      description: TASK_MARKDOWN_TEMPLATE,
+      starterCode: {
+        language: 'cpp',
+        code: CPP_STARTER_TEMPLATE
+      },
+      includeStarterCode: true,
+      publicTests: [],
+      hiddenTests: []
+    };
   }
 }

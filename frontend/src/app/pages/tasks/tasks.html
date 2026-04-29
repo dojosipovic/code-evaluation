@@ -10,11 +10,15 @@
       type="button"
       icon="pi pi-plus"
       label="Novi zadatak"
-      (click)="editorOpen = true">
+      (click)="openCreateTaskDialog()">
     </button>
 
     @if (editorOpen) {
-        <app-task-create-dialog (closed)="editorOpen = false"></app-task-create-dialog>
+      <app-task-create-dialog
+        [selectedTask]="editorTask"
+        (closed)="onTaskEditorClosed()"
+        (saved)="onTaskEditorSaved()">
+      </app-task-create-dialog>
     }
 
   </div>

@@ -23,6 +23,9 @@ import { PopoverModule, Popover } from 'primeng/popover';
 import { AuthService } from '../../services/auth/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
+import { ITaskCreate } from '../../models/task/ITaskCreate';
+import { ITaskResponse } from '../../models/task/ITaskResponse';
+import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 
 @Component({
   selector: 'app-tasks',
@@ -67,6 +70,8 @@ export class Tasks implements OnInit {
   skeletonRows = Array.from({ length: 5 });
 
   editorOpen = false;
+
+  editorTask: ITaskCreate | null = null;
 
   tasks: ITaskListItem[] = [];
   selectedTask: ITaskListItem | null = null;
@@ -213,7 +218,66 @@ export class Tasks implements OnInit {
   }
 
   editTask(task: ITaskListItem): void {
-    this.router.navigate(['/tasks', task.id, 'edit']);
+    this.taskService.getTask(task.id).subscribe({
+      next: fullTask => {
+        this.editorTask = this.mapTaskResponseToEditorModel(fullTask);
+        this.editorOpen = true;
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Greška',
+          detail: 'Nije moguće dohvatiti zadatak za uređivanje'
+        });
+      }
+    });
+  }
+
+  private mapTaskResponseToEditorModel(task: ITaskResponse): ITaskCreate {
+    let nextTestId = 1;
+
+    return {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      starterCode: {
+        language: task.starterCode.language,
+        code: task.starterCode.code
+      },
+      includeStarterCode: task.includeStarterCode,
+
+      publicTests: task.tests
+        .filter(test => test.visibility === TestVisibilityEnum.PUBLIC)
+        .map(test => ({
+          id: nextTestId++,
+          input: test.input,
+          output: test.output
+        })),
+
+      hiddenTests: task.tests
+        .filter(test => test.visibility === TestVisibilityEnum.HIDDEN)
+        .map(test => ({
+          id: nextTestId++,
+          input: test.input,
+          output: test.output
+        }))
+    };
+  }
+
+  openCreateTaskDialog(): void {
+    this.editorTask = null;
+    this.editorOpen = true;
+  }
+
+  onTaskEditorClosed(): void {
+    this.editorOpen = false;
+    this.editorTask = null;
+  }
+
+  onTaskEditorSaved(): void {
+    this.editorOpen = false;
+    this.editorTask = null;
+    this.loadTasks();
   }
 
   onToggleTaskEnabled(task: ITaskListItem): void {

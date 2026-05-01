@@ -16,6 +16,7 @@
             id="taskTitle"
             type="text"
             [(ngModel)]="model.title"
+            [disabled]="isSaving"
             placeholder="Unesi naziv zadatka"
             class="task-title-input" />
         </div>
@@ -25,7 +26,7 @@
         }
   
         <div class="header-actions">
-          <button pButton type="button" severity="secondary" (click)="onClose()">
+          <button pButton type="button" severity="secondary" [disabled]="isSaving" (click)="onClose()">
             Close
           </button>
         </div>
@@ -36,7 +37,7 @@
           <p-step-list class="task-step-list">
             <p-step [value]="1" class="task-step-item">
               <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                <button class="step-icon-button" type="button" [disabled]="isSaving" (click)="canGoToStep(value) && activateCallback()">
                   <span
                     class="step-icon"
                     [class.completed]="value <= activeStep">
@@ -49,7 +50,7 @@
   
             <p-step [value]="2" class="task-step-item">
               <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                <button class="step-icon-button" type="button" [disabled]="isSaving" (click)="canGoToStep(value) && activateCallback()">
                   <span
                     class="step-icon"
                     [class.completed]="value <= activeStep">
@@ -62,7 +63,7 @@
   
             <p-step [value]="3" class="task-step-item">
               <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                <button class="step-icon-button" type="button" [disabled]="isSaving" (click)="canGoToStep(value) && activateCallback()">
                   <span
                     class="step-icon"
                     [class.completed]="value <= activeStep">
@@ -75,7 +76,7 @@
   
             <p-step [value]="4" class="task-step-item">
               <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                <button class="step-icon-button" type="button" (click)="canGoToStep(value) && activateCallback()">
+                <button class="step-icon-button" type="button" [disabled]="isSaving" (click)="canGoToStep(value) && activateCallback()">
                   <span
                     class="step-icon"
                     [class.completed]="value <= activeStep">
@@ -103,6 +104,7 @@
     
                         <textarea
                           [(ngModel)]="model.description"
+                          [disabled]="isSaving"
                           class="markdown-textarea"
                           placeholder="Piši markdown ovdje..."></textarea>
                       </div>
@@ -115,6 +117,7 @@
                   </div>
                   <div class="step-actions">
                     <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
+                      [disabled]="isSaving"
                       (click)="goToStep(2)">
                     </button>
                   </div>
@@ -135,7 +138,7 @@
                         <p>Ovi testovi mogu biti vidljivi korisniku.</p>
                       </div>
   
-                      <button pButton type="button" (click)="addPublicTest()">
+                      <button pButton type="button" [disabled]="isSaving" (click)="addPublicTest()">
                         Dodaj javan test
                       </button>
                     </div>
@@ -150,6 +153,7 @@
                               pButton
                               type="button"
                               severity="danger"
+                              [disabled]="isSaving"
                               (click)="removePublicTest(test.id)">
                               Delete
                             </button>
@@ -161,6 +165,7 @@
                               <textarea
                                 [id]="'public-input-' + test.id"
                                 [(ngModel)]="test.input"
+                                [disabled]="isSaving"
                                 placeholder="Unesi input"></textarea>
                             </div>
   
@@ -169,6 +174,7 @@
                               <textarea
                                 [id]="'public-output-' + test.id"
                                 [(ngModel)]="test.output"
+                                [disabled]="isSaving"
                                 placeholder="Unesi expected output"></textarea>
                             </div>
                           </div>
@@ -185,10 +191,12 @@
   
                   <div class="step-actions">
                     <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
+                      [disabled]="isSaving"
                       (click)="activeStep = 1">
                     </button>
   
                     <button pButton type="button" label="Dalje" icon="pi pi-arrow-right" iconPos="right"
+                      [disabled]="isSaving"
                       (click)="goToStep(3)">
                     </button>
                   </div>
@@ -209,7 +217,7 @@
                         <p>Ovi testovi ostaju skriveni korisniku.</p>
                       </div>
   
-                      <button pButton type="button" (click)="addPrivateTest()">
+                      <button pButton type="button" [disabled]="isSaving" (click)="addPrivateTest()">
                         Dodaj skriveni test
                       </button>
                     </div>
@@ -224,6 +232,7 @@
                               pButton
                               type="button"
                               severity="danger"
+                              [disabled]="isSaving"
                               (click)="removePrivateTest(test.id)">
                               Delete
                             </button>
@@ -235,6 +244,7 @@
                               <textarea
                                 [id]="'private-input-' + test.id"
                                 [(ngModel)]="test.input"
+                                [disabled]="isSaving"
                                 placeholder="Unesi input"></textarea>
                             </div>
   
@@ -243,6 +253,7 @@
                               <textarea
                                 [id]="'private-output-' + test.id"
                                 [(ngModel)]="test.output"
+                                [disabled]="isSaving"
                                 placeholder="Unesi expected output"></textarea>
                             </div>
                           </div>
@@ -264,6 +275,7 @@
                       severity="secondary"
                       label="Nazad"
                       icon="pi pi-arrow-left"
+                      [disabled]="isSaving"
                       (click)="activeStep = 2">
                     </button>
   
@@ -273,6 +285,7 @@
                       label="Dalje"
                       icon="pi pi-arrow-right"
                       iconPos="right"
+                      [disabled]="isSaving"
                       (click)="goToStep(4)">
                     </button>
                   </div>
@@ -290,6 +303,7 @@
                         <p-toggleswitch
                           inputId="includeStarter"
                           [(ngModel)]="model.includeStarterCode"
+                          [disabled]="isSaving"
                           (ngModelChange)="onIncludeStarterCodeChange($event)">
                         </p-toggleswitch>
                       </div>
@@ -299,7 +313,7 @@
                       </div>
                     </div>
   
-                    <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
+                    <div class="monaco-wrapper" [class.disabled]="isSaving || !model.includeStarterCode">
                       <ngx-monaco-editor
                         class="monaco-editor-host"
                         [(ngModel)]="model.starterCode.code"
@@ -316,11 +330,28 @@
   
                   <div class="step-actions">
                     <button pButton type="button" severity="secondary" label="Nazad" icon="pi pi-arrow-left"
+                      [disabled]="isSaving"
                       (click)="activeStep = 3">
                     </button>
   
-                    <button pButton type="button" label="Spremi zadatak" icon="pi pi-check"
+                    <button
+                      pButton
+                      type="button"
+                      class="save-task-button"
+                      [disabled]="isSaving"
+                      [attr.aria-label]="isSaving ? 'Spremanje zadatka' : 'Spremi zadatak'"
                       (click)="onSave()">
+                      @if (isSaving) {
+                        <p-progress-spinner
+                          strokeWidth="8"
+                          fill="transparent"
+                          animationDuration=".5s"
+                          class="save-button-spinner">
+                        </p-progress-spinner>
+                      } @else {
+                        <i class="pi pi-check"></i>
+                        <span>Spremi zadatak</span>
+                      }
                     </button>
                   </div>
                 </div>

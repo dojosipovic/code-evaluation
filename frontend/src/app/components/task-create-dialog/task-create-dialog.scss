@@ -313,6 +313,11 @@
     padding: 0;
   }
 
+  .step-icon-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
   .step-icon {
     width: 2.75rem;
     height: 2.75rem;
@@ -415,4 +420,18 @@
   --p-progressspinner-color-two: var(--p-primary-color);
   --p-progressspinner-color-three: var(--p-primary-color);
   --p-progressspinner-color-four: var(--p-primary-color);
+}
+
+:host ::ng-deep .save-button-spinner {
+  width: 1.2rem;
+  height: 1.2rem;
+  --p-progressspinner-color-one: #111827;
+  --p-progressspinner-color-two: #111827;
+  --p-progressspinner-color-three: #111827;
+  --p-progressspinner-color-four: #111827;
+}
+
+:host ::ng-deep .save-task-button {
+  min-width: 10.25rem;
+  justify-content: center;
 }

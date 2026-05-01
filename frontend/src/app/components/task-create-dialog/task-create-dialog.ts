@@ -20,6 +20,7 @@ import { ITaskResponse } from '../../models/task/ITaskResponse';
 import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 import { ChangeDetectorRef } from '@angular/core';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-task-create-dialog',
@@ -51,6 +52,7 @@ export class TaskCreateDialog implements OnInit {
   readonly MIN_PRIVATE_TESTS = 3;
 
   submitted = false;
+  isSaving = false;
 
   private nextTestId = 1;
   private sanitizer = inject(DomSanitizer);
@@ -82,9 +84,14 @@ export class TaskCreateDialog implements OnInit {
   private updateEditorOptions(): void {
     this.editorOptions = {
       ...this.editorOptions,
-      readOnly: !this.model.includeStarterCode,
-      domReadOnly: !this.model.includeStarterCode
+      readOnly: this.isSaving || !this.model.includeStarterCode,
+      domReadOnly: this.isSaving || !this.model.includeStarterCode
     };
+  }
+
+  private setSaving(value: boolean): void {
+    this.isSaving = value;
+    this.updateEditorOptions();
   }
 
   onIncludeStarterCodeChange(value: boolean): void {
@@ -193,6 +200,10 @@ export class TaskCreateDialog implements OnInit {
   }
 
   onClose(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.confirmationService.confirm({
       message: `Jesi siguran da želiš prekinuti kreiranje zadatka?`,
       header: 'Potvrda',
@@ -216,6 +227,10 @@ export class TaskCreateDialog implements OnInit {
   }
 
   addPublicTest(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.model.publicTests.push({
       id: this.nextTestId++,
       input: '',
@@ -224,6 +239,10 @@ export class TaskCreateDialog implements OnInit {
   }
 
   addPrivateTest(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.model.hiddenTests.push({
       id: this.nextTestId++,
       input: '',
@@ -232,10 +251,18 @@ export class TaskCreateDialog implements OnInit {
   }
 
   removePublicTest(id: number): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.model.publicTests = this.model.publicTests.filter(test => test.id !== id);
   }
 
   removePrivateTest(id: number): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.model.hiddenTests = this.model.hiddenTests.filter(test => test.id !== id);
   }
 
@@ -270,6 +297,10 @@ export class TaskCreateDialog implements OnInit {
   }
 
   goToStep(step: number): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.submitted = true;
 
     if (this.canGoToStep(step)) {
@@ -278,22 +309,34 @@ export class TaskCreateDialog implements OnInit {
   }
 
   onSave(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.submitted = true;
 
     if (!this.canGoToStep(4)) {
       return;
     }
 
+    this.setSaving(true);
+
     const request$ = this.isEditMode
       ? this.taskService.updateTask(this.model)
       : this.taskService.createTask(this.model);
 
-    request$.subscribe({
+    request$
+      .pipe(finalize(() => {
+        this.setSaving(false);
+      }))
+      .subscribe({
       next: () => {
         this.saved.emit();
         this.closeDialog();
       },
       error: (error) => {
+        this.setSaving(false);
+        this.cdr.detectChanges();
         console.error('Task save failed:', error);
       }
     });

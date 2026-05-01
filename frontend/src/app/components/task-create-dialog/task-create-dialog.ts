@@ -59,6 +59,7 @@ export class TaskCreateDialog implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   @Input() taskId: number | null = null;
+  @Input() cloneMode = false;
   @Output() saved = new EventEmitter<void>();
 
   modelReady = false;
@@ -122,6 +123,10 @@ export class TaskCreateDialog implements OnInit {
       next: task => {
         try {
           this.model = this.mapTaskResponseToEditorModel(task);
+          if (this.cloneMode) {
+            delete this.model.id;
+          }
+
           this.nextTestId = this.getNextTestId();
           this.updateEditorOptions();
 
@@ -173,7 +178,7 @@ export class TaskCreateDialog implements OnInit {
   }
 
   get isEditMode(): boolean {
-    return !!this.model.id;
+    return !!this.model.id && !this.cloneMode;
   }
 
   private getNextTestId(): number {

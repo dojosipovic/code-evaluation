@@ -70,6 +70,8 @@ export class Tasks implements OnInit {
 
   editorTaskId: number | null = null;
 
+  editorCloneMode = false;
+
   activeActionsTaskId: number | null = null;
 
   tasks: ITaskListItem[] = [];
@@ -216,6 +218,15 @@ export class Tasks implements OnInit {
     this.hideTaskActions();
 
     this.editorTaskId = task.id;
+    this.editorCloneMode = false;
+    this.editorOpen = true;
+  }
+
+  cloneTask(task: ITaskListItem): void {
+    this.hideTaskActions();
+
+    this.editorTaskId = task.id;
+    this.editorCloneMode = true;
     this.editorOpen = true;
   }
 
@@ -225,17 +236,20 @@ export class Tasks implements OnInit {
 
   openCreateTaskDialog(): void {
     this.editorTaskId = null;
+    this.editorCloneMode = false;
     this.editorOpen = true;
   }
 
   onTaskEditorClosed(): void {
     this.editorOpen = false;
     this.editorTaskId = null;
+    this.editorCloneMode = false;
   }
 
   onTaskEditorSaved(): void {
     this.editorOpen = false;
     this.editorTaskId = null;
+    this.editorCloneMode = false;
     this.loadTasks();
   }
 

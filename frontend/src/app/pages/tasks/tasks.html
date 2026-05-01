@@ -17,6 +17,11 @@
   <p-popover #taskActions>
     @if (selectedTask; as task) {
         <div class="task-actions-menu">
+          <button class="task-action-item" (click)="cloneTask(task)">
+              <i class="pi pi-copy"></i>
+              <span>Clone</span>
+          </button>
+
           @if (task.status === TaskStatusEnum.DRAFT) {
               <button class="task-action-item" (click)="editTask(task)">
                   <i class="pi pi-pencil"></i>
@@ -55,6 +60,7 @@
   @if (editorOpen) {
     <app-task-create-dialog
       [taskId]="editorTaskId"
+      [cloneMode]="editorCloneMode"
       (closed)="onTaskEditorClosed()"
       (saved)="onTaskEditorSaved()">
     </app-task-create-dialog>

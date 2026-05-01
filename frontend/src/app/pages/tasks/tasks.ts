@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DividerModule } from 'primeng/divider';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
@@ -35,7 +35,7 @@ import { TaskCreateDialog } from '../../components/task-create-dialog/task-creat
     InputTextModule,
     SelectModule,
     TagModule,
-    DividerModule,
+    DrawerModule,
     ConfirmDialogModule,
     MenuModule,
     CheckboxModule,
@@ -67,6 +67,8 @@ export class Tasks implements OnInit {
   skeletonRows = Array.from({ length: 5 });
 
   editorOpen = false;
+
+  filtersDrawerVisible = false;
 
   editorTaskId: number | null = null;
 
@@ -160,6 +162,11 @@ export class Tasks implements OnInit {
 
   onApplyFilters(): void {
     this.applyFilters$.next();
+  }
+
+  onApplyFiltersAndCloseDrawer(): void {
+    this.filtersDrawerVisible = false;
+    this.onApplyFilters();
   }
 
   resetFilters(): void {

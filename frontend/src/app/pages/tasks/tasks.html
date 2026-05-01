@@ -14,6 +14,88 @@
     </button>
   </div>
 
+  <p-drawer
+    [(visible)]="filtersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="tasks-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="taskStatus">Status</label>
+          <p-select
+            inputId="taskStatus"
+            [options]="taskStatusOptions"
+            [(ngModel)]="taskFilters.status"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi status"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="taskEnabled">Enabled</label>
+          <p-select
+            inputId="taskEnabled"
+            [options]="enabledOptions"
+            [(ngModel)]="taskFilters.enabled"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi enabled"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="taskShared">Shared</label>
+          <p-select
+            inputId="taskShared"
+            [options]="sharedOptions"
+            [(ngModel)]="taskFilters.shared"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi shared"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="excludeCurrentUser">Autor</label>
+          <p-select
+            inputId="excludeCurrentUser"
+            [options]="excludeCurrentUserOptions"
+            [(ngModel)]="taskFilters.excludeCurrentUser"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi autora"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Primjeni"
+          (click)="onApplyFiltersAndCloseDrawer()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+  </p-drawer>
+
   <p-popover #taskActions>
     @if (selectedTask; as task) {
         <div class="task-actions-menu">
@@ -69,74 +151,16 @@
   <p-confirmDialog></p-confirmDialog>
 
   <p-card class="main-card">
-    <div class="filters-section">
-      <div class="filters-grid">
-        <div class="filter-field">
-          <label for="taskSearch">Search</label>
-          <input
-            id="taskSearch"
-            pInputText
-            [(ngModel)]="taskFilters.search"
-            (ngModelChange)="onSearchInput($event)"
-            (keyup.enter)="onApplyFilters()"
-            placeholder="Pretraži po nazivu zadatka" />
-        </div>
-
-        <div class="filter-field">
-          <label for="taskStatus">Status</label>
-          <p-select
-            inputId="taskStatus"
-            [options]="taskStatusOptions"
-            [(ngModel)]="taskFilters.status"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Odaberi status"
-            [showClear]="false"
-            (onChange)="onFiltersChange()">
-          </p-select>
-        </div>
-
-        <div class="filter-field">
-          <label for="taskEnabled">Enabled</label>
-          <p-select
-            inputId="taskEnabled"
-            [options]="enabledOptions"
-            [(ngModel)]="taskFilters.enabled"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Odaberi enabled"
-            [showClear]="false"
-            (onChange)="onFiltersChange()">
-          </p-select>
-        </div>
-
-        <div class="filter-field">
-          <label for="taskShared">Shared</label>
-          <p-select
-            inputId="taskShared"
-            [options]="sharedOptions"
-            [(ngModel)]="taskFilters.shared"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Odaberi shared"
-            [showClear]="false"
-            (onChange)="onFiltersChange()">
-          </p-select>
-        </div>
-
-        <div class="filter-field">
-          <label for="excludeCurrentUser">Autor</label>
-          <p-select
-            inputId="excludeCurrentUser"
-            [options]="excludeCurrentUserOptions"
-            [(ngModel)]="taskFilters.excludeCurrentUser"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Odaberi autora"
-            [showClear]="false"
-            (onChange)="onFiltersChange()">
-          </p-select>
-        </div>
+    <div class="filters-toolbar">
+      <div class="filter-field search-field">
+        <label for="taskSearch">Search</label>
+        <input
+          id="taskSearch"
+          pInputText
+          [(ngModel)]="taskFilters.search"
+          (ngModelChange)="onSearchInput($event)"
+          (keyup.enter)="onApplyFilters()"
+          placeholder="Pretraži po nazivu zadatka" />
       </div>
 
       <div class="filter-actions">
@@ -144,8 +168,8 @@
           pButton
           type="button"
           icon="pi pi-filter"
-          label="Primjeni"
-          (click)="onApplyFilters()">
+          label="Filteri"
+          (click)="filtersDrawerVisible = true">
         </button>
 
         <button
@@ -158,8 +182,6 @@
         </button>
       </div>
     </div>
-
-    <p-divider></p-divider>
 
     <p-menu
         #taskMenu
@@ -287,3 +309,4 @@
     </div>
   </p-card>
 </div>
+

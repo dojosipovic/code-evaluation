@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { SelectButtonChangeEvent, SelectButtonModule } from 'primeng/selectbutton';
@@ -44,6 +45,7 @@ type ViewMode = 'users' | 'invites';
     SelectModule,
     TagModule,
     DividerModule,
+    DrawerModule,
     ConfirmDialogModule,
     InviteCreateDialog,
     SkeletonModule
@@ -137,6 +139,8 @@ export class Users implements OnInit {
   }
 
   createInviteDialogVisible = false;
+  inviteFiltersDrawerVisible = false;
+  userFiltersDrawerVisible = false;
 
   openCreateInviteDialog(): void {
     this.createInviteDialogVisible = true;
@@ -157,6 +161,16 @@ export class Users implements OnInit {
 
   onApplyFilters(): void {
     this.applyFilters$.next();
+  }
+
+  onApplyInviteFiltersAndCloseDrawer(): void {
+    this.inviteFiltersDrawerVisible = false;
+    this.onApplyFilters();
+  }
+
+  onApplyUserFiltersAndCloseDrawer(): void {
+    this.userFiltersDrawerVisible = false;
+    this.onApplyFilters();
   }
 
   viewOptions = [

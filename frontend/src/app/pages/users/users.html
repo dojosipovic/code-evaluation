@@ -13,6 +13,90 @@
     (created)="onInviteCreated()">
   </app-invite-create-dialog>
 
+  <p-drawer
+    [(visible)]="inviteFiltersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="users-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="inviteStatus">Status</label>
+          <p-select
+            inputId="inviteStatus"
+            [options]="inviteStatusOptions"
+            [(ngModel)]="inviteFilters.status"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi status"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="inviteRole">Rola</label>
+          <p-select
+            inputId="inviteRole"
+            [options]="roleOptions"
+            [(ngModel)]="inviteFilters.role"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi rolu"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button pButton type="button" icon="pi pi-filter" (click)="onApplyInviteFiltersAndCloseDrawer()">Primjeni</button>
+        <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()">Reset</button>
+      </div>
+    </div>
+  </p-drawer>
+
+  <p-drawer
+    [(visible)]="userFiltersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="users-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="userRole">Rola</label>
+          <p-select
+            inputId="userRole"
+            [options]="roleOptions"
+            [(ngModel)]="userFilters.role"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi rolu"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="userEnabled">Enabled</label>
+          <p-select
+            inputId="userEnabled"
+            [options]="enabledOptions"
+            [(ngModel)]="userFilters.enabled"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi status"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button pButton type="button" icon="pi pi-filter" (click)="onApplyUserFiltersAndCloseDrawer()">Primjeni</button>
+        <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetUserFilters()">Reset</button>
+      </div>
+    </div>
+  </p-drawer>
+
   <p-card class="main-card">
     <div class="top-actions">
       <div class="view-switcher">
@@ -36,100 +120,40 @@
     </div>
 
     @if (currentView() === 'invites') {
-      <div class="filters-section">
-        <div class="filters-grid">
-          <div class="filter-field">
-            <label for="email">Email</label>
-            <input
-              inputId="email"
-              pInputText
-              [(ngModel)]="inviteFilters.email"
-              (ngModelChange)="onEmailInput($event)"
-              (keyup.enter)="onApplyFilters()"
-              placeholder="Pretraži po emailu" />
-          </div>
-
-          <div class="filter-field">
-            <label for="inviteStatus">Status</label>
-            <p-select
-              inputId="inviteStatus"
-              [options]="inviteStatusOptions"
-              [(ngModel)]="inviteFilters.status"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Odaberi status"
-              [showClear]="false"
-              (onChange)="onInviteFiltersChange()">
-            </p-select>
-          </div>
-
-          <div class="filter-field">
-            <label for="inviteRole">Rola</label>
-            <p-select
-              inputId="inviteRole"
-              [options]="roleOptions"
-              [(ngModel)]="inviteFilters.role"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Odaberi rolu"
-              [showClear]="false"
-              (onChange)="onInviteFiltersChange()">
-            </p-select>
-          </div>
+      <div class="filters-toolbar">
+        <div class="filter-field">
+          <label for="email">Email</label>
+          <input
+            inputId="email"
+            pInputText
+            [(ngModel)]="inviteFilters.email"
+            (ngModelChange)="onEmailInput($event)"
+            (keyup.enter)="onApplyFilters()"
+            placeholder="Pretraži po emailu" />
         </div>
 
         <div class="filter-actions">
-          <button pButton type="button" icon="pi pi-filter" (click)="onApplyFilters()">Primjeni</button>
+          <button pButton type="button" icon="pi pi-filter" (click)="inviteFiltersDrawerVisible = true">Filteri</button>
           <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()">Reset</button>
         </div>
       </div>
     }
 
     @if (currentView() === 'users') {
-      <div class="filters-section">
-        <div class="filters-grid">
-          <div class="filter-field">
-            <label for="userSearch">Search</label>
-            <input
-              id="userSearch"
-              pInputText
-              [(ngModel)]="userFilters.search"
-              (ngModelChange)="onUserSearchInput($event)"
-              (keyup.enter)="onApplyFilters()"
-              placeholder="Pretraži po username ili email" />
-          </div>
-
-          <div class="filter-field">
-            <label for="userRole">Rola</label>
-            <p-select
-              inputId="userRole"
-              [options]="roleOptions"
-              [(ngModel)]="userFilters.role"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Odaberi rolu"
-              [showClear]="false"
-              (onChange)="onUserFiltersChange()">
-            </p-select>
-          </div>
-
-          <div class="filter-field">
-            <label for="userEnabled">Enabled</label>
-            <p-select
-              inputId="userEnabled"
-              [options]="enabledOptions"
-              [(ngModel)]="userFilters.enabled"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Odaberi status"
-              [showClear]="false"
-              (onChange)="onUserFiltersChange()">
-            </p-select>
-          </div>
+      <div class="filters-toolbar">
+        <div class="filter-field">
+          <label for="userSearch">Search</label>
+          <input
+            id="userSearch"
+            pInputText
+            [(ngModel)]="userFilters.search"
+            (ngModelChange)="onUserSearchInput($event)"
+            (keyup.enter)="onApplyFilters()"
+            placeholder="Pretraži po username ili email" />
         </div>
 
         <div class="filter-actions">
-          <button pButton type="button" icon="pi pi-filter" (click)="onApplyFilters()">Primjeni</button>
+          <button pButton type="button" icon="pi pi-filter" (click)="userFiltersDrawerVisible = true">Filteri</button>
           <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetUserFilters()">Reset</button>
         </div>
       </div>
@@ -314,3 +338,4 @@
     }
   </p-card>
 </div>
+

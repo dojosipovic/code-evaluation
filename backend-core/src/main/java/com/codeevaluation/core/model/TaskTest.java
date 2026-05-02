@@ -32,7 +32,7 @@ public class TaskTest extends PanacheEntityBase {
     @Column(length = INPUT_MAX_LENGTH)
     private String input;
 
-    @Column(nullable = false, length = OUTPUT_MAX_LENGTH)
+    @Column(length = OUTPUT_MAX_LENGTH)
     private String output;
 
     @Enumerated(EnumType.STRING)

@@ -85,4 +85,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="004-make-task-test-io-nullable" author="dominik">
+        <dropNotNullConstraint tableName="task_test" columnName="output" columnDataType="VARCHAR(200)"/>
+    </changeSet>
+
 </databaseChangeLog>

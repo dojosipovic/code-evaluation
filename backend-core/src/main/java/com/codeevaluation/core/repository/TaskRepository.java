@@ -33,7 +33,9 @@ public class TaskRepository implements PanacheRepository<Task> {
         task.setTitle(taskCreateDto.title().trim());
         task.setDescription(taskCreateDto.description().trim());
 
-        if (Boolean.TRUE.equals(taskCreateDto.includeStarterCode())) {
+        boolean includeStarterCode = Boolean.TRUE.equals(taskCreateDto.includeStarterCode());
+        task.setIncludeStarterCode(includeStarterCode);
+        if (includeStarterCode) {
             task.setStarterCode(taskCreateDto.starterCode().code().trim());
         }
 
@@ -72,11 +74,13 @@ public class TaskRepository implements PanacheRepository<Task> {
         task.setTitle(taskUpdateDto.title().trim());
         task.setDescription(taskUpdateDto.description().trim());
 
-        if (Boolean.TRUE.equals(taskUpdateDto.includeStarterCode())) {
+        boolean includeStarterCode = Boolean.TRUE.equals(taskUpdateDto.includeStarterCode());
+        task.setIncludeStarterCode(includeStarterCode);
+        if (includeStarterCode) {
             task.setStarterCode(taskUpdateDto.starterCode().code().trim());
         }
 
-        task.setEnabled(true);
+        task.setEnabled(Boolean.TRUE.equals(taskUpdateDto.enabled()));
         task.setShared(Boolean.TRUE.equals(taskUpdateDto.shared()));
 
         task.removeAllTests();

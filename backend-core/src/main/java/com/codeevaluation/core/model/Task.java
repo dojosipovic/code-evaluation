@@ -41,6 +41,9 @@ public class Task extends PanacheEntityBase {
     @Column(name = "starter_code")
     private String starterCode;
 
+    @Column(nullable = false, name = "include_starter_code")
+    private Boolean includeStarterCode;
+
     @Column(nullable = false)
     private Boolean enabled;
 

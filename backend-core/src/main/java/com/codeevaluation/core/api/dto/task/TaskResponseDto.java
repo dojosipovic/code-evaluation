@@ -31,6 +31,7 @@ public class TaskResponseDto {
         taskResponseDto.setTitle(task.getTitle());
         taskResponseDto.setDescription(task.getDescription());
         taskResponseDto.setStarterCode(new StarterCodeDto(null, task.getStarterCode()));
+        taskResponseDto.setIncludeStarterCode(task.getIncludeStarterCode());
         taskResponseDto.setShared(task.getShared());
         taskResponseDto.setEnabled(task.getEnabled());
         taskResponseDto.setStatus(task.getStatus());

@@ -1,83 +1,108 @@
-<div class="editor-overlay" [class.closing]="isClosing">
-  <div class="editor-shell" [class.closing]="isClosing">
-    <div class="editor-header">
-      <div class="editor-title-group">
-        <label for="taskTitle" class="field-label">Naziv zadatka</label>
-        <input
-          pInputText
-          id="taskTitle"
-          type="text"
-          [(ngModel)]="model.title"
-          placeholder="Unesi naziv zadatka"
-          class="task-title-input" />
-      </div>
-
-      <div class="header-actions">
-        <button pButton type="button" (click)="onSave()">
-          Save
-        </button>
-
-        <button pButton type="button" severity="secondary" (click)="onClose()">
-          Close
-        </button>
-      </div>
+@if (!modelReady) {
+  <div class="editor-overlay">
+    <div class="editor-shell loading-shell">
+      <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+      <div class="loading-text">Ucitavanje zadatka...</div>
     </div>
+  </div>
+} @else {
+  <div class="editor-overlay" [class.closing]="isClosing">
+    <div class="editor-shell" [class.closing]="isClosing">
+      <div class="editor-header">
+        <div class="editor-title-group">
+          <label for="taskTitle" class="field-label">Naziv zadatka</label>
+          <input
+            pInputText
+            id="taskTitle"
+            type="text"
+            [(ngModel)]="model.title"
+            [disabled]="true"
+            class="task-title-input" />
+        </div>
 
-    <div class="editor-body">
-      <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
-        <p-tablist>
-          <p-tab value="preview">Pregled</p-tab>
-          <p-tab value="public">Javni testovi</p-tab>
-          <p-tab value="private">Skriveni testovi</p-tab>
-          <p-tab value="code">Početni kod</p-tab>
-        </p-tablist>
+        <div class="header-actions">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-copy"
+            label="Clone"
+            [disabled]="isActionRunning"
+            (click)="onClone()">
+          </button>
 
-        <p-tabpanels>
-          <p-tabpanel value="preview">
-            <div class="preview-layout">
-              <div class="markdown-pane">
-                <div class="pane-header">Markdown</div>
+          <button
+            pButton
+            type="button"
+            [severity]="task?.enabled ? 'danger' : 'success'"
+            [icon]="task?.enabled ? 'pi pi-times' : 'pi pi-check'"
+            [label]="task?.enabled ? 'Deaktiviraj' : 'Aktiviraj'"
+            [disabled]="isActionRunning"
+            (click)="onToggleEnabled()">
+          </button>
 
-                <textarea
-                  [(ngModel)]="model.description"
-                  class="markdown-textarea"
-                  placeholder="Piši markdown ovdje..."></textarea>
-              </div>
+          <button
+            pButton
+            type="button"
+            [severity]="task?.shared ? 'secondary' : 'success'"
+            [icon]="task?.shared ? 'pi pi-lock' : 'pi pi-globe'"
+            [label]="task?.shared ? 'Sakrij' : 'Podijeli'"
+            [disabled]="isActionRunning"
+            (click)="onToggleShared()">
+          </button>
 
-              <div class="preview-pane">
-                <div class="pane-header">Pregled</div>
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            label="Close"
+            (click)="onClose()">
+          </button>
+        </div>
+      </div>
 
-                <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
-              </div>
-            </div>
-          </p-tabpanel>
+      <div class="editor-body">
+        <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
+          <p-tablist>
+            <p-tab value="preview">Pregled</p-tab>
+            <p-tab value="public">Javni testovi</p-tab>
+            <p-tab value="private">Skriveni testovi</p-tab>
+            <p-tab value="code">Pocetni kod</p-tab>
+          </p-tablist>
 
-          <p-tabpanel value="public">
-            <div class="tests-tab">
-              <div class="tests-tab-header">
-                <div>
-                  <h3>Javni testovi</h3>
-                  <p>Ovi testovi mogu biti vidljivi korisniku.</p>
+          <p-tabpanels>
+            <p-tabpanel value="preview">
+              <div class="preview-layout">
+                <div class="markdown-pane">
+                  <div class="pane-header">Markdown</div>
+
+                  <textarea
+                    [(ngModel)]="model.description"
+                    [readonly]="true"
+                    class="markdown-textarea"></textarea>
                 </div>
 
-                <button pButton type="button" (click)="addPublicTest()">
-                  Dodaj javan test
-                </button>
-              </div>
+                <div class="preview-pane">
+                  <div class="pane-header">Pregled</div>
 
-              <div class="tests-list">
-                @for (test of model.publicTests; track $index) {
+                  <div class="preview-content" [innerHTML]="renderedMarkdown"></div>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <p-tabpanel value="public">
+              <div class="tests-tab">
+                <div class="tests-tab-header">
+                  <div>
+                    <h3>Javni testovi</h3>
+                    <p>Ovi testovi mogu biti vidljivi korisniku.</p>
+                  </div>
+                </div>
+
+                <div class="tests-list">
+                  @for (test of model.publicTests; track test.id) {
                     <div class="test-card">
                       <div class="test-card-header">
                         <span>Test #{{ test.id }}</span>
-
-                        <button
-                          pButton
-                          type="button"
-                          severity="danger"
-                          (click)="removePublicTest(test.id)">
-                          Delete
-                        </button>
                       </div>
 
                       <div class="test-grid">
@@ -86,7 +111,7 @@
                           <textarea
                             [id]="'public-input-' + test.id"
                             [(ngModel)]="test.input"
-                            placeholder="Unesi input"></textarea>
+                            [readonly]="true"></textarea>
                         </div>
 
                         <div class="test-field">
@@ -94,47 +119,35 @@
                           <textarea
                             [id]="'public-output-' + test.id"
                             [(ngModel)]="test.output"
-                            placeholder="Unesi expected output"></textarea>
+                            [readonly]="true"></textarea>
                         </div>
                       </div>
                     </div>
-                }
+                  }
 
-                @if (model.publicTests.length === 0) {
+                  @if (model.publicTests.length === 0) {
                     <div class="empty-state">
                       Nema javnih testova.
                     </div>
-                }
+                  }
+                </div>
               </div>
-            </div>
-          </p-tabpanel>
+            </p-tabpanel>
 
-          <p-tabpanel value="private">
-            <div class="tests-tab">
-              <div class="tests-tab-header">
-                <div>
-                  <h3>Skriveni testovi</h3>
-                  <p>Ovi testovi ostaju skriveni korisniku.</p>
+            <p-tabpanel value="private">
+              <div class="tests-tab">
+                <div class="tests-tab-header">
+                  <div>
+                    <h3>Skriveni testovi</h3>
+                    <p>Ovi testovi ostaju skriveni korisniku.</p>
+                  </div>
                 </div>
 
-                <button pButton type="button" (click)="addPrivateTest()">
-                  Dodaj skriveni test
-                </button>
-              </div>
-
-              <div class="tests-list">
-                @for (test of model.hiddenTests; track $index) {
+                <div class="tests-list">
+                  @for (test of model.hiddenTests; track test.id) {
                     <div class="test-card">
                       <div class="test-card-header">
                         <span>Test #{{ test.id }}</span>
-
-                        <button
-                          pButton
-                          type="button"
-                          severity="danger"
-                          (click)="removePrivateTest(test.id)">
-                          Delete
-                        </button>
                       </div>
 
                       <div class="test-grid">
@@ -143,7 +156,7 @@
                           <textarea
                             [id]="'private-input-' + test.id"
                             [(ngModel)]="test.input"
-                            placeholder="Unesi input"></textarea>
+                            [readonly]="true"></textarea>
                         </div>
 
                         <div class="test-field">
@@ -151,63 +164,57 @@
                           <textarea
                             [id]="'private-output-' + test.id"
                             [(ngModel)]="test.output"
-                            placeholder="Unesi expected output"></textarea>
+                            [readonly]="true"></textarea>
                         </div>
                       </div>
                     </div>
-                }
+                  }
 
-                @if (model.hiddenTests.length === 0) {
+                  @if (model.hiddenTests.length === 0) {
                     <div class="empty-state">
                       Nema skrivenih testova.
                     </div>
-                }
+                  }
+                </div>
               </div>
-            </div>
-          </p-tabpanel>
-
-          <p-tabpanel value="code">
-
-            <div class="code-tab">
-
-                <!-- HEADER -->
-                <div class="code-header">
-
-                <div class="left-controls">
-                  <label for="includeStarter">Uključi početni kod</label>
-                  <p-toggleswitch
-                    inputId="includeStarter"
-                    [(ngModel)]="model.includeStarterCode"
-                    (ngModelChange)="onIncludeStarterCodeChange($event)">
-                  </p-toggleswitch>
-                </div>
-
-                <div class="right-controls">
-                  <p>Kod će biti izuzet u računanju plagijata</p>
-                </div>
-
-                </div>
-
-                <!-- EDITOR -->
-                <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
-                    <ngx-monaco-editor
-                        class="monaco-editor-host"
-                        [(ngModel)]="model.starterCode.code"
-                        [options]="editorOptions">
-                    </ngx-monaco-editor>
-
-                    @if (!model.includeStarterCode) {
-                      <div class="monaco-disabled-overlay">
-                        Početni kod nije uključen
-                      </div>
-                    }
-                </div>
-
-            </div>
-
             </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+
+            <p-tabpanel value="code">
+              <div class="code-tab">
+                <div class="code-header">
+                  <div class="left-controls">
+                    <label for="includeStarter">Ukljuci pocetni kod</label>
+                    <p-toggleswitch
+                      inputId="includeStarter"
+                      [(ngModel)]="model.includeStarterCode"
+                      [disabled]="true"
+                      (ngModelChange)="onIncludeStarterCodeChange($event)">
+                    </p-toggleswitch>
+                  </div>
+
+                  <div class="right-controls">
+                    <p>Kod ce biti izuzet u racunanju plagijata</p>
+                  </div>
+                </div>
+
+                <div class="monaco-wrapper" [class.disabled]="!model.includeStarterCode">
+                  <ngx-monaco-editor
+                    class="monaco-editor-host"
+                    [(ngModel)]="model.starterCode.code"
+                    [options]="editorOptions">
+                  </ngx-monaco-editor>
+
+                  @if (!model.includeStarterCode) {
+                    <div class="monaco-disabled-overlay">
+                      Pocetni kod nije ukljucen
+                    </div>
+                  }
+                </div>
+              </div>
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
+      </div>
     </div>
   </div>
-</div>
+}

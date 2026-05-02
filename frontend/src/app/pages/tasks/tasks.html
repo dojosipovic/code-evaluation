@@ -120,7 +120,7 @@
                   <span>Obriši</span>
               </button>
           } @else {
-              <button class="task-action-item" (click)="hideTaskActions(); openTaskDetails(task)">
+              <button class="task-action-item" (click)="openTaskDetails(task)">
                   <i class="pi pi-eye"></i>
                   <span>Pregledaj</span>
               </button>
@@ -146,6 +146,15 @@
       (closed)="onTaskEditorClosed()"
       (saved)="onTaskEditorSaved()">
     </app-task-create-dialog>
+  }
+
+  @if (viewerOpen) {
+    <app-task-view-dialog
+      [taskId]="viewerTaskId"
+      (closed)="onTaskViewerClosed()"
+      (cloneRequested)="onTaskViewerCloneRequested($event)"
+      (changed)="onTaskViewerChanged()">
+    </app-task-view-dialog>
   }
 
   <p-confirmDialog></p-confirmDialog>

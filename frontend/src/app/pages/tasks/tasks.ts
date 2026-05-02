@@ -13,7 +13,6 @@ import { MenuModule } from 'primeng/menu';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { TaskService } from '../../services/task.service';
-import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
 import { ITaskListItem } from '../../models/task/ITaskListItem';
 import { TaskStatusEnum } from '../../models/enum/TaskStatusEnum';
@@ -23,6 +22,7 @@ import { PopoverModule, Popover } from 'primeng/popover';
 import { AuthService } from '../../services/auth/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
+import { TaskViewDialog } from '../../components/task-view-dialog/task-view-dialog';
 
 @Component({
   selector: 'app-tasks',
@@ -40,6 +40,7 @@ import { TaskCreateDialog } from '../../components/task-create-dialog/task-creat
     MenuModule,
     CheckboxModule,
     TaskCreateDialog,
+    TaskViewDialog,
     PopoverModule,
     SkeletonModule
   ],
@@ -53,7 +54,6 @@ export class Tasks implements OnInit {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private destroyRef = inject(DestroyRef);
-  private router = inject(Router);
   private authService = inject(AuthService);
 
   private searchInput$ = new Subject<string>();
@@ -67,10 +67,12 @@ export class Tasks implements OnInit {
   skeletonRows = Array.from({ length: 5 });
 
   editorOpen = false;
+  viewerOpen = false;
 
   filtersDrawerVisible = false;
 
   editorTaskId: number | null = null;
+  viewerTaskId: number | null = null;
 
   editorCloneMode = false;
 
@@ -218,7 +220,9 @@ export class Tasks implements OnInit {
   }
 
   openTaskDetails(task: ITaskListItem): void {
-    this.router.navigate(['/tasks', task.id]);
+    this.hideTaskActions();
+    this.viewerTaskId = task.id;
+    this.viewerOpen = true;
   }
 
   editTask(task: ITaskListItem): void {
@@ -257,6 +261,23 @@ export class Tasks implements OnInit {
     this.editorOpen = false;
     this.editorTaskId = null;
     this.editorCloneMode = false;
+    this.loadTasks();
+  }
+
+  onTaskViewerClosed(): void {
+    this.viewerOpen = false;
+    this.viewerTaskId = null;
+  }
+
+  onTaskViewerCloneRequested(taskId: number): void {
+    this.viewerOpen = false;
+    this.viewerTaskId = null;
+    this.editorTaskId = taskId;
+    this.editorCloneMode = true;
+    this.editorOpen = true;
+  }
+
+  onTaskViewerChanged(): void {
     this.loadTasks();
   }
 

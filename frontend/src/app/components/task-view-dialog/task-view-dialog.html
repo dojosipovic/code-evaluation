@@ -71,16 +71,7 @@
 
           <p-tabpanels>
             <p-tabpanel value="preview">
-              <div class="preview-layout">
-                <div class="markdown-pane">
-                  <div class="pane-header">Markdown</div>
-
-                  <textarea
-                    [(ngModel)]="model.description"
-                    [readonly]="true"
-                    class="markdown-textarea"></textarea>
-                </div>
-
+              <div class="preview-layout preview-layout-single">
                 <div class="preview-pane">
                   <div class="pane-header">Pregled</div>
 
@@ -188,7 +179,7 @@
                       inputId="includeStarter"
                       [(ngModel)]="model.includeStarterCode"
                       [disabled]="true"
-                      (ngModelChange)="onIncludeStarterCodeChange($event)">
+                      (ngModelChange)="onIncludeStarterCodeChange()">
                     </p-toggleswitch>
                   </div>
 

@@ -108,7 +108,7 @@ export class TaskViewDialog implements OnInit {
     };
   }
 
-  onIncludeStarterCodeChange(_value: boolean): void {
+  onIncludeStarterCodeChange(): void {
     this.updateEditorOptions();
   }
 

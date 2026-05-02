@@ -38,6 +38,13 @@
   font-weight: 600;
 }
 
+:host ::ng-deep .p-progressspinner {
+  --p-progressspinner-color-one: var(--p-primary-color);
+  --p-progressspinner-color-two: var(--p-primary-color);
+  --p-progressspinner-color-three: var(--p-primary-color);
+  --p-progressspinner-color-four: var(--p-primary-color);
+}
+
 /* ================= HEADER ================= */
 
 .editor-header {
@@ -88,6 +95,10 @@
   gap: 1rem;
   height: calc(100vh - 170px);
   min-height: 0;
+}
+
+.preview-layout-single {
+  grid-template-columns: 1fr;
 }
 
 .markdown-pane,

@@ -1,8 +1,19 @@
 package com.codeevaluation.plagscan;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
 
-@QuarkusIntegrationTest
-class ExampleResourceIT extends ExampleResourceTest {
-    // Execute the same tests but in packaged mode.
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
+
+@QuarkusTest
+class ExampleResourceIT {
+    @Test
+    void testHelloEndpoint() {
+        given()
+                .when().get("/hello")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from Quarkus REST"));
+    }
 }

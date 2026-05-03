@@ -16,26 +16,8 @@ import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
-interface TestCase {
-  id: number;
-  input: string;
-  output: string;
-}
-
-interface StarterCode {
-  language: string;
-  code: string;
-}
-
-interface TaskModel {
-  title: string;
-  description: string;
-  starterCode: StarterCode;
-  includeStarterCode: boolean;
-  publicTests: TestCase[];
-  hiddenTests: TestCase[];
-}
+import { ITaskCreate } from '../../models/task/ITaskCreate';
+import { ITestCase } from '../../models/task/ITestCase';
 
 type ActiveTab = 'preview' | 'public' | 'private' | 'code';
 
@@ -79,7 +61,7 @@ export class TaskViewDialog implements OnInit {
     { label: 'C++', value: 'cpp' }
   ];
 
-  model: TaskModel = {
+  model: ITaskCreate = {
     title: '',
     description: TASK_MARKDOWN_TEMPLATE,
     starterCode: {
@@ -151,7 +133,7 @@ export class TaskViewDialog implements OnInit {
     });
   }
 
-  private mapTaskResponseToViewModel(task: ITaskResponse): TaskModel {
+  private mapTaskResponseToViewModel(task: ITaskResponse): ITaskCreate {
     let nextTestId = 1;
 
     return {
@@ -324,7 +306,7 @@ export class TaskViewDialog implements OnInit {
     });
   }
 
-  trackByTestId(_index: number, test: TestCase): number {
+  trackByTestId(_index: number, test: ITestCase): number {
     return test.id;
   }
 

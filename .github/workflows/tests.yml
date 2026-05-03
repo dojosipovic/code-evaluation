@@ -1,9 +1,9 @@
-name: Checkstyle
+name: Tests
 
 on:
   pull_request:
     branches: [ main, develop ]
-    types: [opened, synchronize, ready_for_review]
+    types: [ opened, synchronize, ready_for_review ]
   push:
     branches: [ main, develop ]
 
@@ -27,12 +27,14 @@ jobs:
           filters: |
             backend_core:
               - backend-core/**
+              - pom.xml
             backend_plagscan:
               - backend-plagscan/**
+              - pom.xml
             frontend:
               - frontend/**
 
-  checkstyle-backend-core:
+  tests-backend-core:
     needs: detect-changes
     if: >
       needs.detect-changes.outputs.backend_core == 'true' &&
@@ -45,10 +47,11 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - name: Run Checkstyle (backend-core)
-        run: mvn -pl backend-core checkstyle:check
 
-  checkstyle-backend-plagscan:
+      - name: Run backend-core tests
+        run: mvn -pl backend-core -am verify -DskipITs=false
+
+  tests-backend-plagscan:
     needs: detect-changes
     if: >
       needs.detect-changes.outputs.backend_plagscan == 'true' &&
@@ -61,10 +64,11 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - name: Run Checkstyle (backend-plagscan)
-        run: mvn -pl backend-plagscan checkstyle:check
 
-  eslint-frontend:
+      - name: Run backend-plagscan tests
+        run: mvn -pl backend-plagscan -am verify -DskipITs=false
+
+  tests-frontend:
     needs: detect-changes
     if: >
       needs.detect-changes.outputs.frontend == 'true' &&
@@ -75,20 +79,14 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Show npm config
-        run: |
-          npm config get registry
-          npm config list
-
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run frontend tests
+        run: npm run test:ci

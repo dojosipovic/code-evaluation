@@ -14,12 +14,12 @@ import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { SelectButtonChangeEvent, SelectButtonModule } from 'primeng/selectbutton';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -27,6 +27,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { InviteCreateDialog } from '../../components/invite-create-dialog/invite-create-dialog';
 import { IUserQueryParams } from '../../models/user/IUserQueryParams';
+import { SkeletonModule } from 'primeng/skeleton';
 
 type ViewMode = 'users' | 'invites';
 
@@ -44,9 +45,10 @@ type ViewMode = 'users' | 'invites';
     SelectModule,
     TagModule,
     DividerModule,
-    ProgressSpinnerModule,
+    DrawerModule,
     ConfirmDialogModule,
-    InviteCreateDialog
+    InviteCreateDialog,
+    SkeletonModule
   ],
   providers: [ConfirmationService],
   templateUrl: './users.html',
@@ -68,6 +70,8 @@ export class Users implements OnInit {
 
   readonly currentView = signal<ViewMode>('users');
   readonly loading = signal(false);
+
+  skeletonRows = Array.from({ length: 5 });
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -135,6 +139,8 @@ export class Users implements OnInit {
   }
 
   createInviteDialogVisible = false;
+  inviteFiltersDrawerVisible = false;
+  userFiltersDrawerVisible = false;
 
   openCreateInviteDialog(): void {
     this.createInviteDialogVisible = true;
@@ -155,6 +161,16 @@ export class Users implements OnInit {
 
   onApplyFilters(): void {
     this.applyFilters$.next();
+  }
+
+  onApplyInviteFiltersAndCloseDrawer(): void {
+    this.inviteFiltersDrawerVisible = false;
+    this.onApplyFilters();
+  }
+
+  onApplyUserFiltersAndCloseDrawer(): void {
+    this.userFiltersDrawerVisible = false;
+    this.onApplyFilters();
   }
 
   viewOptions = [
@@ -394,6 +410,7 @@ export class Users implements OnInit {
 
   private loadInvites(): void {
     this.loading.set(true);
+    this.invites = [];
 
     this.inviteService.getInvites(this.buildInviteParams())
       .pipe(finalize(() => this.loading.set(false)))

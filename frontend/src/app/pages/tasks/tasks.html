@@ -1,0 +1,321 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div>
+      <h2>Zadaci</h2>
+      <p>Pregled kreiranih zadataka i njihovih autora</p>
+    </div>
+
+    <button
+      pButton
+      type="button"
+      icon="pi pi-plus"
+      label="Novi zadatak"
+      (click)="openCreateTaskDialog()">
+    </button>
+  </div>
+
+  <p-drawer
+    [(visible)]="filtersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="tasks-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="taskStatus">Status</label>
+          <p-select
+            inputId="taskStatus"
+            [options]="taskStatusOptions"
+            [(ngModel)]="taskFilters.status"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi status"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="taskEnabled">Enabled</label>
+          <p-select
+            inputId="taskEnabled"
+            [options]="enabledOptions"
+            [(ngModel)]="taskFilters.enabled"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi enabled"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="taskShared">Shared</label>
+          <p-select
+            inputId="taskShared"
+            [options]="sharedOptions"
+            [(ngModel)]="taskFilters.shared"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi shared"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="excludeCurrentUser">Autor</label>
+          <p-select
+            inputId="excludeCurrentUser"
+            [options]="excludeCurrentUserOptions"
+            [(ngModel)]="taskFilters.excludeCurrentUser"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Odaberi autora"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Primjeni"
+          (click)="onApplyFiltersAndCloseDrawer()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+  </p-drawer>
+
+  <p-popover #taskActions>
+    @if (selectedTask; as task) {
+        <div class="task-actions-menu">
+          <button class="task-action-item" (click)="cloneTask(task)">
+              <i class="pi pi-copy"></i>
+              <span>Clone</span>
+          </button>
+
+          @if (task.status === TaskStatusEnum.DRAFT) {
+              <button class="task-action-item" (click)="editTask(task)">
+                  <i class="pi pi-pencil"></i>
+                  <span>Uredi</span>
+              </button>
+
+              <button class="task-action-item" (click)="hideTaskActions(); onToggleTaskStatus(task)">
+                  <i class="pi pi-send"></i>
+                  <span>Objavi</span>
+              </button>
+
+              <button class="task-action-item danger" (click)="hideTaskActions(); onDeleteTask(task)">
+                  <i class="pi pi-trash"></i>
+                  <span>Obriši</span>
+              </button>
+          } @else {
+              <button class="task-action-item" (click)="openTaskDetails(task)">
+                  <i class="pi pi-eye"></i>
+                  <span>Pregledaj</span>
+              </button>
+              @if (canEditTask(task)) {
+                <button class="task-action-item" (click)="hideTaskActions(); onToggleTaskEnabled(task)">
+                    <i class="pi" [ngClass]="task.enabled ? 'pi-times' : 'pi-check'"></i>
+                    <span>{{ task.enabled ? 'Deaktiviraj' : 'Aktiviraj' }}</span>
+                </button>
+                <button class="task-action-item" (click)="hideTaskActions(); onToggleTaskShared(task)">
+                    <i class="pi" [ngClass]="task.shared ? 'pi-lock' : 'pi-globe'"></i>
+                    <span>{{ task.shared ? 'Prestani dijeliti' : 'Podijeli' }}</span>
+                </button>
+              }
+          }
+        </div>
+    }
+  </p-popover>
+
+  @if (editorOpen) {
+    <app-task-create-dialog
+      [taskId]="editorTaskId"
+      [cloneMode]="editorCloneMode"
+      (closed)="onTaskEditorClosed()"
+      (saved)="onTaskEditorSaved()">
+    </app-task-create-dialog>
+  }
+
+  @if (viewerOpen) {
+    <app-task-view-dialog
+      [taskId]="viewerTaskId"
+      (closed)="onTaskViewerClosed()"
+      (cloneRequested)="onTaskViewerCloneRequested($event)"
+      (changed)="onTaskViewerChanged()">
+    </app-task-view-dialog>
+  }
+
+  <p-confirmDialog></p-confirmDialog>
+
+  <p-card class="main-card">
+    <div class="filters-toolbar">
+      <div class="filter-field search-field">
+        <label for="taskSearch">Search</label>
+        <input
+          id="taskSearch"
+          pInputText
+          [(ngModel)]="taskFilters.search"
+          (ngModelChange)="onSearchInput($event)"
+          (keyup.enter)="onApplyFilters()"
+          placeholder="Pretraži po nazivu zadatka" />
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Filteri"
+          (click)="filtersDrawerVisible = true">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+
+    <p-menu
+        #taskMenu
+        [model]="taskMenuItems"
+        [popup]="true"
+        appendTo="body">
+    </p-menu>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : tasks"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="first"
+        [totalRecords]="totalRecords"
+        [rowsPerPageOptions]="[10, 20, 50]"
+        (onLazyLoad)="onLazyLoad($event)"
+        class="p-datatable-sm tasks-table">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id">
+              ID
+              <p-sortIcon field="id"></p-sortIcon>
+            </th>
+
+            <th pSortableColumn="title">
+              Naziv
+              <p-sortIcon field="title"></p-sortIcon>
+            </th>
+
+            <th pSortableColumn="status">
+              Status
+              <p-sortIcon field="status"></p-sortIcon>
+            </th>
+
+            <th pSortableColumn="enabled">
+              Enabled
+              <p-sortIcon field="enabled"></p-sortIcon>
+            </th>
+
+            <th pSortableColumn="shared">
+              Shared
+              <p-sortIcon field="shared"></p-sortIcon>
+            </th>
+
+            <th>Autor</th>
+
+            <th class="actions-column">Akcije</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-task>
+          <tr>
+            <td>{{ task.id }}</td>
+
+            <td>
+              <div class="primary-cell">{{ task.title }}</div>
+            </td>
+
+            <td>
+              <p-tag
+                [value]="task.status"
+                [severity]="getStatusSeverity(task.status)">
+              </p-tag>
+            </td>
+
+            <td>
+              <i
+                class="pi"
+                [ngClass]="task.enabled ? 'pi-check enabled-icon' : 'pi-times disabled-icon'">
+              </i>
+            </td>
+
+            <td>
+              <i
+                class="pi"
+                [ngClass]="task.shared ? 'pi-globe shared-icon' : 'pi-lock private-icon'">
+              </i>
+            </td>
+
+            <td>
+              <div class="author-cell">
+                <div class="author-name">{{ getAuthorName(task) }}</div>
+                <div class="author-email">{{ task.user?.email }}</div>
+              </div>
+            </td>
+
+            <td class="actions-column">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-ellipsis-v"
+                class="p-button-text p-button-rounded"
+                (click)="openTaskActions($event, task)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+          <tr>
+            <td><p-skeleton width="2rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="8rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="6rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+            <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+            <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+            <td>
+              <p-skeleton width="8rem" height="1.1rem"></p-skeleton>
+              <p-skeleton width="9rem" height="0.9rem" styleClass="mt-2"></p-skeleton>
+            </td>
+            <td class="actions-column">
+              <p-skeleton width="2rem" height="2rem" borderRadius="50%"></p-skeleton>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">Nema zadataka za zadane filtere.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-card>
+</div>
+

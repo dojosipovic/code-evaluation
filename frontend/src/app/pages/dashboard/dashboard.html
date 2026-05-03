@@ -2,6 +2,14 @@
 <p-card header="Dashboard">
     <p>Dobrodošao 👋</p>
 
+    <button pButton type="button" (click)="editorOpen = true">
+        Open task editor
+    </button>
+
+    @if (editorOpen) {
+        <app-task-create-dialog (closed)="editorOpen = false"></app-task-create-dialog>
+    }
+
     <p-button
         label="Dohvati moje podatke"
         icon="pi pi-user"
@@ -12,5 +20,5 @@
     @if (me) {
         <pre>{{ me }}</pre>
     }
-    
+
 </p-card>

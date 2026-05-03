@@ -3,16 +3,18 @@ import { Component, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ButtonModule, CardModule],
+  imports: [ButtonModule, CardModule, TaskCreateDialog],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
 
   me: string | null = null;
+  editorOpen = false;
 
   private http = inject(HttpClient);
   private messageService = inject(MessageService);

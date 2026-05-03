@@ -48,4 +48,8 @@ public class User extends PanacheEntityBase {
 
     @Column(nullable = false)
     private Boolean enabled;
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
+    }
 }

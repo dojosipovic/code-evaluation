@@ -10,5 +10,6 @@
     <include file="db/changelog/002-seed-data.xml"/>
     <include file="db/changelog/003-user-enabled-column-add.xml"/>
     <include file="db/changelog/004-task-and-test.xml"/>
+    <include file="db/changelog/005-group-and-member.xml"/>
 
 </databaseChangeLog>

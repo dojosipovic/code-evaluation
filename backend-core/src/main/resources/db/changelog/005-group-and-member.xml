@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="005-create-groups-table" author="dominik">
+        <createTable tableName="groups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="TEXT"/>
+
+            <column name="owner_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="groups"
+                baseColumnNames="owner_id"
+                constraintName="fk_groups_owner"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <createIndex
+                indexName="idx_groups_owner_id"
+                tableName="groups">
+            <column name="owner_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="005-create-group-member-table" author="dominik">
+        <createTable tableName="group_member">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="added_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="group_member"
+                baseColumnNames="group_id"
+                constraintName="fk_group_member_groups"
+                referencedTableName="groups"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="group_member"
+                baseColumnNames="user_id"
+                constraintName="fk_group_member_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addUniqueConstraint
+                tableName="group_member"
+                columnNames="group_id, user_id"
+                constraintName="uk_group_member_group_user"/>
+
+        <createIndex
+                indexName="idx_group_member_group_id"
+                tableName="group_member">
+            <column name="group_id"/>
+        </createIndex>
+
+        <createIndex
+                indexName="idx_group_member_user_id"
+                tableName="group_member">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -9,7 +9,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -49,7 +51,16 @@ public class User extends PanacheEntityBase {
     @Column(nullable = false)
     private Boolean enabled;
 
+    @OneToMany(mappedBy = "user")
+    private List<GroupMember> groupMemberships;
+
     public boolean isAdmin() {
         return role == Role.ADMIN;
+    }
+
+    public List<Group> getGroups() {
+        return groupMemberships.stream()
+                .map(GroupMember::getGroup)
+                .toList();
     }
 }

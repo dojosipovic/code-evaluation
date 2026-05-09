@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
@@ -41,4 +42,10 @@ public class GroupMember extends PanacheEntityBase {
     @Column(name = "added_at", nullable = false, updatable = false)
     private Instant addedAt;
 
+    @PrePersist
+    void onCreate() {
+        if (addedAt == null) {
+            addedAt = Instant.now();
+        }
+    }
 }

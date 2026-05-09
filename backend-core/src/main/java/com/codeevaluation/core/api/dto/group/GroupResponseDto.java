@@ -14,6 +14,7 @@ public class GroupResponseDto {
     private String description;
     private UserDto owner;
     private Instant createdAt;
+    private Integer memberCount;
 
     public static GroupResponseDto from(Group group) {
         GroupResponseDto groupResponseDto = new GroupResponseDto();
@@ -22,6 +23,7 @@ public class GroupResponseDto {
         groupResponseDto.setDescription(group.getDescription());
         groupResponseDto.setOwner(UserDto.from(group.getOwner()));
         groupResponseDto.setCreatedAt(group.getCreatedAt());
+        groupResponseDto.setMemberCount(group.getMembers().size());
 
         return groupResponseDto;
     }

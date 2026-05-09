@@ -1,6 +1,7 @@
 package com.codeevaluation.core.helper;
 
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.model.Group;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BadRequestException;
@@ -15,6 +16,14 @@ public class GroupValidator {
         }
 
         validateName(groupCreateDto.name());
+    }
+
+    public void validateGroup(GroupUpdateDto groupUpdateDto) {
+        if (groupUpdateDto == null) {
+            throw new BadRequestException("Payload is required");
+        }
+
+        validateName(groupUpdateDto.getName());
     }
 
     private void validateName(String name) {

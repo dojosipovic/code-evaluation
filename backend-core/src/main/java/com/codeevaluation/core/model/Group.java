@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,8 +40,8 @@ public class Group extends PanacheEntityBase {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
-    private List<GroupMember> members;
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupMember> members = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -50,5 +51,16 @@ public class Group extends PanacheEntityBase {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
+    }
+
+    public boolean isOwner(String username) {
+        return owner.getUsername().equals(username);
+    }
+
+    public boolean isMember(String username) {
+        return members.stream()
+                .anyMatch(
+                        m -> m.getUser().getUsername().equals(username)
+                );
     }
 }

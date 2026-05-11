@@ -2,12 +2,14 @@ package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.helper.GroupValidator;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.helper.PagedParams;
+import com.codeevaluation.core.helper.PagedSearchGroupImpl;
 import com.codeevaluation.core.helper.PagedSearchGroupMemberImpl;
 import com.codeevaluation.core.model.Group;
 import com.codeevaluation.core.model.GroupMember;
@@ -37,6 +39,7 @@ public class GroupService {
     private final UserRepository userRepository;
     private final GroupValidator groupValidator;
     private final PagedSearchGroupMemberImpl pagedSearchGroupMember;
+    private final PagedSearchGroupImpl pagedSearchGroup;
 
     @Transactional
     public GroupResponseDto createGroup(GroupCreateDto groupCreateDto) {
@@ -148,5 +151,11 @@ public class GroupService {
         int size = pagedContext.size();
 
         return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    public PagedResponse<GroupListItemDto> getGroups(PagedParams pagedParams) {
+        User currentUser = currentUserProvider.getCurrentUser();
+        PagedContext pagedContext = pagedSearchGroup.generateFrom(pagedParams);
+        return groupRepository.getGroups(currentUser, pagedContext);
     }
 }

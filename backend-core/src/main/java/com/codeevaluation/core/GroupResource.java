@@ -2,6 +2,7 @@ package com.codeevaluation.core;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
@@ -57,12 +58,12 @@ public class GroupResource {
         return groupService.updateGroup(groupCreateDto, groupId);
     }
 
-//    @GET
-//    @Authenticated
-//    public Response getGroups() {
-//        // TODO: get groups (if student or another prof check if you have right to see it )
-//    }
-//
+    @GET
+    @Authenticated
+    public PagedResponse<GroupListItemDto> getGroups(@BeanParam PagedParams pagedParams) {
+        return groupService.getGroups(pagedParams);
+    }
+
     @POST
     @Path("/{groupId}/members/{userId}")
     @RolesAllowed({ "ADMIN", "PROF" })
@@ -90,7 +91,8 @@ public class GroupResource {
     @Authenticated
     public PagedResponse<UserDto> getMembers(
             @PathParam("groupId") Long groupId,
-            @BeanParam PagedParams pagedParams) {
+            @BeanParam PagedParams pagedParams
+    ) {
         return groupService.getMembers(groupId, pagedParams);
     }
 }

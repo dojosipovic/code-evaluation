@@ -1,6 +1,6 @@
 import { IUserResponse } from "../user/IUserResponse";
 
-export interface IGroupListItem {
+export interface IGroupResponse {
     id: number;
     name: string;
     description: string;

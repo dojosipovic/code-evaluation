@@ -6,6 +6,8 @@ import { IPagedResponse } from "../models/IPagedResponse";
 import { IGroupListItem } from "../models/group/IGroupListItem";
 import { GroupQueryParamEnum } from "../models/enum/GroupQueryParamEnum";
 import { SortDirection } from "../config/app-types";
+import { IGroupCreate } from "../models/group/IGroupCreate";
+import { IGroupResponse } from "../models/group/IGroupResponse";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -23,5 +25,9 @@ export class GroupService {
         if (params.sortBy) httpParams = httpParams.set(GroupQueryParamEnum.SORT_BY, params.sortBy);
 
         return this.http.get<IPagedResponse<IGroupListItem>>(this.baseUrl, { params: httpParams });
+    }
+
+    creategroup(payload: IGroupCreate): Observable<IGroupResponse> {
+        return this.http.post<IGroupResponse>(this.baseUrl, payload);
     }
 }

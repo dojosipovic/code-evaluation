@@ -27,7 +27,7 @@ export class GroupService {
         return this.http.get<IPagedResponse<IGroupListItem>>(this.baseUrl, { params: httpParams });
     }
 
-    creategroup(payload: IGroupCreate): Observable<IGroupResponse> {
+    createGroup(payload: IGroupCreate): Observable<IGroupResponse> {
         return this.http.post<IGroupResponse>(this.baseUrl, payload);
     }
 }

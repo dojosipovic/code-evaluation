@@ -1,0 +1,71 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '36rem' }"
+  header="Nova grupa">
+
+  <form [formGroup]="form" class="group-form">
+    <div class="field">
+      <label for="groupName">Naziv</label>
+      <input
+        id="groupName"
+        pInputText
+        formControlName="name"
+        placeholder="Unesi naziv grupe" />
+
+      @if ((form.controls.name.dirty || form.controls.name.touched) && form.controls.name.errors?.['required']) {
+        <small class="error-text">
+          Naziv grupe je obavezan.
+        </small>
+      }
+
+      @if ((form.controls.name.dirty || form.controls.name.touched) && form.controls.name.errors?.['maxlength']) {
+        <small class="error-text">
+          Naziv moze imati maksimalno 100 znakova.
+        </small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="groupDescription">Opis</label>
+      <textarea
+        id="groupDescription"
+        pTextarea
+        formControlName="description"
+        rows="7"
+        placeholder="Unesi opis grupe">
+      </textarea>
+
+      @if ((form.controls.description.dirty || form.controls.description.touched) && form.controls.description.errors?.['maxlength']) {
+        <small class="error-text">
+          Opis moze imati maksimalno 1000 znakova.
+        </small>
+      }
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Odustani"
+      severity="secondary"
+      [outlined]="true"
+      (click)="cancel()">
+    </button>
+
+    <button
+      pButton
+      type="button"
+      label="Kreiraj"
+      icon="pi pi-plus"
+      [loading]="submitting"
+      [disabled]="form.invalid"
+      (click)="submit()">
+    </button>
+  </ng-template>
+</p-dialog>

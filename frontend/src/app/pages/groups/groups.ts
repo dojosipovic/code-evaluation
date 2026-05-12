@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
@@ -12,6 +12,8 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
 import { GroupService } from '../../services/group.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { GroupCreateDialog } from '../../components/group-create-dialog/group-create-dialog';
 import { IGroupListItem } from '../../models/group/IGroupListItem';
 import { IGroupQueryParams } from '../../models/group/IGroupQueryParams';
 
@@ -37,7 +39,8 @@ interface GroupDataViewEvent {
     InputTextModule,
     SelectModule,
     SelectButtonModule,
-    SkeletonModule
+    SkeletonModule,
+    GroupCreateDialog
   ],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
@@ -45,6 +48,7 @@ interface GroupDataViewEvent {
 export class Groups implements OnInit {
 
   private groupService = inject(GroupService);
+  private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
 
@@ -52,10 +56,12 @@ export class Groups implements OnInit {
   private applyFilters$ = new Subject<void>();
 
   readonly loading = signal(false);
+  readonly canCreateGroup = computed(() => this.authService.isAdmin() || this.authService.isProf());
 
   groups: IGroupListItem[] = [];
   skeletonRows = Array.from({ length: 6 });
   totalRecords = 0;
+  createGroupDialogVisible = false;
 
   rows = 10;
   first = 0;
@@ -115,6 +121,15 @@ export class Groups implements OnInit {
 
   onApplyFilters(): void {
     this.applyFilters$.next();
+  }
+
+  openCreateGroupDialog(): void {
+    this.createGroupDialogVisible = true;
+  }
+
+  onGroupCreated(): void {
+    this.first = 0;
+    this.loadGroups();
   }
 
   resetFilters(): void {

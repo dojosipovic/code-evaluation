@@ -39,6 +39,15 @@
   }
 }
 
+.top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
 .filters-toolbar {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(210px, 260px) auto;
@@ -97,10 +106,6 @@
     border-color 160ms ease,
     box-shadow 160ms ease,
     transform 160ms ease;
-
-  &.with-border {
-    border-top-color: var(--p-content-border-color);
-  }
 
   &:hover {
     border-color: var(--p-primary-color);
@@ -177,11 +182,6 @@ h3 {
   strong {
     color: var(--p-text-color);
     font-size: 16px;
-  }
-
-  span {
-    font-size: 12px;
-    color: var(--p-text-muted-color);
   }
 
   &.compact {

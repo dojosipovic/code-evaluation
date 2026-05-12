@@ -6,7 +6,24 @@
     </div>
   </div>
 
+  <app-group-create-dialog
+    [(visible)]="createGroupDialogVisible"
+    (created)="onGroupCreated()">
+  </app-group-create-dialog>
+
   <p-card class="main-card">
+    @if (canCreateGroup()) {
+      <div class="top-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-plus"
+          label="Nova grupa"
+          (click)="openCreateGroupDialog()">
+        </button>
+      </div>
+    }
+
     <div class="filters-toolbar">
       <div class="filter-field search-field">
         <label for="groupSearch">Search</label>

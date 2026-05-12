@@ -10,7 +10,7 @@ import { SortDirection } from "../config/app-types";
 @Injectable({ providedIn: 'root' })
 export class GroupService {
     private http = inject(HttpClient);
-    private readonly baseUrl = '/api/invites';
+    private readonly baseUrl = '/api/groups';
 
     getGroups(params: IGroupQueryParams): Observable<IPagedResponse<IGroupListItem>> {
         const defaultSortDirection: SortDirection = 'desc';
@@ -20,6 +20,7 @@ export class GroupService {
             .set(GroupQueryParamEnum.SORT_DIRECTION, params.sortDirection ?? defaultSortDirection);
 
         if (params.search) httpParams = httpParams.set(GroupQueryParamEnum.SEARCH, params.search);
+        if (params.sortBy) httpParams = httpParams.set(GroupQueryParamEnum.SORT_BY, params.sortBy);
 
         return this.http.get<IPagedResponse<IGroupListItem>>(this.baseUrl, { params: httpParams });
     }

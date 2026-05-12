@@ -87,9 +87,19 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 18px;
   padding: 18px 4px;
+  border-radius: 8px;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 
   &.with-border {
     border-top: 1px solid var(--p-content-border-color);
+  }
+
+  &:hover {
+    background: var(--p-content-hover-background);
   }
 }
 
@@ -193,6 +203,18 @@ h3 {
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   background: var(--p-content-background);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-hover-background);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    transform: translateY(-1px);
+  }
 }
 
 .group-card-footer {

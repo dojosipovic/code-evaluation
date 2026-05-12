@@ -107,7 +107,7 @@
     box-shadow 160ms ease,
     transform 160ms ease;
 
-  &:hover {
+  &:not(.skeleton-item):hover {
     border-color: var(--p-primary-color);
     background: var(--p-content-hover-background);
     box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
@@ -216,7 +216,7 @@ h3 {
     box-shadow 160ms ease,
     transform 160ms ease;
 
-  &:hover {
+  &:not(.skeleton-item):hover {
     border-color: var(--p-primary-color);
     background: var(--p-content-hover-background);
     box-shadow: 0 8px 24px rgb(0 0 0 / 12%);

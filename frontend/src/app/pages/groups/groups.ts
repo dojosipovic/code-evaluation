@@ -69,7 +69,10 @@ export class Groups implements OnInit {
   groupSortOrder: SortOrder = -1;
   sortKey = '!id';
 
-  layoutOptions: DataViewLayout[] = ['list', 'grid'];
+  layoutOptions = [
+    { label: 'List', icon: 'pi pi-bars', value: 'list' as DataViewLayout },
+    { label: 'Grid', icon: 'pi pi-table', value: 'grid' as DataViewLayout }
+  ];
 
   sortOptions = [
     { label: 'ID silazno', value: '!id' },

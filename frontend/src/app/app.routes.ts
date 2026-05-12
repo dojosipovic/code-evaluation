@@ -8,6 +8,7 @@ import { getRolesForPath } from './config/app-navigation.config';
 import { Users } from './pages/users/users';
 import { Register } from './pages/register/register';
 import { Tasks } from './pages/tasks/tasks';
+import { Groups } from './pages/groups/groups';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
@@ -22,6 +23,7 @@ export const routes: Routes = [
             { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile') } },
             { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings') } },
             { path: 'tasks', canActivate: [authGuard], component: Tasks, data: { roles: getRolesForPath('/tasks') } },
+            { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups') } },
 
             { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }

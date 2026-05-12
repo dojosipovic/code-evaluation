@@ -47,6 +47,13 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true
   },
+  {
+    label: 'Grupe',
+    path: '/groups',
+    icon: 'pi pi-users',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true
+  },
 ];
 
 export function getRolesForPath(path: string): AppRole[] {

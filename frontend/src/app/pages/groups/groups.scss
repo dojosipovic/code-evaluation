@@ -1,0 +1,258 @@
+:host {
+  display: block;
+  color: var(--p-text-color);
+}
+
+.page-wrapper {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.page-header {
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--p-text-color);
+  }
+
+  p {
+    margin: 0;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.main-card {
+  ::ng-deep .p-card {
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 16px;
+    box-shadow: var(--p-card-shadow);
+  }
+
+  ::ng-deep .p-card-body {
+    padding: 1.25rem;
+  }
+}
+
+.filters-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(210px, 260px) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.dataview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.result-count {
+  color: var(--p-text-muted-color);
+  font-size: 14px;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 18px 4px;
+
+  &.with-border {
+    border-top: 1px solid var(--p-content-border-color);
+  }
+}
+
+.group-main,
+.group-meta,
+.group-card,
+.group-card-footer {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-main {
+  gap: 8px;
+  min-width: 0;
+}
+
+.group-title,
+.group-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.group-title {
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
+.group-id {
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.owner-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+}
+
+.group-meta {
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.member-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--p-text-muted-color);
+
+  i {
+    color: var(--p-primary-color);
+    font-size: 1rem;
+  }
+
+  strong {
+    color: var(--p-text-color);
+    font-size: 16px;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--p-text-muted-color);
+  }
+
+  &.compact {
+    align-items: center;
+  }
+}
+
+.created-at {
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  padding-top: 14px;
+}
+
+.group-card {
+  min-height: 150px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+}
+
+.group-card-footer {
+  gap: 8px;
+}
+
+.empty-state {
+  padding: 32px 8px;
+  text-align: center;
+  color: var(--p-text-muted-color);
+}
+
+:host ::ng-deep {
+  .p-inputtext,
+  .p-select,
+  .p-button,
+  .p-paginator-rpp-dropdown {
+    border-radius: 10px;
+  }
+
+  .p-dataview {
+    border: 0;
+  }
+
+  .p-dataview-header {
+    border: 0;
+    border-top: 1px solid var(--p-content-border-color);
+    padding: 16px 0 0;
+    background: transparent;
+  }
+
+  .p-dataview-content {
+    background: transparent;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 16px;
+  }
+
+  .filters-toolbar,
+  .group-list-item {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    justify-content: stretch;
+  }
+
+  .filter-actions .p-button {
+    width: 100%;
+  }
+
+  .group-meta {
+    align-items: flex-start;
+  }
+
+  .dataview-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

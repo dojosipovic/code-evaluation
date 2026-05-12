@@ -1,11 +1,198 @@
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DataViewModule } from 'primeng/dataview';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { SkeletonModule } from 'primeng/skeleton';
+import { MessageService } from 'primeng/api';
+import { GroupService } from '../../services/group.service';
+import { IGroupListItem } from '../../models/group/IGroupListItem';
+import { IGroupQueryParams } from '../../models/group/IGroupQueryParams';
+
+type DataViewLayout = 'list' | 'grid';
+type SortOrder = 1 | -1;
+
+interface GroupDataViewEvent {
+  first?: number;
+  rows?: number;
+  sortField?: string | string[] | null;
+  sortOrder?: number | null;
+}
 
 @Component({
   selector: 'app-groups',
-  imports: [],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DatePipe,
+    DataViewModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    SelectButtonModule,
+    SkeletonModule
+  ],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class Groups {
+export class Groups implements OnInit {
 
+  private groupService = inject(GroupService);
+  private messageService = inject(MessageService);
+  private destroyRef = inject(DestroyRef);
+
+  private searchInput$ = new Subject<string>();
+  private applyFilters$ = new Subject<void>();
+
+  readonly loading = signal(false);
+
+  groups: IGroupListItem[] = [];
+  skeletonRows = Array.from({ length: 6 });
+  totalRecords = 0;
+
+  rows = 10;
+  first = 0;
+  layout: DataViewLayout = 'grid';
+
+  groupFilters = {
+    search: ''
+  };
+
+  groupSortField = 'id';
+  groupSortOrder: SortOrder = -1;
+  sortKey = '!id';
+
+  layoutOptions: DataViewLayout[] = ['list', 'grid'];
+
+  sortOptions = [
+    { label: 'ID silazno', value: '!id' },
+    { label: 'ID uzlazno', value: 'id' },
+    { label: 'Naziv A-Z', value: 'name' },
+    { label: 'Naziv Z-A', value: '!name' },
+    { label: 'Najnovije', value: '!createdAt' },
+    { label: 'Najstarije', value: 'createdAt' },
+    { label: 'Najvise clanova', value: '!memberCount' },
+    { label: 'Najmanje clanova', value: 'memberCount' }
+  ];
+
+  ngOnInit(): void {
+    this.searchInput$
+      .pipe(
+        debounceTime(1500),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(value => {
+        this.groupFilters.search = value;
+        this.first = 0;
+        this.loadGroups();
+      });
+
+    this.applyFilters$
+      .pipe(
+        throttleTime(1000, undefined, { leading: true, trailing: false }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.first = 0;
+        this.loadGroups();
+      });
+  }
+
+  onSearchInput(value: string): void {
+    this.searchInput$.next(value);
+  }
+
+  onApplyFilters(): void {
+    this.applyFilters$.next();
+  }
+
+  resetFilters(): void {
+    this.groupFilters = {
+      search: ''
+    };
+
+    this.groupSortField = 'id';
+    this.groupSortOrder = -1;
+    this.sortKey = '!id';
+    this.first = 0;
+
+    this.applyFilters$.next();
+  }
+
+  onSortChange(value: string): void {
+    this.sortKey = value;
+    this.groupSortOrder = value.startsWith('!') ? -1 : 1;
+    this.groupSortField = value.replace('!', '');
+    this.first = 0;
+    this.loadGroups();
+  }
+
+  onLazyLoad(event: GroupDataViewEvent): void {
+    this.first = event.first ?? 0;
+    this.rows = event.rows ?? 10;
+
+    if (typeof event.sortField === 'string' && event.sortField) {
+      this.groupSortField = event.sortField;
+    }
+
+    if (event.sortOrder === 1 || event.sortOrder === -1) {
+      this.groupSortOrder = event.sortOrder;
+      this.sortKey = this.groupSortOrder === -1 ? `!${this.groupSortField}` : this.groupSortField;
+    }
+
+    this.loadGroups();
+  }
+
+  getOwnerName(group: IGroupListItem): string {
+    const owner = group.owner;
+
+    if (!owner) {
+      return '-';
+    }
+
+    const fullName = `${owner.firstname ?? ''} ${owner.lastname ?? ''}`.trim();
+
+    return fullName || owner.username || owner.email || '-';
+  }
+
+  private buildGroupParams(): IGroupQueryParams {
+    return {
+      page: Math.floor(this.first / this.rows),
+      size: this.rows,
+      search: this.groupFilters.search?.trim() || null,
+      sortBy: this.groupSortField,
+      sortDirection: this.groupSortOrder === 1 ? 'asc' : 'desc'
+    };
+  }
+
+  private loadGroups(): void {
+    this.loading.set(true);
+
+    this.groupService.getGroups(this.buildGroupParams())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: response => {
+          this.groups = response.items;
+          this.totalRecords = response.totalItems;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Greska',
+            detail: 'Nije moguce dohvatiti grupe'
+          });
+
+          this.groups = [];
+          this.totalRecords = 0;
+        }
+      });
+  }
 }

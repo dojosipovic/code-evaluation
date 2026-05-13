@@ -90,6 +90,12 @@
   gap: 12px;
 }
 
+.dataview-switcher {
+  flex: 0 1 150px;
+  min-width: 130px;
+  margin-bottom: 0;
+}
+
 .result-count {
   color: var(--p-text-muted-color);
   font-size: 14px;
@@ -296,6 +302,40 @@ h3 {
   .p-paginator {
     flex: 0 0 auto;
   }
+
+  .dataview-switcher .p-selectbutton {
+    width: 100%;
+    display: flex;
+    justify-content: stretch;
+    gap: 10px;
+    padding: 5px 8px;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 10px;
+    background: var(--p-form-field-background);
+  }
+
+  .dataview-switcher .p-togglebutton {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 0.25rem 0.75rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .dataview-switcher .p-togglebutton::before {
+    display: none;
+  }
+
+  .dataview-switcher .p-togglebutton.p-togglebutton-checked,
+  .dataview-switcher .p-togglebutton.p-highlight,
+  .dataview-switcher .p-togglebutton[aria-pressed='true'] {
+    color: var(--p-primary-color);
+    background: color-mix(in srgb, var(--p-primary-color) 22%, var(--p-content-background));
+    border: 0;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--p-primary-color) 36%, transparent);
+  }
 }
 
 @media (max-width: 768px) {
@@ -324,5 +364,10 @@ h3 {
   .dataview-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .dataview-switcher {
+    width: 100%;
+    flex-basis: auto;
   }
 }

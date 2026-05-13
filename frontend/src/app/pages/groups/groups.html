@@ -71,16 +71,18 @@
             {{ totalRecords }} grupa
           </div>
 
-          <p-selectButton
-            [(ngModel)]="layout"
-            [options]="layoutOptions"
-            optionLabel="label"
-            optionValue="value"
-            [allowEmpty]="false">
-            <ng-template #item let-option>
-              <i [class]="option.icon"></i>
-            </ng-template>
-          </p-selectButton>
+          <div class="dataview-switcher">
+            <p-selectButton
+              [(ngModel)]="layout"
+              [options]="layoutOptions"
+              optionLabel="label"
+              optionValue="value"
+              [allowEmpty]="false">
+              <ng-template #item let-option>
+                <i [class]="option.icon"></i>
+              </ng-template>
+            </p-selectButton>
+          </div>
         </div>
       </ng-template>
 

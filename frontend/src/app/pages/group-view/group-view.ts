@@ -1,8 +1,9 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, finalize } from 'rxjs';
+import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { CardModule } from 'primeng/card';
@@ -20,7 +21,7 @@ type GroupTab = 'users' | 'tasks';
   selector: 'app-group-view',
   imports: [
     CommonModule,
-    DatePipe,
+    AccordionModule,
     BadgeModule,
     ButtonModule,
     CardModule,
@@ -85,18 +86,6 @@ export class GroupView implements OnInit {
     }
 
     this.router.navigate(['/groups', this.group.id, value]);
-  }
-
-  getOwnerName(): string {
-    const owner = this.group?.owner;
-
-    if (!owner) {
-      return '-';
-    }
-
-    const fullName = `${owner.firstname ?? ''} ${owner.lastname ?? ''}`.trim();
-
-    return fullName || owner.username || owner.email || '-';
   }
 
   private loadGroup(id: number): void {

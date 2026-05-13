@@ -25,30 +25,18 @@
     </div>
 
     <p-card class="main-card">
-      <div class="group-summary">
-        <div class="summary-item">
-          <span>Vlasnik</span>
-          <strong>{{ getOwnerName() }}</strong>
-        </div>
-
-        <div class="summary-item">
-          <span>Clanovi</span>
-          <strong>{{ group.memberCount }}</strong>
-        </div>
-
-        <div class="summary-item">
-          <span>Kreirano</span>
-          <strong>{{ group.createdAt | date:'dd.MM.yyyy HH:mm' }}</strong>
-        </div>
-      </div>
-
-      <section class="description-section">
-        <h3>Opis</h3>
-
-        <p-scrollpanel [style]="{ width: '100%', height: '180px' }">
-          <p class="description-text">{{ group.description || 'Nema opisa.' }}</p>
-        </p-scrollpanel>
-      </section>
+      @if (group.description) {
+        <p-accordion class="description-accordion">
+          <p-accordion-panel value="description">
+            <p-accordion-header>Opis</p-accordion-header>
+            <p-accordion-content>
+              <p-scrollpanel [style]="{ width: '100%', height: '180px' }">
+                <p class="description-text">{{ group.description }}</p>
+              </p-scrollpanel>
+            </p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+      }
 
       <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
         <p-tablist>

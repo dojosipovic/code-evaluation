@@ -102,8 +102,7 @@ export class Groups implements OnInit {
       )
       .subscribe(value => {
         this.groupFilters.search = value;
-        this.first = 0;
-        this.loadGroups();
+        this.loadFromFirstPage();
       });
 
     this.applyFilters$
@@ -112,8 +111,7 @@ export class Groups implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
-        this.first = 0;
-        this.loadGroups();
+        this.loadFromFirstPage();
       });
   }
 
@@ -130,8 +128,7 @@ export class Groups implements OnInit {
   }
 
   onGroupCreated(): void {
-    this.first = 0;
-    this.loadGroups();
+    this.loadFromFirstPage();
   }
 
   openGroup(group: IGroupListItem): void {
@@ -146,7 +143,6 @@ export class Groups implements OnInit {
     this.groupSortField = 'id';
     this.groupSortOrder = -1;
     this.sortKey = '!id';
-    this.first = 0;
 
     this.applyFilters$.next();
   }
@@ -155,22 +151,12 @@ export class Groups implements OnInit {
     this.sortKey = value;
     this.groupSortOrder = value.startsWith('!') ? -1 : 1;
     this.groupSortField = value.replace('!', '');
-    this.first = 0;
-    this.loadGroups();
+    this.loadFromFirstPage();
   }
 
   onLazyLoad(event: GroupDataViewEvent): void {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
-
-    if (typeof event.sortField === 'string' && event.sortField) {
-      this.groupSortField = event.sortField;
-    }
-
-    if (event.sortOrder === 1 || event.sortOrder === -1) {
-      this.groupSortOrder = event.sortOrder;
-      this.sortKey = this.groupSortOrder === -1 ? `!${this.groupSortField}` : this.groupSortField;
-    }
 
     this.loadGroups();
   }
@@ -218,5 +204,14 @@ export class Groups implements OnInit {
           this.totalRecords = 0;
         }
       });
+  }
+
+  private loadFromFirstPage(): void {
+    if (this.first === 0) {
+      this.loadGroups();
+      return;
+    }
+
+    this.first = 0;
   }
 }

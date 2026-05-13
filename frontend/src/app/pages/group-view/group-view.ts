@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, finalize } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
+import { BadgeModule } from 'primeng/badge';
 import { CardModule } from 'primeng/card';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -20,6 +21,7 @@ type GroupTab = 'users' | 'tasks';
   imports: [
     CommonModule,
     DatePipe,
+    BadgeModule,
     ButtonModule,
     CardModule,
     RouterModule,

@@ -52,8 +52,20 @@
 
       <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
         <p-tablist>
-          <p-tab value="users">Clanovi</p-tab>
-          <p-tab value="tasks">Zadaci</p-tab>
+          <p-tab value="users">
+            <div class="tab-label">
+              <i class="pi pi-users"></i>
+              <span>Clanovi</span>
+              <p-badge [value]="group.memberCount"></p-badge>
+            </div>
+          </p-tab>
+
+          <p-tab value="tasks">
+            <div class="tab-label">
+              <i class="pi pi-receipt"></i>
+              <span>Zadaci</span>
+            </div>
+          </p-tab>
         </p-tablist>
 
         <p-tabpanels>

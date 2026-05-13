@@ -187,9 +187,51 @@
 }
 
 .view-switcher {
+  flex: 1 1 280px;
+  min-width: 0;
   margin-bottom: 0;
+}
+
+.view-switcher ::ng-deep .p-selectbutton {
+  width: 100%;
+  display: flex;
+  justify-content: stretch;
+  gap: 10px;
+  padding: 5px 8px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  background: var(--p-form-field-background);
+}
+
+.view-switcher ::ng-deep .p-togglebutton {
+  flex: 1 1 0;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.view-switcher ::ng-deep .p-togglebutton::before {
+  display: none;
+}
+
+.view-switcher ::ng-deep .p-togglebutton.p-togglebutton-checked,
+.view-switcher ::ng-deep .p-togglebutton.p-highlight,
+.view-switcher ::ng-deep .p-togglebutton[aria-pressed='true'] {
+  color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 22%, var(--p-content-background));
+  border: 0;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--p-primary-color) 36%, transparent);
 }
 
 .top-actions .p-button {
   height: 100%;
+}
+
+@media (max-width: 768px) {
+  .top-actions .p-button {
+    width: 100%;
+  }
 }

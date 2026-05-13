@@ -84,12 +84,41 @@
 .layout-breadcrumb {
   display: block;
   max-width: 1400px;
-  margin: 0 auto 0.75rem;
+  margin: 0 auto 1.25rem;
+  padding: 0 24px;
+  box-sizing: border-box;
 
   ::ng-deep .p-breadcrumb {
     padding: 0;
     border: 0;
     background: transparent;
+  }
+
+  ::ng-deep .p-breadcrumb-list {
+    gap: 0.55rem;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link,
+  ::ng-deep .p-breadcrumb-item-label {
+    color: var(--p-text-color);
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link {
+    text-decoration: none;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link:hover {
+    color: var(--p-primary-color);
+  }
+
+  .breadcrumb-separator {
+    color: var(--p-text-muted-color);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1;
   }
 }
 
@@ -359,6 +388,10 @@
 @media (max-width: 767px) {
   .content {
     padding: 0.75rem;
+  }
+
+  .layout-breadcrumb {
+    padding: 0 16px;
   }
 
   .mobile-sidebar {

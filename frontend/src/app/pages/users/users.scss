@@ -4,26 +4,10 @@
 }
 
 .page-wrapper {
-  padding: 24px;
+  padding: 0 24px 24px;
   max-width: 1400px;
   margin: 0 auto;
   background: transparent;
-}
-
-.page-header {
-  margin-bottom: 20px;
-
-  h2 {
-    margin: 0 0 6px;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--p-text-color);
-  }
-
-  p {
-    margin: 0;
-    color: var(--p-text-muted-color);
-  }
 }
 
 .main-card {
@@ -139,7 +123,7 @@
 
 @media (max-width: 768px) {
   .page-wrapper {
-    padding: 16px;
+    padding: 0 16px 16px;
   }
 
   .filters-toolbar {

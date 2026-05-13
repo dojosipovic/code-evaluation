@@ -64,6 +64,8 @@ export class GroupView implements OnInit {
 
         if (this.group?.id !== groupId) {
           this.loadGroup(groupId);
+        } else {
+          this.updateBreadcrumb();
         }
       });
   }
@@ -96,10 +98,7 @@ export class GroupView implements OnInit {
       .subscribe({
         next: group => {
           this.group = group;
-          this.breadcrumbService.set([
-            { label: 'Grupe', routerLink: '/groups' },
-            { label: this.breadcrumbService.shorten(group.name) }
-          ]);
+          this.updateBreadcrumb();
         },
         error: () => {
           this.group = null;
@@ -111,5 +110,16 @@ export class GroupView implements OnInit {
           this.router.navigate(['/groups']);
         }
       });
+  }
+
+  private updateBreadcrumb(): void {
+    if (!this.group) {
+      return;
+    }
+
+    this.breadcrumbService.set([
+      { label: 'Grupe', routerLink: '/groups' },
+      { label: this.breadcrumbService.shorten(this.group.name) }
+    ]);
   }
 }

@@ -59,7 +59,11 @@
 
     <div class="content">
       @if (breadcrumbs().length) {
-        <p-breadcrumb class="layout-breadcrumb" [model]="breadcrumbs()"></p-breadcrumb>
+        <p-breadcrumb class="layout-breadcrumb" [model]="breadcrumbs()">
+          <ng-template #separator>
+            <span class="breadcrumb-separator">/</span>
+          </ng-template>
+        </p-breadcrumb>
       }
 
       <router-outlet></router-outlet>

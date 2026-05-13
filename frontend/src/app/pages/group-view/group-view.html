@@ -1,0 +1,80 @@
+<div class="page-wrapper">
+  @if (loading()) {
+    <p-card class="main-card">
+      <div class="group-header">
+        <div class="group-title-block">
+          <p-skeleton width="14rem" height="2rem"></p-skeleton>
+          <p-skeleton width="12rem" height="1rem"></p-skeleton>
+        </div>
+
+        <p-skeleton width="7rem" height="2.5rem" borderRadius="10px"></p-skeleton>
+      </div>
+
+      <p-skeleton width="100%" height="10rem"></p-skeleton>
+    </p-card>
+  } @else if (group) {
+    <div class="page-header">
+      <div>
+        <h2>{{ group.name }}</h2>
+        <p>Pregled grupe, clanova i zadataka</p>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        icon="pi pi-arrow-left"
+        label="Nazad"
+        class="p-button-secondary"
+        routerLink="/groups">
+      </button>
+    </div>
+
+    <p-card class="main-card">
+      <div class="group-summary">
+        <div class="summary-item">
+          <span>Vlasnik</span>
+          <strong>{{ getOwnerName() }}</strong>
+        </div>
+
+        <div class="summary-item">
+          <span>Clanovi</span>
+          <strong>{{ group.memberCount }}</strong>
+        </div>
+
+        <div class="summary-item">
+          <span>Kreirano</span>
+          <strong>{{ group.createdAt | date:'dd.MM.yyyy HH:mm' }}</strong>
+        </div>
+      </div>
+
+      <section class="description-section">
+        <h3>Opis</h3>
+
+        <p-scrollpanel [style]="{ width: '100%', height: '180px' }">
+          <p class="description-text">{{ group.description || 'Nema opisa.' }}</p>
+        </p-scrollpanel>
+      </section>
+
+      <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+        <p-tablist>
+          <p-tab value="users">Clanovi</p-tab>
+          <p-tab value="tasks">Zadaci</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <p-tabpanel value="users">
+            <div class="tab-empty-state">
+              Clanovi grupe ce biti prikazani ovdje.
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="tasks">
+            <div class="tab-empty-state">
+              Zadaci grupe ce biti prikazani ovdje.
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </p-card>
+  }
+</div>

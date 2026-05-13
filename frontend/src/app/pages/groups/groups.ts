@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 import { GroupService } from '../../services/group.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { GroupCreateDialog } from '../../components/group-create-dialog/group-create-dialog';
@@ -50,6 +51,7 @@ export class Groups implements OnInit {
   private groupService = inject(GroupService);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
   private searchInput$ = new Subject<string>();
@@ -130,6 +132,10 @@ export class Groups implements OnInit {
   onGroupCreated(): void {
     this.first = 0;
     this.loadGroups();
+  }
+
+  openGroup(group: IGroupListItem): void {
+    this.router.navigate(['/groups', group.id, 'users']);
   }
 
   resetFilters(): void {

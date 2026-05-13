@@ -81,6 +81,18 @@
   background: var(--surface-ground);
 }
 
+.layout-breadcrumb {
+  display: block;
+  max-width: 1400px;
+  margin: 0 auto 0.75rem;
+
+  ::ng-deep .p-breadcrumb {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
 /* MOBILE TOPBAR */
 .topbar {
   background: color-mix(in srgb, var(--surface-card) 92%, transparent);

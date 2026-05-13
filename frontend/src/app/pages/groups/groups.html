@@ -111,7 +111,14 @@
             }
           } @else {
             @for (group of items; track group.id; let first = $first) {
-              <div class="group-list-item" [class.with-border]="!first">
+              <div
+                class="group-list-item"
+                [class.with-border]="!first"
+                role="button"
+                tabindex="0"
+                (click)="openGroup(group)"
+                (keydown.enter)="openGroup(group)"
+                (keydown.space)="openGroup(group); $event.preventDefault()">
                 <div class="group-main">
                   <div class="group-title">
                     <span class="group-id">#{{ group.id }}</span>
@@ -157,7 +164,13 @@
             }
           } @else {
             @for (group of items; track group.id) {
-              <div class="group-card">
+              <div
+                class="group-card"
+                role="button"
+                tabindex="0"
+                (click)="openGroup(group)"
+                (keydown.enter)="openGroup(group)"
+                (keydown.space)="openGroup(group); $event.preventDefault()">
                 <div class="group-card-header">
                   <div>
                     <span class="group-id">#{{ group.id }}</span>

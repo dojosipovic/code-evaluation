@@ -30,4 +30,8 @@ export class GroupService {
     createGroup(payload: IGroupCreate): Observable<IGroupResponse> {
         return this.http.post<IGroupResponse>(this.baseUrl, payload);
     }
+
+    getGroup(id: number): Observable<IGroupResponse> {
+        return this.http.get<IGroupResponse>(`${this.baseUrl}/${id}`);
+    }
 }

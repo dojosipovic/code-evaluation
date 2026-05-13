@@ -107,11 +107,20 @@
     box-shadow 160ms ease,
     transform 160ms ease;
 
+  &:not(.skeleton-item) {
+    cursor: pointer;
+  }
+
   &:not(.skeleton-item):hover {
     border-color: var(--p-primary-color);
     background: var(--p-content-hover-background);
     box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
     transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
   }
 }
 
@@ -216,11 +225,20 @@ h3 {
     box-shadow 160ms ease,
     transform 160ms ease;
 
+  &:not(.skeleton-item) {
+    cursor: pointer;
+  }
+
   &:not(.skeleton-item):hover {
     border-color: var(--p-primary-color);
     background: var(--p-content-hover-background);
     box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
     transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
   }
 }
 

@@ -58,6 +58,10 @@
     }
 
     <div class="content">
+      @if (breadcrumbs().length) {
+        <p-breadcrumb class="layout-breadcrumb" [model]="breadcrumbs()"></p-breadcrumb>
+      }
+
       <router-outlet></router-outlet>
     </div>
   </div>

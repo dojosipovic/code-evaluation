@@ -13,17 +13,6 @@
       <p-skeleton width="100%" height="10rem"></p-skeleton>
     </p-card>
   } @else if (group) {
-    <div class="page-actions">
-      <button
-        pButton
-        type="button"
-        icon="pi pi-arrow-left"
-        label="Nazad"
-        class="p-button-secondary"
-        routerLink="/groups">
-      </button>
-    </div>
-
     <p-card class="main-card">
       @if (group.description) {
         <p-accordion class="description-accordion">

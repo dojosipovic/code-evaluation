@@ -24,7 +24,7 @@ export const routes: Routes = [
             { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile'), breadcrumb: 'Profil' } },
             { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings'), breadcrumb: 'Postavke' } },
             { path: 'tasks', canActivate: [authGuard], component: Tasks, data: { roles: getRolesForPath('/tasks'), breadcrumb: 'Zadaci' } },
-            { path: 'groups/:id/:tab', canActivate: [authGuard], component: GroupView, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },
+            { path: 'groups/:id/:tab', canActivate: [authGuard], component: GroupView, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe', backTo: '/groups' } },
             { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },
 
             { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },

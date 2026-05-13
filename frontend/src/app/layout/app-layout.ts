@@ -25,6 +25,9 @@ export class AppLayout implements OnInit {
   private route = inject(ActivatedRoute);
 
   breadcrumbs = this.breadcrumbService.items;
+  private currentUrl = '';
+  private navbarNavigation = false;
+  backTarget: string | null = null;
 
   menuItems = computed(() => {
     return APP_NAV_ITEMS.filter(item => {
@@ -35,11 +38,19 @@ export class AppLayout implements OnInit {
   });
 
   ngOnInit(): void {
+    this.currentUrl = this.router.url;
     this.setBreadcrumbsFromRoute();
 
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => this.setBreadcrumbsFromRoute());
+      .subscribe(event => {
+        const nextUrl = event.urlAfterRedirects;
+        this.updateBackTarget(this.currentUrl, nextUrl);
+
+        this.navbarNavigation = false;
+        this.currentUrl = nextUrl;
+        this.setBreadcrumbsFromRoute();
+      });
   }
 
   @HostListener('window:resize')
@@ -61,6 +72,67 @@ export class AppLayout implements OnInit {
 
   closeMobileMenu() {
     this.mobileMenuVisible = false;
+  }
+
+  onNavClick(): void {
+    this.navbarNavigation = true;
+    this.closeMobileMenu();
+  }
+
+  goBack(): void {
+    if (!this.backTarget) {
+      return;
+    }
+
+    this.router.navigateByUrl(this.backTarget);
+  }
+
+  private updateBackTarget(previousUrl: string, nextUrl: string): void {
+    if (this.navbarNavigation) {
+      this.backTarget = null;
+      return;
+    }
+
+    const configuredBackTarget = this.getConfiguredBackTarget();
+
+    if (!configuredBackTarget) {
+      this.backTarget = null;
+      return;
+    }
+
+    if (this.normalizeUrl(previousUrl) === configuredBackTarget) {
+      this.backTarget = configuredBackTarget;
+      return;
+    }
+
+    if (this.backTarget === configuredBackTarget) {
+      return;
+    }
+
+    if (this.normalizeUrl(nextUrl) !== this.normalizeUrl(previousUrl)) {
+      this.backTarget = null;
+    }
+  }
+
+  private getConfiguredBackTarget(): string | null {
+    let route = this.route.firstChild;
+    let backTarget: string | null = null;
+
+    while (route) {
+      const configuredValue = route.snapshot.data['backTo'];
+
+      if (typeof configuredValue === 'string') {
+        backTarget = this.normalizeUrl(configuredValue);
+      }
+
+      route = route.firstChild;
+    }
+
+    return backTarget;
+  }
+
+  private normalizeUrl(url: string): string {
+    return url.split('?')[0].split('#')[0];
   }
 
   private setBreadcrumbsFromRoute(): void {

@@ -1,5 +1,6 @@
 :host {
   display: block;
+  min-height: 0;
   color: var(--p-text-color);
 }
 
@@ -7,11 +8,24 @@
   padding: 0 24px 24px;
   max-width: 1400px;
   margin: 0 auto;
+  height: calc(100vh - 92px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: transparent;
 }
 
 .main-card {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+
   ::ng-deep .p-card {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     background: var(--p-content-background);
     border: 1px solid var(--p-content-border-color);
     border-radius: 16px;
@@ -19,7 +33,18 @@
   }
 
   ::ng-deep .p-card-body {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 1.25rem;
+  }
+
+  ::ng-deep .p-card-content {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -67,7 +92,10 @@
 }
 
 .table-wrapper {
+  min-height: 0;
+  flex: 1 1 auto;
   margin-top: 16px;
+  overflow: hidden;
 }
 
 .primary-cell {
@@ -103,8 +131,21 @@
   }
 
   .p-datatable-table-container {
+    min-height: 0;
+    flex: 1 1 auto;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: auto;
+  }
+
+  .p-datatable {
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-paginator {
+    flex: 0 0 auto;
   }
 
   .users-filter-drawer {
@@ -123,6 +164,7 @@
 
 @media (max-width: 768px) {
   .page-wrapper {
+    height: calc(100vh - 82px);
     padding: 0 16px 16px;
   }
 

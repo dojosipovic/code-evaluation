@@ -12,7 +12,6 @@ import com.codeevaluation.core.helper.PagedParams;
 import com.codeevaluation.core.helper.PagedSearchGroupImpl;
 import com.codeevaluation.core.helper.PagedSearchGroupMemberImpl;
 import com.codeevaluation.core.model.Group;
-import com.codeevaluation.core.model.GroupMember;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.GroupMemberRepository;
@@ -139,13 +138,28 @@ public class GroupService {
         }
 
         PagedContext pagedContext = pagedSearchGroupMember.generateFrom(pagedParams);
-        PanacheQuery<GroupMember> query = groupMemberRepository.getMembers(groupId, pagedContext);
+        PanacheQuery<User> query = groupMemberRepository.getMembers(groupId, pagedContext);
 
-        List<UserDto> items = query.list()
-                .stream()
-                .map(GroupMember::getUser)
-                .map(UserDto::from)
-                .toList();
+        List<UserDto> items = UserDto.from(query.list());
+        long totalItems = query.count();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    public PagedResponse<UserDto> getNonMembers(Long groupId, PagedParams pagedParams) {
+        Group group = groupRepository.findByIdOptional(groupId)
+                .orElseThrow(() -> new NotFoundException("Group not found"));
+
+        if (!canFetchGroup(group)) {
+            throw new ForbiddenException("You cannot see this group");
+        }
+
+        PagedContext pagedContext = pagedSearchGroupMember.generateFrom(pagedParams);
+        PanacheQuery<User> query = groupMemberRepository.getNonMembers(groupId, pagedContext);
+
+        List<UserDto> items = UserDto.from(query.list());
         long totalItems = query.count();
         int page = pagedContext.page();
         int size = pagedContext.size();

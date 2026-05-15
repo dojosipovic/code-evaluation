@@ -1,5 +1,6 @@
 package com.codeevaluation.core.repository;
 
+import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Group;
 import com.codeevaluation.core.model.GroupMember;
@@ -33,13 +34,18 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
         return groupMember;
     }
 
-    public PanacheQuery<GroupMember> getMembers(Long groupId, PagedContext pagedContext) {
+    public PanacheQuery<User> getMembers(Long groupId, PagedContext pagedContext) {
         StringBuilder query = new StringBuilder(
                 """
-                    from GroupMember gm
-                    join fetch gm.user
-                    where gm.group.id = :groupId
+                    from User user
+                    where exists (
+                        select 1
+                        from GroupMember gm
+                        where gm.user = user
+                        and gm.group.id = :groupId
+                    )
                 """);
+
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
 
@@ -47,11 +53,11 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
             query.append(
                     """
                      and (
-                              lower(gm.user.username) like :search
-                              or lower(gm.user.firstname) like :search
-                              or lower(gm.user.lastname) like :search
-                              or lower(concat(gm.user.firstname, ' ', gm.user.lastname)) like :search
-                              or lower(gm.user.email) like :search
+                              lower(user.username) like :search
+                              or lower(user.firstname) like :search
+                              or lower(user.lastname) like :search
+                              or lower(concat(user.firstname, ' ', user.lastname)) like :search
+                              or lower(user.email) like :search
                         )
                     """);
 
@@ -62,6 +68,46 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
         int page = pagedContext.page();
         int size = pagedContext.size();
 
-        return find(query.toString(), sort, params).page(Page.of(page, size));
+        return User.find(query.toString(), sort, params)
+                .page(Page.of(page, size));
+    }
+
+    public PanacheQuery<User> getNonMembers(Long groupId, PagedContext pagedContext) {
+        StringBuilder query = new StringBuilder(
+                """
+                    from User user
+                    where user.role = :role
+                    and not exists (
+                        select 1
+                        from GroupMember gm
+                        where gm.user = user
+                        and gm.group.id = :groupId
+                    )
+                """);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", groupId);
+        params.put("role", Role.STUDENT);
+
+        if (!StringUtils.isBlank(pagedContext.search())) {
+            query.append(
+                    """
+                     and (
+                              lower(user.username) like :search
+                              or lower(user.firstname) like :search
+                              or lower(user.lastname) like :search
+                              or lower(concat(user.firstname, ' ', user.lastname)) like :search
+                              or lower(user.email) like :search
+                        )
+                    """);
+
+            params.put("search", "%" + pagedContext.search().toLowerCase().trim() + "%");
+        }
+
+        Sort sort = pagedContext.sort();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return User.find(query.toString(), sort, params).page(Page.of(page, size));
     }
 }

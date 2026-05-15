@@ -95,4 +95,14 @@ public class GroupResource {
     ) {
         return groupService.getMembers(groupId, pagedParams);
     }
+
+    @GET
+    @Path("/{groupId}/non-members")
+    @RolesAllowed({ "ADMIN", "PROF" })
+    public PagedResponse<UserDto> getNonMembers(
+            @PathParam("groupId") Long groupId,
+            @BeanParam PagedParams pagedParams
+    ) {
+        return groupService.getNonMembers(groupId, pagedParams);
+    }
 }

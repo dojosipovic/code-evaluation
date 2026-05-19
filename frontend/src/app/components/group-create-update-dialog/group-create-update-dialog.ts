@@ -13,7 +13,7 @@ import { GroupService } from '../../services/group.service';
 import { IGroupResponse } from '../../models/group/IGroupResponse';
 
 @Component({
-  selector: 'app-group-create-dialog',
+  selector: 'app-group-create-update-dialog',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -22,10 +22,10 @@ import { IGroupResponse } from '../../models/group/IGroupResponse';
     InputTextModule,
     TextareaModule
   ],
-  templateUrl: './group-create-dialog.html',
-  styleUrl: './group-create-dialog.scss',
+  templateUrl: './group-create-update-dialog.html',
+  styleUrl: './group-create-update-dialog.scss',
 })
-export class GroupCreateDialog {
+export class GroupCreateUpdateDialog {
   private fb = inject(FormBuilder);
   private groupService = inject(GroupService);
   private messageService = inject(MessageService);

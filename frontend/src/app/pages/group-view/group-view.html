@@ -1,9 +1,9 @@
 <div class="page-wrapper">
-  <app-group-create-dialog
+  <app-group-create-update-dialog
     [(visible)]="updateGroupDialogVisible"
     [group]="group"
     (updated)="onGroupUpdated($event)">
-  </app-group-create-dialog>
+  </app-group-create-update-dialog>
 
   @if (loading()) {
     <p-card class="main-card">

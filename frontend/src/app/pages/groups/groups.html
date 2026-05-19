@@ -1,8 +1,8 @@
 <div class="page-wrapper">
-  <app-group-create-dialog
+  <app-group-create-update-dialog
     [(visible)]="createGroupDialogVisible"
     (created)="onGroupCreated()">
-  </app-group-create-dialog>
+  </app-group-create-update-dialog>
 
   <p-card class="main-card">
     @if (canCreateGroup()) {

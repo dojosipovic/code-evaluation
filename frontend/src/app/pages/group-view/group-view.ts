@@ -14,7 +14,7 @@ import { MessageService } from 'primeng/api';
 import { GroupService } from '../../services/group.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { IGroupResponse } from '../../models/group/IGroupResponse';
-import { GroupCreateDialog } from '../../components/group-create-dialog/group-create-dialog';
+import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -30,7 +30,7 @@ type GroupTab = 'users' | 'tasks';
     ScrollPanelModule,
     SkeletonModule,
     TabsModule,
-    GroupCreateDialog
+    GroupCreateUpdateDialog
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',

@@ -14,7 +14,7 @@ import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { GroupService } from '../../services/group.service';
 import { AuthService } from '../../services/auth/auth.service';
-import { GroupCreateDialog } from '../../components/group-create-dialog/group-create-dialog';
+import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 import { IGroupListItem } from '../../models/group/IGroupListItem';
 import { IGroupQueryParams } from '../../models/group/IGroupQueryParams';
 
@@ -41,7 +41,7 @@ interface GroupDataViewEvent {
     SelectModule,
     SelectButtonModule,
     SkeletonModule,
-    GroupCreateDialog
+    GroupCreateUpdateDialog
   ],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',

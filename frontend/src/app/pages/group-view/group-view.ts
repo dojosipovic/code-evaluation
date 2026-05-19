@@ -110,6 +110,17 @@ export class GroupView implements OnInit {
     this.updateBreadcrumb();
   }
 
+  onMemberAdded(): void {
+    if (!this.group) {
+      return;
+    }
+
+    this.group = {
+      ...this.group,
+      memberCount: this.group.memberCount + 1
+    };
+  }
+
   onMemberRemoved(): void {
     if (!this.group) {
       return;

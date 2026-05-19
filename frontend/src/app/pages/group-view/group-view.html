@@ -75,6 +75,7 @@
             <app-group-members
               [groupId]="group.id"
               [canManage]="canEditGroup()"
+              (memberAdded)="onMemberAdded()"
               (memberRemoved)="onMemberRemoved()">
             </app-group-members>
           </p-tabpanel>

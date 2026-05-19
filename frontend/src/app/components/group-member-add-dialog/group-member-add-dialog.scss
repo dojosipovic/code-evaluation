@@ -1,18 +1,17 @@
 :host {
   display: block;
+  height: min(68vh, 620px);
+  min-height: 0;
+}
+
+.dialog-content {
   height: 100%;
   min-height: 0;
-}
-
-.table-wrapper {
-  min-height: 0;
-  height: calc(100% - 72px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-.members-toolbar {
+.users-toolbar {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto;
   align-items: end;
@@ -34,8 +33,15 @@
 
 .toolbar-actions {
   display: flex;
-  gap: 10px;
   justify-content: flex-end;
+}
+
+.table-wrapper {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .primary-cell {
@@ -45,34 +51,6 @@
 .actions-column {
   width: 90px;
   text-align: center;
-}
-
-.member-actions-menu {
-  min-width: 160px;
-  display: flex;
-  flex-direction: column;
-  padding: 4px;
-}
-
-.member-action-item {
-  border: 0;
-  background: transparent;
-  color: var(--p-text-color);
-  padding: 10px 12px;
-  border-radius: 8px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  cursor: pointer;
-  text-align: left;
-
-  &:hover {
-    background: var(--p-content-hover-background);
-  }
-
-  &.danger {
-    color: var(--p-red-500);
-  }
 }
 
 :host ::ng-deep {
@@ -100,23 +78,18 @@
   .p-paginator {
     flex: 0 0 auto;
   }
-
-  .p-popover {
-    border-radius: 12px;
-  }
-
-  .p-popover-content {
-    padding: 4px;
-  }
 }
 
 @media (max-width: 768px) {
-  .members-toolbar {
+  :host {
+    height: 70vh;
+  }
+
+  .users-toolbar {
     grid-template-columns: 1fr;
   }
 
   .toolbar-actions {
-    flex-direction: column;
     justify-content: stretch;
 
     .p-button {

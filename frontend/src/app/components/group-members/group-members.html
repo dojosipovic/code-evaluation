@@ -32,6 +32,16 @@
       class="p-button-secondary"
       (click)="resetSearch()">
     </button>
+
+    @if (canManage) {
+      <button
+        pButton
+        type="button"
+        icon="pi pi-user-plus"
+        label="Dodaj"
+        (click)="openAddMembersDialog()">
+      </button>
+    }
   </div>
 </div>
 

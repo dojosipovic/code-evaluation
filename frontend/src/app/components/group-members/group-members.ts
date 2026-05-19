@@ -6,6 +6,7 @@ import {
   Input,
   OnChanges,
   OnInit,
+  OnDestroy,
   Output,
   SimpleChanges,
   ViewChild,
@@ -23,9 +24,11 @@ import { Popover, PopoverModule } from 'primeng/popover';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GroupService } from '../../services/group.service';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { SortDirection } from '../../config/app-types';
+import { GroupMemberAddDialog } from '../group-member-add-dialog/group-member-add-dialog';
 
 @Component({
   selector: 'app-group-members',
@@ -34,20 +37,22 @@ import { SortDirection } from '../../config/app-types';
     FormsModule,
     ButtonModule,
     ConfirmDialogModule,
+    DynamicDialogModule,
     InputTextModule,
     PopoverModule,
     SkeletonModule,
     TableModule,
     TagModule
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, DialogService],
   templateUrl: './group-members.html',
   styleUrl: './group-members.scss',
 })
-export class GroupMembers implements OnChanges, OnInit {
+export class GroupMembers implements OnChanges, OnInit, OnDestroy {
   private groupService = inject(GroupService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
 
   private searchInput$ = new Subject<string>();
@@ -57,6 +62,7 @@ export class GroupMembers implements OnChanges, OnInit {
   @Input() canManage = false;
 
   @Output() memberRemoved = new EventEmitter<void>();
+  @Output() memberAdded = new EventEmitter<void>();
 
   @ViewChild('memberActions') memberActions!: Popover;
 
@@ -64,6 +70,7 @@ export class GroupMembers implements OnChanges, OnInit {
 
   members: IUserResponse[] = [];
   selectedMember: IUserResponse | null = null;
+  addMembersDialogRef: DynamicDialogRef<GroupMemberAddDialog> | null = null;
   skeletonRows = Array.from({ length: 5 });
   totalRecords = 0;
 
@@ -107,6 +114,10 @@ export class GroupMembers implements OnChanges, OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.addMembersDialogRef?.close();
+  }
+
   onLazyLoad(event: TableLazyLoadEvent): void {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
@@ -136,6 +147,37 @@ export class GroupMembers implements OnChanges, OnInit {
     };
     this.first = 0;
     this.applySearch$.next();
+  }
+
+  openAddMembersDialog(): void {
+    if (!this.canManage || this.addMembersDialogRef) {
+      return;
+    }
+
+    this.addMembersDialogRef = this.dialogService.open(GroupMemberAddDialog, {
+      header: 'Dodaj clanove',
+      modal: true,
+      closable: true,
+      width: '78vw',
+      contentStyle: { overflow: 'hidden' },
+      breakpoints: {
+        '960px': '88vw',
+        '640px': '96vw'
+      },
+      data: {
+        groupId: this.groupId,
+        onMemberAdded: () => {
+          this.memberAdded.emit();
+          this.loadMembers();
+        }
+      }
+    });
+
+    this.addMembersDialogRef?.onClose
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.addMembersDialogRef = null;
+      });
   }
 
   openMemberActions(event: Event, member: IUserResponse): void {

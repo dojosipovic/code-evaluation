@@ -8,6 +8,7 @@ import { GroupQueryParamEnum } from "../models/enum/GroupQueryParamEnum";
 import { SortDirection } from "../config/app-types";
 import { IGroupCreate } from "../models/group/IGroupCreate";
 import { IGroupResponse } from "../models/group/IGroupResponse";
+import { IGroupUpdate } from "../models/group/IGroupUpdate";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -33,5 +34,9 @@ export class GroupService {
 
     getGroup(id: number): Observable<IGroupResponse> {
         return this.http.get<IGroupResponse>(`${this.baseUrl}/${id}`);
+    }
+
+    updateGroup(id: number, payload: IGroupUpdate): Observable<IGroupResponse> {
+        return this.http.put<IGroupResponse>(`${this.baseUrl}/${id}`, payload);
     }
 }

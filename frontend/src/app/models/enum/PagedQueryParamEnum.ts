@@ -1,4 +1,4 @@
-export enum GroupQueryParamEnum {
+export enum PagedQueryParamEnum {
     PAGE = 'page',
     SIZE = 'size',
     SEARCH = 'search',

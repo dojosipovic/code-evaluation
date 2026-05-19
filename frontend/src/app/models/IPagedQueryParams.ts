@@ -1,6 +1,6 @@
-import { SortDirection } from "../../config/app-types";
+import { SortDirection } from "../config/app-types";
 
-export interface IGroupQueryParams {
+export interface IPagedQueryParams {
     page: number;
     size: number;
     search?: string | null;

@@ -16,7 +16,7 @@ import { GroupService } from '../../services/group.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 import { IGroupListItem } from '../../models/group/IGroupListItem';
-import { IGroupQueryParams } from '../../models/group/IGroupQueryParams';
+import { IPagedQueryParams } from '../../models/IPagedQueryParams';
 
 type DataViewLayout = 'list' | 'grid';
 type SortOrder = 1 | -1;
@@ -173,7 +173,7 @@ export class Groups implements OnInit {
     return fullName || owner.username || owner.email || '-';
   }
 
-  private buildGroupParams(): IGroupQueryParams {
+  private buildGroupParams(): IPagedQueryParams {
     return {
       page: Math.floor(this.first / this.rows),
       size: this.rows,

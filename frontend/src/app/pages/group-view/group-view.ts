@@ -15,6 +15,7 @@ import { GroupService } from '../../services/group.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { IGroupResponse } from '../../models/group/IGroupResponse';
 import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
+import { AuthService } from '../../services/auth/auth.service';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -42,6 +43,7 @@ export class GroupView implements OnInit {
   private groupService = inject(GroupService);
   private messageService = inject(MessageService);
   private breadcrumbService = inject(BreadcrumbService);
+  private authService = inject(AuthService);
 
   readonly loading = signal(false);
   readonly activeTab = signal<GroupTab>('users');
@@ -93,12 +95,25 @@ export class GroupView implements OnInit {
 
   openUpdateGroupDialog(event?: Event): void {
     event?.stopPropagation();
+
+    if (!this.canEditGroup()) {
+      return;
+    }
+
     this.updateGroupDialogVisible = true;
   }
 
   onGroupUpdated(group: IGroupResponse): void {
     this.group = group;
     this.updateBreadcrumb();
+  }
+
+  canEditGroup(): boolean {
+    if (!this.group) {
+      return false;
+    }
+
+    return this.authService.isAdmin() || (this.authService.isProf() && this.isOwner(this.group));
   }
 
   private loadGroup(id: number): void {
@@ -132,5 +147,9 @@ export class GroupView implements OnInit {
       { label: 'Grupe', routerLink: '/groups' },
       { label: this.breadcrumbService.shorten(this.group.name) }
     ]);
+  }
+
+  private isOwner(group: IGroupResponse): boolean {
+    return group.owner?.username === this.authService.username();
   }
 }

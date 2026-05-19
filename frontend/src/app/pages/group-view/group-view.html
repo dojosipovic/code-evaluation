@@ -25,17 +25,19 @@
           <p-accordion-header>
             <div class="description-header">
               <span>Opis</span>
-              <button
-                pButton
-                type="button"
-                icon="pi pi-pencil"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                aria-label="Uredi grupu"
-                title="Uredi grupu"
-                (click)="openUpdateGroupDialog($event)">
-              </button>
+              @if (canEditGroup()) {
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  aria-label="Uredi grupu"
+                  title="Uredi grupu"
+                  (click)="openUpdateGroupDialog($event)">
+                </button>
+              }
             </div>
           </p-accordion-header>
           <p-accordion-content>

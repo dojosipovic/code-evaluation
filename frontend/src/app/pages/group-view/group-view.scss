@@ -1,5 +1,6 @@
 :host {
   display: block;
+  min-height: 0;
   color: var(--p-text-color);
 }
 
@@ -7,6 +8,10 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px 24px;
+  height: calc(100vh - 92px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .group-header {
@@ -18,7 +23,16 @@
 }
 
 .main-card {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+
   ::ng-deep .p-card {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     background: var(--p-content-background);
     border: 1px solid var(--p-content-border-color);
     border-radius: 16px;
@@ -26,7 +40,18 @@
   }
 
   ::ng-deep .p-card-body {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 1.25rem;
+  }
+
+  ::ng-deep .p-card-content {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -91,7 +116,23 @@
   }
 
   .p-tabs {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     margin-top: 8px;
+  }
+
+  .p-tabpanels {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-tabpanel {
+    min-height: 0;
+    flex: 1;
   }
 
   .p-tablist-tab-list {
@@ -148,6 +189,7 @@
 
 @media (max-width: 768px) {
   .page-wrapper {
+    height: calc(100vh - 82px);
     padding: 0 16px 16px;
   }
 

@@ -72,9 +72,11 @@
 
         <p-tabpanels>
           <p-tabpanel value="users">
-            <div class="tab-empty-state">
-              Clanovi grupe ce biti prikazani ovdje.
-            </div>
+            <app-group-members
+              [groupId]="group.id"
+              [canManage]="canEditGroup()"
+              (memberRemoved)="onMemberRemoved()">
+            </app-group-members>
           </p-tabpanel>
 
           <p-tabpanel value="tasks">

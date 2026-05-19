@@ -1,0 +1,135 @@
+<p-confirmDialog></p-confirmDialog>
+
+<p-popover #memberActions>
+  @if (selectedMember; as member) {
+    <div class="member-actions-menu">
+      <button class="member-action-item danger" (click)="removeMember(member)">
+        <i class="pi pi-user-minus"></i>
+        <span>Ukloni</span>
+      </button>
+    </div>
+  }
+</p-popover>
+
+<div class="members-toolbar">
+  <div class="filter-field">
+    <label for="memberSearch">Search</label>
+    <input
+      id="memberSearch"
+      pInputText
+      [(ngModel)]="memberFilters.search"
+      (ngModelChange)="onSearchInput($event)"
+      (keyup.enter)="onApplySearch()"
+      placeholder="Pretrazi clanove" />
+  </div>
+
+  <div class="toolbar-actions">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      label="Reset"
+      class="p-button-secondary"
+      (click)="resetSearch()">
+    </button>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <p-table
+    [value]="loading() ? skeletonRows : members"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="rows"
+    [first]="first"
+    [totalRecords]="totalRecords"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="onLazyLoad($event)"
+    class="p-datatable-sm members-table">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id">
+          ID
+          <p-sortIcon field="id"></p-sortIcon>
+        </th>
+
+        <th>
+          Korisnicko ime
+        </th>
+
+        <th>Ime</th>
+
+        <th>Prezime</th>
+
+        <th>
+          Email
+        </th>
+
+        <th>
+          Rola
+        </th>
+
+        @if (canManage) {
+          <th class="actions-column">Akcije</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-member>
+      <tr>
+        <td>{{ member.id }}</td>
+
+        <td>
+          <div class="primary-cell">{{ member.username }}</div>
+        </td>
+
+        <td>{{ member.firstname || '-' }}</td>
+
+        <td>{{ member.lastname || '-' }}</td>
+
+        <td>{{ member.email }}</td>
+
+        <td>
+          <p-tag [value]="member.role"></p-tag>
+        </td>
+
+        @if (canManage) {
+          <td class="actions-column">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-ellipsis-v"
+              class="p-button-text p-button-rounded"
+              aria-label="Akcije"
+              (click)="openMemberActions($event, member)">
+            </button>
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      <tr>
+        <td><p-skeleton width="2rem" height="1.1rem"></p-skeleton></td>
+        <td><p-skeleton width="8rem" height="1.1rem"></p-skeleton></td>
+        <td><p-skeleton width="7rem" height="1.1rem"></p-skeleton></td>
+        <td><p-skeleton width="8rem" height="1.1rem"></p-skeleton></td>
+        <td><p-skeleton width="12rem" height="1.1rem"></p-skeleton></td>
+        <td><p-skeleton width="5rem" height="1.6rem" borderRadius="12px"></p-skeleton></td>
+
+        @if (canManage) {
+          <td class="actions-column">
+            <p-skeleton width="2rem" height="2rem" borderRadius="50%"></p-skeleton>
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="canManage ? 7 : 6">Nema clanova u grupi.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

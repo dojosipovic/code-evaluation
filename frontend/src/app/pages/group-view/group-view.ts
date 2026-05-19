@@ -16,6 +16,7 @@ import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { IGroupResponse } from '../../models/group/IGroupResponse';
 import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 import { AuthService } from '../../services/auth/auth.service';
+import { GroupMembers } from '../../components/group-members/group-members';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -31,7 +32,8 @@ type GroupTab = 'users' | 'tasks';
     ScrollPanelModule,
     SkeletonModule,
     TabsModule,
-    GroupCreateUpdateDialog
+    GroupCreateUpdateDialog,
+    GroupMembers
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',
@@ -106,6 +108,17 @@ export class GroupView implements OnInit {
   onGroupUpdated(group: IGroupResponse): void {
     this.group = group;
     this.updateBreadcrumb();
+  }
+
+  onMemberRemoved(): void {
+    if (!this.group) {
+      return;
+    }
+
+    this.group = {
+      ...this.group,
+      memberCount: Math.max(this.group.memberCount - 1, 0)
+    };
   }
 
   canEditGroup(): boolean {

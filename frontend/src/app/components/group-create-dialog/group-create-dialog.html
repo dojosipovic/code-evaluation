@@ -6,7 +6,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '36rem' }"
-  header="Nova grupa">
+  [header]="dialogHeader()">
 
   <form [formGroup]="form" class="group-form">
     <div class="field">
@@ -61,8 +61,8 @@
     <button
       pButton
       type="button"
-      label="Kreiraj"
-      icon="pi pi-plus"
+      [label]="submitLabel()"
+      [icon]="submitIcon()"
       [loading]="submitting"
       [disabled]="form.invalid"
       (click)="submit()">

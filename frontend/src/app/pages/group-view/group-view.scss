@@ -35,12 +35,25 @@
   margin-bottom: 22px;
 }
 
+.description-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
 .description-text {
   margin: 0;
   padding-right: 14px;
   color: var(--p-text-color);
   line-height: 1.55;
   white-space: pre-wrap;
+
+  &.muted {
+    color: var(--p-text-muted-color);
+    font-style: italic;
+  }
 }
 
 .tab-label {

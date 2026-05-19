@@ -1,4 +1,10 @@
 <div class="page-wrapper">
+  <app-group-create-dialog
+    [(visible)]="updateGroupDialogVisible"
+    [group]="group"
+    (updated)="onGroupUpdated($event)">
+  </app-group-create-dialog>
+
   @if (loading()) {
     <p-card class="main-card">
       <div class="group-header">
@@ -14,18 +20,35 @@
     </p-card>
   } @else if (group) {
     <p-card class="main-card">
-      @if (group.description) {
-        <p-accordion class="description-accordion">
-          <p-accordion-panel value="description">
-            <p-accordion-header>Opis</p-accordion-header>
-            <p-accordion-content>
-              <p-scrollpanel [style]="{ width: '100%', height: '180px' }">
+      <p-accordion class="description-accordion">
+        <p-accordion-panel value="description">
+          <p-accordion-header>
+            <div class="description-header">
+              <span>Opis</span>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                aria-label="Uredi grupu"
+                title="Uredi grupu"
+                (click)="openUpdateGroupDialog($event)">
+              </button>
+            </div>
+          </p-accordion-header>
+          <p-accordion-content>
+            <p-scrollpanel [style]="{ width: '100%', height: '180px' }">
+              @if (group.description) {
                 <p class="description-text">{{ group.description }}</p>
-              </p-scrollpanel>
-            </p-accordion-content>
-          </p-accordion-panel>
-        </p-accordion>
-      }
+              } @else {
+                <p class="description-text muted">Nema opisa.</p>
+              }
+            </p-scrollpanel>
+          </p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
 
       <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
         <p-tablist>

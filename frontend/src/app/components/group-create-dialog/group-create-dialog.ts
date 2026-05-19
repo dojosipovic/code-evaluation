@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, inject, model } from '@angular/core';
+import { Component, EventEmitter, Output, computed, effect, inject, input, model } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { TextareaModule } from 'primeng/textarea';
 
 import { GroupService } from '../../services/group.service';
+import { IGroupResponse } from '../../models/group/IGroupResponse';
 
 @Component({
   selector: 'app-group-create-dialog',
@@ -30,10 +31,33 @@ export class GroupCreateDialog {
   private messageService = inject(MessageService);
 
   visible = model<boolean>(false);
+  group = input<IGroupResponse | null>(null);
 
   @Output() created = new EventEmitter<void>();
+  @Output() updated = new EventEmitter<IGroupResponse>();
+
+  readonly isEditMode = computed(() => !!this.group());
+  readonly dialogHeader = computed(() => this.isEditMode() ? 'Uredi grupu' : 'Nova grupa');
+  readonly submitLabel = computed(() => this.isEditMode() ? 'Spremi' : 'Kreiraj');
+  readonly submitIcon = computed(() => this.isEditMode() ? 'pi pi-check' : 'pi pi-plus');
 
   submitting = false;
+
+  private populateEditForm = effect(() => {
+    const group = this.group();
+
+    if (!this.visible() || !group) {
+      return;
+    }
+
+    this.form.reset({
+      name: group.name,
+      description: group.description ?? ''
+    });
+
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+  });
 
   form = this.fb.group({
     name: this.fb.control('', {
@@ -72,28 +96,40 @@ export class GroupCreateDialog {
 
     this.submitting = true;
 
-    this.groupService.createGroup({
+    const payload = {
       name: trimmedName,
       description: description?.trim() ?? ''
-    })
+    };
+    const group = this.group();
+    const request = group
+      ? this.groupService.updateGroup(group.id, payload)
+      : this.groupService.createGroup(payload);
+
+    request
       .pipe(finalize(() => (this.submitting = false)))
       .subscribe({
-        next: () => {
+        next: response => {
+          const isEditMode = !!group;
+
           this.messageService.add({
             severity: 'success',
             summary: 'Uspjeh',
-            detail: 'Grupa je uspjesno kreirana'
+            detail: isEditMode ? 'Grupa je uspjesno azurirana' : 'Grupa je uspjesno kreirana'
           });
 
           this.visible.set(false);
-          this.created.emit();
+          if (isEditMode) {
+            this.updated.emit(response);
+          } else {
+            this.created.emit();
+          }
           this.resetFormState();
         },
         error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Greska',
-            detail: 'Kreiranje grupe nije uspjelo'
+            detail: group ? 'Azuriranje grupe nije uspjelo' : 'Kreiranje grupe nije uspjelo'
           });
         }
       });

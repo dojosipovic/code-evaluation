@@ -14,6 +14,7 @@ import { MessageService } from 'primeng/api';
 import { GroupService } from '../../services/group.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { IGroupResponse } from '../../models/group/IGroupResponse';
+import { GroupCreateDialog } from '../../components/group-create-dialog/group-create-dialog';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -28,7 +29,8 @@ type GroupTab = 'users' | 'tasks';
     RouterModule,
     ScrollPanelModule,
     SkeletonModule,
-    TabsModule
+    TabsModule,
+    GroupCreateDialog
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',
@@ -45,6 +47,7 @@ export class GroupView implements OnInit {
   readonly activeTab = signal<GroupTab>('users');
 
   group: IGroupResponse | null = null;
+  updateGroupDialogVisible = false;
 
   ngOnInit(): void {
     this.route.paramMap
@@ -86,6 +89,16 @@ export class GroupView implements OnInit {
     }
 
     this.router.navigate(['/groups', this.group.id, value]);
+  }
+
+  openUpdateGroupDialog(event?: Event): void {
+    event?.stopPropagation();
+    this.updateGroupDialogVisible = true;
+  }
+
+  onGroupUpdated(group: IGroupResponse): void {
+    this.group = group;
+    this.updateBreadcrumb();
   }
 
   private loadGroup(id: number): void {

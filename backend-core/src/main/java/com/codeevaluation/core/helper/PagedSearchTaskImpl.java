@@ -27,7 +27,8 @@ public class PagedSearchTaskImpl extends PagedSearchHelper {
                 "id", "t.id",
                 "title", "t.title",
                 "status", "t.status",
-                "enabled", "t.enabled"
+                "enabled", "t.enabled",
+                "shared", "t.shared"
         );
     }
 }

@@ -1,0 +1,202 @@
+<div class="page-wrapper">
+  <app-group-create-update-dialog
+    [(visible)]="createGroupDialogVisible"
+    (created)="onGroupCreated()">
+  </app-group-create-update-dialog>
+
+  <p-card class="main-card">
+    @if (canCreateGroup()) {
+      <div class="top-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-plus"
+          label="Nova grupa"
+          (click)="openCreateGroupDialog()">
+        </button>
+      </div>
+    }
+
+    <div class="filters-toolbar">
+      <div class="filter-field search-field">
+        <label for="groupSearch">Search</label>
+        <input
+          id="groupSearch"
+          pInputText
+          [(ngModel)]="groupFilters.search"
+          (ngModelChange)="onSearchInput($event)"
+          (keyup.enter)="onApplyFilters()"
+          placeholder="Pretrazi po nazivu grupe" />
+      </div>
+
+      <div class="filter-field sort-field">
+        <label for="groupSort">Sort</label>
+        <p-select
+          inputId="groupSort"
+          [options]="sortOptions"
+          [(ngModel)]="sortKey"
+          optionLabel="label"
+          optionValue="value"
+          (ngModelChange)="onSortChange($event)"
+          [showClear]="false">
+        </p-select>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+
+    <p-dataview
+      [value]="loading() ? skeletonRows : groups"
+      [layout]="layout"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="rows"
+      [first]="first"
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      (onLazyLoad)="onLazyLoad($event)">
+
+      <ng-template #header>
+        <div class="dataview-header">
+          <div class="result-count">
+            {{ totalRecords }} grupa
+          </div>
+
+          <div class="dataview-switcher">
+            <p-selectButton
+              [(ngModel)]="layout"
+              [options]="layoutOptions"
+              optionLabel="label"
+              optionValue="value"
+              [allowEmpty]="false">
+              <ng-template #item let-option>
+                <i [class]="option.icon"></i>
+              </ng-template>
+            </p-selectButton>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #list let-items>
+        <div class="group-list">
+          @if (loading()) {
+            @for (row of skeletonRows; track $index; let first = $first) {
+              <div class="group-list-item skeleton-item" [class.with-border]="!first">
+                <div class="group-main">
+                  <p-skeleton width="10rem" height="1.4rem"></p-skeleton>
+                  <p-skeleton width="12rem" height="0.9rem"></p-skeleton>
+                </div>
+
+                <div class="group-meta">
+                  <p-skeleton width="6rem" height="1.2rem"></p-skeleton>
+                  <p-skeleton width="9rem" height="1rem"></p-skeleton>
+                </div>
+              </div>
+            }
+          } @else {
+            @for (group of items; track group.id; let first = $first) {
+              <div
+                class="group-list-item"
+                [class.with-border]="!first"
+                role="button"
+                tabindex="0"
+                (click)="openGroup(group)"
+                (keydown.enter)="openGroup(group)"
+                (keydown.space)="openGroup(group); $event.preventDefault()">
+                <div class="group-main">
+                  <div class="group-title">
+                    <span class="group-id">#{{ group.id }}</span>
+                    <h3>{{ group.name }}</h3>
+                  </div>
+
+                  <div class="owner-line">
+                    <i class="pi pi-user"></i>
+                    <span>{{ getOwnerName(group) }}</span>
+                  </div>
+                </div>
+
+                <div class="group-meta">
+                  <div class="member-count">
+                    <i class="pi pi-users"></i>
+                    <strong>{{ group.memberCount }}</strong>
+                  </div>
+
+                  <div class="created-at">
+                    {{ group.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </ng-template>
+
+      <ng-template #grid let-items>
+        <div class="group-grid">
+          @if (loading()) {
+            @for (row of skeletonRows; track $index) {
+              <div class="group-card skeleton-item">
+                <div class="group-card-header">
+                  <p-skeleton width="8rem" height="1.4rem"></p-skeleton>
+                  <p-skeleton width="5rem" height="1.2rem"></p-skeleton>
+                </div>
+                <div class="group-card-footer">
+                  <p-skeleton width="8rem" height="1rem"></p-skeleton>
+                  <p-skeleton width="6rem" height="1rem"></p-skeleton>
+                </div>
+              </div>
+            }
+          } @else {
+            @for (group of items; track group.id) {
+              <div
+                class="group-card"
+                role="button"
+                tabindex="0"
+                (click)="openGroup(group)"
+                (keydown.enter)="openGroup(group)"
+                (keydown.space)="openGroup(group); $event.preventDefault()">
+                <div class="group-card-header">
+                  <div>
+                    <span class="group-id">#{{ group.id }}</span>
+                    <h3>{{ group.name }}</h3>
+                  </div>
+
+                  <div class="member-count compact">
+                    <i class="pi pi-users"></i>
+                    <strong>{{ group.memberCount }}</strong>
+                  </div>
+                </div>
+
+                <div class="group-card-footer">
+                  <div class="owner-line">
+                    <i class="pi pi-user"></i>
+                    <span>{{ getOwnerName(group) }}</span>
+                  </div>
+
+                  <div class="created-at">
+                    {{ group.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </ng-template>
+
+      <ng-template #empty>
+        <div class="empty-state">
+          Nema grupa za zadane filtere.
+        </div>
+      </ng-template>
+    </p-dataview>
+  </p-card>
+</div>

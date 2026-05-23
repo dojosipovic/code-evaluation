@@ -81,6 +81,75 @@
   background: var(--surface-ground);
 }
 
+.breadcrumb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 1400px;
+  margin: 0 auto 1.25rem;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.layout-breadcrumb {
+  display: block;
+  min-width: 0;
+
+  ::ng-deep .p-breadcrumb {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  ::ng-deep .p-breadcrumb-list {
+    gap: 0.55rem;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link,
+  ::ng-deep .p-breadcrumb-item-label {
+    color: var(--p-text-muted-color);
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link {
+    text-decoration: none;
+  }
+
+  ::ng-deep .p-breadcrumb-item-link:hover {
+    color: #ffffff;
+  }
+
+  ::ng-deep .p-breadcrumb-item:last-child .p-breadcrumb-item-label,
+  ::ng-deep .p-breadcrumb-item:last-child .p-breadcrumb-item-link {
+    color: color-mix(in srgb, var(--p-text-color) 78%, var(--p-text-muted-color));
+    font-weight: 650;
+  }
+
+  .breadcrumb-separator {
+    color: var(--p-text-muted-color);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+}
+
+:host ::ng-deep .breadcrumb-back-button {
+  width: 2.35rem;
+  height: 2.35rem;
+  color: var(--p-text-muted-color);
+}
+
+:host ::ng-deep .breadcrumb-back-button:hover {
+  color: var(--p-text-color);
+}
+
+:host ::ng-deep .invisible-back-button {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* MOBILE TOPBAR */
 .topbar {
   background: color-mix(in srgb, var(--surface-card) 92%, transparent);
@@ -347,6 +416,10 @@
 @media (max-width: 767px) {
   .content {
     padding: 0.75rem;
+  }
+
+  .breadcrumb-row {
+    padding: 0 16px;
   }
 
   .mobile-sidebar {

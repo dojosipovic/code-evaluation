@@ -1,0 +1,92 @@
+<div class="page-wrapper">
+  <app-group-create-update-dialog
+    [(visible)]="updateGroupDialogVisible"
+    [group]="group"
+    (updated)="onGroupUpdated($event)">
+  </app-group-create-update-dialog>
+
+  @if (loading()) {
+    <p-card class="main-card">
+      <div class="group-header">
+        <div class="group-title-block">
+          <p-skeleton width="14rem" height="2rem"></p-skeleton>
+          <p-skeleton width="12rem" height="1rem"></p-skeleton>
+        </div>
+
+        <p-skeleton width="7rem" height="2.5rem" borderRadius="10px"></p-skeleton>
+      </div>
+
+      <p-skeleton width="100%" height="10rem"></p-skeleton>
+    </p-card>
+  } @else if (group) {
+    <p-card class="main-card">
+      <p-accordion class="description-accordion">
+        <p-accordion-panel value="description">
+          <p-accordion-header>
+            <div class="description-header">
+              <span>Opis</span>
+              @if (canEditGroup()) {
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  aria-label="Uredi grupu"
+                  title="Uredi grupu"
+                  (click)="openUpdateGroupDialog($event)">
+                </button>
+              }
+            </div>
+          </p-accordion-header>
+          <p-accordion-content>
+            <p-scrollpanel [style]="{ width: '100%', height: '80px' }">
+              @if (group.description) {
+                <p class="description-text">{{ group.description }}</p>
+              } @else {
+                <p class="description-text muted">Nema opisa.</p>
+              }
+            </p-scrollpanel>
+          </p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
+
+      <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+        <p-tablist>
+          <p-tab value="users">
+            <div class="tab-label">
+              <i class="pi pi-users"></i>
+              <span>Clanovi</span>
+              <p-badge [value]="group.memberCount"></p-badge>
+            </div>
+          </p-tab>
+
+          <p-tab value="tasks">
+            <div class="tab-label">
+              <i class="pi pi-receipt"></i>
+              <span>Zadaci</span>
+            </div>
+          </p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <p-tabpanel value="users">
+            <app-group-members
+              [groupId]="group.id"
+              [canManage]="canEditGroup()"
+              (memberAdded)="onMemberAdded()"
+              (memberRemoved)="onMemberRemoved()">
+            </app-group-members>
+          </p-tabpanel>
+
+          <p-tabpanel value="tasks">
+            <div class="tab-empty-state">
+              Zadaci grupe ce biti prikazani ovdje.
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </p-card>
+  }
+</div>

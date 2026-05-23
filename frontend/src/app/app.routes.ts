@@ -8,6 +8,8 @@ import { getRolesForPath } from './config/app-navigation.config';
 import { Users } from './pages/users/users';
 import { Register } from './pages/register/register';
 import { Tasks } from './pages/tasks/tasks';
+import { Groups } from './pages/groups/groups';
+import { GroupView } from './pages/group-view/group-view';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
@@ -17,13 +19,16 @@ export const routes: Routes = [
         component: AppLayout,
         canActivate: [authGuard],
         children: [
-            { path: 'dashboard', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/dashboard') } },
-            { path: 'users/:tab', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users') } },
-            { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile') } },
-            { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings') } },
-            { path: 'tasks', canActivate: [authGuard], component: Tasks, data: { roles: getRolesForPath('/tasks') } },
+            { path: 'dashboard', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/dashboard'), breadcrumb: 'Dashboard' } },
+            { path: 'users/:tab', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users'), breadcrumb: 'Access management' } },
+            { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile'), breadcrumb: 'Profil' } },
+            { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings'), breadcrumb: 'Postavke' } },
+            { path: 'tasks', canActivate: [authGuard], component: Tasks, data: { roles: getRolesForPath('/tasks'), breadcrumb: 'Zadaci' } },
+            { path: 'groups/:id/:tab', canActivate: [authGuard], component: GroupView, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe', backTo: '/groups' } },
+            { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },
 
             { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },
+            { path: 'groups/:id', redirectTo: 'groups/:id/users', pathMatch: 'full' },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

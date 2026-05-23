@@ -28,7 +28,7 @@
             [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
             class="nav-link"
             [attr.title]="collapsed ? item.label : null"
-            (click)="closeMobileMenu()"
+            (click)="onNavClick()"
           >
             <i [class]="item.icon + ' nav-icon'"></i>
 
@@ -58,6 +58,28 @@
     }
 
     <div class="content">
+      @if (breadcrumbs().length) {
+        <div class="breadcrumb-row">
+          <p-button
+            icon="pi pi-arrow-left"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            styleClass="breadcrumb-back-button"
+            [class.invisible-back-button]="!backTarget"
+            [disabled]="!backTarget"
+            ariaLabel="Nazad"
+            (onClick)="goBack()">
+          </p-button>
+
+          <p-breadcrumb class="layout-breadcrumb" [model]="breadcrumbs()">
+            <ng-template #separator>
+              <span class="breadcrumb-separator">/</span>
+            </ng-template>
+          </p-breadcrumb>
+        </div>
+      }
+
       <router-outlet></router-outlet>
     </div>
   </div>
@@ -102,7 +124,7 @@
           [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
           class="nav-link"
           [attr.title]="collapsed ? item.label : null"
-          (click)="closeMobileMenu()"
+          (click)="onNavClick()"
         >
           <i [class]="item.icon + ' nav-icon'"></i>
 

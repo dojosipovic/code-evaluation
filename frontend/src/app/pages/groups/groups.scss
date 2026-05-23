@@ -1,0 +1,373 @@
+:host {
+  display: block;
+  min-height: 0;
+  color: var(--p-text-color);
+}
+
+.page-wrapper {
+  padding: 0 24px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: calc(100vh - 92px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.main-card {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+
+  ::ng-deep .p-card {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 16px;
+    box-shadow: var(--p-card-shadow);
+  }
+
+  ::ng-deep .p-card-body {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+  }
+
+  ::ng-deep .p-card-content {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filters-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(210px, 260px) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.dataview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dataview-switcher {
+  flex: 0 1 150px;
+  min-width: 130px;
+  margin-bottom: 0;
+}
+
+.result-count {
+  color: var(--p-text-muted-color);
+  font-size: 14px;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+}
+
+.group-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  &:not(.skeleton-item) {
+    cursor: pointer;
+  }
+
+  &:not(.skeleton-item):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-hover-background);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.group-main,
+.group-meta,
+.group-card,
+.group-card-footer {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-main {
+  gap: 8px;
+  min-width: 0;
+}
+
+.group-title,
+.group-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.group-title {
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
+.group-id {
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.owner-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+}
+
+.group-meta {
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.member-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--p-text-muted-color);
+
+  i {
+    color: var(--p-primary-color);
+    font-size: 1rem;
+  }
+
+  strong {
+    color: var(--p-text-color);
+    font-size: 16px;
+  }
+
+  &.compact {
+    align-items: center;
+  }
+}
+
+.created-at {
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  padding-top: 14px;
+}
+
+.group-card {
+  min-height: 150px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  &:not(.skeleton-item) {
+    cursor: pointer;
+  }
+
+  &:not(.skeleton-item):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-hover-background);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.group-card-footer {
+  gap: 8px;
+}
+
+.empty-state {
+  padding: 32px 8px;
+  text-align: center;
+  color: var(--p-text-muted-color);
+}
+
+:host ::ng-deep {
+  .p-inputtext,
+  .p-select,
+  .p-button,
+  .p-paginator-rpp-dropdown {
+    border-radius: 10px;
+  }
+
+  .p-dataview {
+    border: 0;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-dataview-header {
+    flex: 0 0 auto;
+    border: 0;
+    border-top: 1px solid var(--p-content-border-color);
+    padding: 16px 0 0;
+    background: transparent;
+  }
+
+  .p-dataview-content {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+    background: transparent;
+  }
+
+  .p-paginator {
+    flex: 0 0 auto;
+  }
+
+  .dataview-switcher .p-selectbutton {
+    width: 100%;
+    display: flex;
+    justify-content: stretch;
+    gap: 10px;
+    padding: 5px 8px;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 10px;
+    background: var(--p-form-field-background);
+  }
+
+  .dataview-switcher .p-togglebutton {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 0.25rem 0.75rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .dataview-switcher .p-togglebutton::before {
+    display: none;
+  }
+
+  .dataview-switcher .p-togglebutton.p-togglebutton-checked,
+  .dataview-switcher .p-togglebutton.p-highlight,
+  .dataview-switcher .p-togglebutton[aria-pressed='true'] {
+    color: var(--p-primary-color);
+    background: color-mix(in srgb, var(--p-primary-color) 22%, var(--p-content-background));
+    border: 0;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--p-primary-color) 36%, transparent);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    height: calc(100vh - 82px);
+    padding: 0 16px 16px;
+  }
+
+  .filters-toolbar,
+  .group-list-item {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    justify-content: stretch;
+  }
+
+  .filter-actions .p-button {
+    width: 100%;
+  }
+
+  .group-meta {
+    align-items: flex-start;
+  }
+
+  .dataview-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dataview-switcher {
+    width: 100%;
+    flex-basis: auto;
+  }
+}

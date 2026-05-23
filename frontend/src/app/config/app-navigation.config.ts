@@ -34,6 +34,13 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     showInNavbar: true
   },
   {
+    label: 'Grupe',
+    path: '/groups',
+    icon: 'pi pi-sitemap',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true
+  },
+  {
     label: 'Profil',
     path: '/profile',
     icon: 'pi pi-user',

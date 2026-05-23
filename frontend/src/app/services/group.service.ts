@@ -10,6 +10,7 @@ import { IGroupResponse } from "../models/group/IGroupResponse";
 import { IGroupUpdate } from "../models/group/IGroupUpdate";
 import { IPagedQueryParams } from "../models/IPagedQueryParams";
 import { IUserResponse } from "../models/user/IUserResponse";
+import { IGroupMember } from "../models/group/IGroupMember";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -41,7 +42,7 @@ export class GroupService {
         return this.http.put<IGroupResponse>(`${this.baseUrl}/${id}`, payload);
     }
 
-    getMembers(id: number, params: IPagedQueryParams): Observable<IPagedResponse<IUserResponse>> {
+    getMembers(id: number, params: IPagedQueryParams): Observable<IPagedResponse<IGroupMember>> {
         const defaultSortDirection: SortDirection = 'desc';
         let httpParams = new HttpParams()
             .set(PagedQueryParamEnum.PAGE, params.page)
@@ -51,7 +52,7 @@ export class GroupService {
         if (params.search) httpParams = httpParams.set(PagedQueryParamEnum.SEARCH, params.search);
         if (params.sortBy) httpParams = httpParams.set(PagedQueryParamEnum.SORT_BY, params.sortBy);
 
-        return this.http.get<IPagedResponse<IUserResponse>>(`${this.baseUrl}/${id}/members`, { params: httpParams });
+        return this.http.get<IPagedResponse<IGroupMember>>(`${this.baseUrl}/${id}/members`, { params: httpParams });
     }
 
     getNonMembers(id: number, params: IPagedQueryParams): Observable<IPagedResponse<IUserResponse>> {

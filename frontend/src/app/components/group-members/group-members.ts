@@ -26,9 +26,9 @@ import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GroupService } from '../../services/group.service';
-import { IUserResponse } from '../../models/user/IUserResponse';
 import { SortDirection } from '../../config/app-types';
 import { GroupMemberAddDialog } from '../group-member-add-dialog/group-member-add-dialog';
+import { IGroupMember } from '../../models/group/IGroupMember';
 
 @Component({
   selector: 'app-group-members',
@@ -68,8 +68,8 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
 
   readonly loading = signal(false);
 
-  members: IUserResponse[] = [];
-  selectedMember: IUserResponse | null = null;
+  members: IGroupMember[] = [];
+  selectedMember: IGroupMember | null = null;
   addMembersDialogRef: DynamicDialogRef<GroupMemberAddDialog> | null = null;
   skeletonRows = Array.from({ length: 5 });
   totalRecords = 0;
@@ -122,8 +122,8 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
 
-    if (event.sortField === 'id') {
-      this.sortField = 'id';
+    if (event.sortField === 'id' || event.sortField === 'addedAt') {
+      this.sortField = event.sortField;
     }
 
     if (event.sortOrder === 1 || event.sortOrder === -1) {
@@ -180,7 +180,7 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
       });
   }
 
-  openMemberActions(event: Event, member: IUserResponse): void {
+  openMemberActions(event: Event, member: IGroupMember): void {
     if (!this.canManage) {
       return;
     }
@@ -199,7 +199,7 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
     });
   }
 
-  removeMember(member: IUserResponse): void {
+  removeMember(member: IGroupMember): void {
     this.memberActions.hide();
 
     this.confirmationService.confirm({
@@ -235,7 +235,7 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
     });
   }
 
-  getMemberName(member: IUserResponse): string {
+  getMemberName(member: IGroupMember): string {
     const fullName = `${member.firstname ?? ''} ${member.lastname ?? ''}`.trim();
 
     return fullName || member.username || member.email || '-';

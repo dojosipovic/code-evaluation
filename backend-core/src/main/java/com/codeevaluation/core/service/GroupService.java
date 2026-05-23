@@ -3,6 +3,7 @@ package com.codeevaluation.core.service;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
+import com.codeevaluation.core.api.dto.group.GroupMemberDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
@@ -12,6 +13,7 @@ import com.codeevaluation.core.helper.PagedParams;
 import com.codeevaluation.core.helper.PagedSearchGroupImpl;
 import com.codeevaluation.core.helper.PagedSearchGroupMemberImpl;
 import com.codeevaluation.core.model.Group;
+import com.codeevaluation.core.model.GroupMember;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.GroupMemberRepository;
@@ -129,7 +131,7 @@ public class GroupService {
         return group;
     }
 
-    public PagedResponse<UserDto> getMembers(Long groupId, PagedParams pagedParams) {
+    public PagedResponse<GroupMemberDto> getMembers(Long groupId, PagedParams pagedParams) {
         Group group = groupRepository.findByIdOptional(groupId)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
@@ -138,9 +140,9 @@ public class GroupService {
         }
 
         PagedContext pagedContext = pagedSearchGroupMember.generateFrom(pagedParams);
-        PanacheQuery<User> query = groupMemberRepository.getMembers(groupId, pagedContext);
+        PanacheQuery<GroupMember> query = groupMemberRepository.getMembers(groupId, pagedContext);
 
-        List<UserDto> items = UserDto.from(query.list());
+        List<GroupMemberDto> items = GroupMemberDto.from(query.list());
         long totalItems = query.count();
         int page = pagedContext.page();
         int size = pagedContext.size();

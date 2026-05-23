@@ -3,6 +3,7 @@ package com.codeevaluation.core;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
+import com.codeevaluation.core.api.dto.group.GroupMemberDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
@@ -89,7 +90,7 @@ public class GroupResource {
     @GET
     @Path("/{groupId}/members")
     @Authenticated
-    public PagedResponse<UserDto> getMembers(
+    public PagedResponse<GroupMemberDto> getMembers(
             @PathParam("groupId") Long groupId,
             @BeanParam PagedParams pagedParams
     ) {

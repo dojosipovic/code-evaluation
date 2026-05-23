@@ -13,7 +13,8 @@ public class PagedSearchGroupMemberImpl extends PagedSearchHelper {
     @Override
     public Map<String, String> sortFieldMappings() {
         return Map.of(
-                "id", "user.id"
+                "id", "user.id",
+                "addedAt", "gm.addedAt"
         );
     }
 }

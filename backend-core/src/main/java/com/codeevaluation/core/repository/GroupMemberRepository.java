@@ -34,16 +34,12 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
         return groupMember;
     }
 
-    public PanacheQuery<User> getMembers(Long groupId, PagedContext pagedContext) {
+    public PanacheQuery<GroupMember> getMembers(Long groupId, PagedContext pagedContext) {
         StringBuilder query = new StringBuilder(
                 """
-                    from User user
-                    where exists (
-                        select 1
-                        from GroupMember gm
-                        where gm.user = user
-                        and gm.group.id = :groupId
-                    )
+                    from GroupMember gm
+                    join fetch gm.user user
+                    where gm.group.id = :groupId
                 """);
 
         Map<String, Object> params = new HashMap<>();
@@ -68,8 +64,7 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
         int page = pagedContext.page();
         int size = pagedContext.size();
 
-        return User.find(query.toString(), sort, params)
-                .page(Page.of(page, size));
+        return GroupMember.find(query.toString(), sort, params).page(Page.of(page, size));
     }
 
     public PanacheQuery<User> getNonMembers(Long groupId, PagedContext pagedContext) {

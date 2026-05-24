@@ -14,7 +14,8 @@ public class PagedSearchGroupMemberImpl extends PagedSearchHelper {
     public Map<String, String> sortFieldMappings() {
         return Map.of(
                 "id", "user.id",
-                "addedAt", "gm.addedAt"
+                "addedAt", "gm.addedAt",
+                "enabled", "user.enabled"
         );
     }
 }

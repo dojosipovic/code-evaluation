@@ -7,6 +7,7 @@ import { IRefreshResponse } from '../../models/auth/IRefreshResponse';
 import { AppRole } from '../../config/app-types';
 import { IRegisterRequest } from '../../models/auth/IRegisterRequest';
 import { IUserResponse } from '../../models/user/IUserResponse';
+import { ConfigService } from '../config.service';
 
 export interface JwtPayload {
   sub?: string;
@@ -21,8 +22,11 @@ export interface JwtPayload {
 export class AuthService {
   private readonly tokenKey = 'access_token';
   private readonly http = inject(HttpClient);
+  private readonly config = inject(ConfigService);
 
-  readonly apiBase = '';
+  get apiBase(): string {
+    return this.config.apiUrl;
+  }
 
   private _token = signal<string | null>(this.readToken());
 

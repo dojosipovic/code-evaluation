@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+**/.idea
+**/.vscode
+**/target
+**/node_modules
+frontend/dist
+frontend/.angular
+backend-core/.mvn
+backend-core/mvnw
+backend-core/mvnw.cmd
+backend-core/README.md
+backend-core/backend-core.iml

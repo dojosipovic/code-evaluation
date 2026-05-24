@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,9 +19,10 @@ export class Dashboard {
 
   private http = inject(HttpClient);
   private messageService = inject(MessageService);
+  private config = inject(ConfigService);
 
   loadMe() {
-    this.http.get('/api/auth/me', { responseType: 'text' }).subscribe({
+    this.http.get(`${this.config.apiUrl}/api/auth/me`, { responseType: 'text' }).subscribe({
       next: (data: string) => {
         this.me = data;
 

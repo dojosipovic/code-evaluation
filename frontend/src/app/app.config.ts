@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -11,6 +11,7 @@ import { bearerInterceptor } from './interceptor/bearer.interceptor';
 import { credentialsInterceptor } from './interceptor/credentials.interceptor';
 import { refreshInterceptor } from './interceptor/refresh.interceptor';
 import { NGX_MONACO_EDITOR_CONFIG } from 'ngx-monaco-editor-v2';
+import { ConfigService } from './services/config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,6 +23,10 @@ export const appConfig: ApplicationConfig = {
       bearerInterceptor,
       refreshInterceptor
     ])),
+    provideAppInitializer(() => {
+      const configService = inject(ConfigService);
+      return configService.load();
+    }),
     providePrimeNG({
       ripple: true,
       theme: {

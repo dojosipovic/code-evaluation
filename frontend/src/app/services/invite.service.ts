@@ -8,11 +8,16 @@ import { InviteQueryParamEnum } from "../models/enum/InviteQueryParamEnum";
 import { SortDirection } from "../config/app-types";
 import { IInviteCreate } from "../models/invite/IInviteCreate";
 import { IInviteValidate } from "../models/invite/IInviteValidate";
+import { ConfigService } from "./config.service";
 
 @Injectable({ providedIn: 'root' })
 export class InviteService {
     private http = inject(HttpClient);
-    private readonly baseUrl = '/api/invites';
+    private config = inject(ConfigService);
+
+    private get baseUrl(): string {
+        return `${this.config.apiUrl}/api/invites`;
+    }
 
     getInvites(params: IInviteQueryParams): Observable<IPagedResponse<IInviteResponse>> {
         const defaultSortDirection: SortDirection = 'desc';

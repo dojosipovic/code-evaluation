@@ -7,11 +7,16 @@ import { ITaskListItem } from "../models/task/ITaskListItem";
 import { TaskQueryParamEnum } from "../models/enum/TaskQueryParamEnum";
 import { ITaskCreate } from "../models/task/ITaskCreate";
 import { ITaskResponse } from "../models/task/ITaskResponse";
+import { ConfigService } from "./config.service";
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/tasks';
+  private config = inject(ConfigService);
+
+  private get baseUrl(): string {
+    return `${this.config.apiUrl}/api/tasks`;
+  }
 
   getTasks(params: ITaskQueryParams): Observable<IPagedResponse<ITaskListItem>> {
     return this.http.get<IPagedResponse<ITaskListItem>>(this.baseUrl, {

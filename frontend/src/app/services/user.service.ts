@@ -6,13 +6,18 @@ import { UserQueryParamEnum } from '../models/enum/UserQueryParamEnum';
 import { IUserQueryParams } from '../models/user/IUserQueryParams';
 import { IPagedResponse } from '../models/IPagedResponse';
 import { SortDirection } from '../config/app-types';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/users';
+  private config = inject(ConfigService);
+
+  private get baseUrl(): string {
+    return `${this.config.apiUrl}/api/users`;
+  }
 
   getUserByEmail(email: string): Observable<IUserResponse> {
     const httpParams = new HttpParams().set(UserQueryParamEnum.EMAIL, email);

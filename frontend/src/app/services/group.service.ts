@@ -11,11 +11,16 @@ import { IGroupUpdate } from "../models/group/IGroupUpdate";
 import { IPagedQueryParams } from "../models/IPagedQueryParams";
 import { IUserResponse } from "../models/user/IUserResponse";
 import { IGroupMember } from "../models/group/IGroupMember";
+import { ConfigService } from "./config.service";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
     private http = inject(HttpClient);
-    private readonly baseUrl = '/api/groups';
+    private config = inject(ConfigService);
+
+    private get baseUrl(): string {
+        return `${this.config.apiUrl}/api/groups`;
+    }
 
     getGroups(params: IPagedQueryParams): Observable<IPagedResponse<IGroupListItem>> {
         const defaultSortDirection: SortDirection = 'desc';

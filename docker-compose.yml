@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   db:
     image: postgres:16
@@ -22,8 +21,8 @@ services:
   backend:
     container_name: backend-core
     build:
-      context: ./backend-core
-      dockerfile: src/main/docker/Dockerfile.jvm
+      context: .
+      dockerfile: backend-core/src/main/docker/Dockerfile.jvm
     ports:
       - "8080:8080"
     environment:
@@ -35,6 +34,18 @@ services:
       - //var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - db
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    environment:
+      API_URL: http://localhost:8080
+    depends_on:
+      - backend
 
   cpp-compile-image:
     profiles: [ "build-sandbox" ]

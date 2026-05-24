@@ -122,7 +122,7 @@ export class GroupMembers implements OnChanges, OnInit, OnDestroy {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
 
-    if (event.sortField === 'id' || event.sortField === 'addedAt') {
+    if (event.sortField === 'id' || event.sortField === 'enabled' || event.sortField === 'addedAt') {
       this.sortField = event.sortField;
     }
 

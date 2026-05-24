@@ -47,6 +47,20 @@
   text-align: center;
 }
 
+.enabled-icon,
+.disabled-icon {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.enabled-icon {
+  color: var(--p-green-500);
+}
+
+.disabled-icon {
+  color: var(--p-red-500);
+}
+
 .member-actions-menu {
   min-width: 160px;
   display: flex;

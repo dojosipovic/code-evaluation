@@ -1,6 +1,3 @@
 {
-  "apiUrl": "http://localhost:8080",
-  "appEnv": "local",
-  "production": false,
-  "featureXEnabled": true
+  "apiUrl": "http://localhost:8080"
 }

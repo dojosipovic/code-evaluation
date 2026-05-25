@@ -311,6 +311,31 @@ jobs:
 
           sed -n '1,50p' dokploy-api-auth-response.txt
 
+      - name: Debug Dokploy redirect
+        if: inputs.debug_dokploy == true
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          curl -i -sS -o dokploy-redirect-debug-response.txt -X POST \
+            "${DOKPLOY_URL}/api/application.saveDockerProvider" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            -d '{}'
+
+          sed -n '1,40p' dokploy-redirect-debug-response.txt
+
       - name: Update Dokploy Docker image
         shell: bash
         env:
@@ -345,7 +370,7 @@ jobs:
             }' > dokploy-docker-provider.json
 
           HTTP_CODE="$(
-            curl -L -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
+            curl -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.saveDockerProvider" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
@@ -377,7 +402,7 @@ jobs:
           DOKPLOY_URL="${DOKPLOY_URL%/}"
 
           HTTP_CODE="$(
-            curl -L -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
+            curl -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.deploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \

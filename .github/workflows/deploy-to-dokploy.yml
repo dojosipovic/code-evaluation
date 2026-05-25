@@ -29,12 +29,6 @@ on:
         type: boolean
         default: true
 
-      debug_dokploy:
-        description: "Print Dokploy/Cloudflare debug responses"
-        required: false
-        type: boolean
-        default: false
-
 env:
   RELEASE_BRANCH: release
   REGISTRY: ghcr.io
@@ -230,8 +224,6 @@ jobs:
 
     if: inputs.deploy == true
 
-    # Ovo mora odgovarati stvarnom GitHub Environmentu:
-    # Settings -> Environments -> production
     environment:
       name: ${{ inputs.environment }}
 
@@ -267,74 +259,6 @@ jobs:
           fi
 
           echo "dokploy_app_id=$DOKPLOY_APP_ID" >> "$GITHUB_OUTPUT"
-
-      - name: Test Cloudflare Access to Dokploy
-        if: inputs.debug_dokploy == true
-        shell: bash
-        env:
-          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-        run: |
-          set -euo pipefail
-
-          DOKPLOY_URL="${DOKPLOY_URL%/}"
-
-          curl -L -i -sS -o dokploy-cloudflare-response.txt \
-            "${DOKPLOY_URL}/" \
-            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
-            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
-
-          sed -n '1,30p' dokploy-cloudflare-response.txt
-
-      - name: Test Dokploy API auth
-        if: inputs.debug_dokploy == true
-        shell: bash
-        env:
-          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-        run: |
-          set -euo pipefail
-
-          DOKPLOY_URL="${DOKPLOY_URL%/}"
-
-          curl -L -i -sS -o dokploy-api-auth-response.txt \
-            "${DOKPLOY_URL}/api/project.all" \
-            -H "accept: application/json" \
-            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
-            -H "x-api-key: ${DOKPLOY_API_KEY}" \
-            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
-
-          sed -n '1,50p' dokploy-api-auth-response.txt
-
-      - name: Debug Dokploy redirect
-        if: inputs.debug_dokploy == true
-        shell: bash
-        env:
-          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-        run: |
-          set -euo pipefail
-
-          DOKPLOY_URL="${DOKPLOY_URL%/}"
-
-          curl -i -sS -o dokploy-redirect-debug-response.txt -X POST \
-            "${DOKPLOY_URL}/api/application.saveDockerProvider" \
-            -H "accept: application/json" \
-            -H "Content-Type: application/json" \
-            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
-            -H "x-api-key: ${DOKPLOY_API_KEY}" \
-            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
-            -d '{}'
-
-          sed -n '1,40p' dokploy-redirect-debug-response.txt
 
       - name: Update Dokploy Docker image
         shell: bash

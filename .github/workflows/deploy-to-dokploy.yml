@@ -30,7 +30,7 @@ on:
         default: true
 
 env:
-  RELEASE_BRANCH: release
+  RELEASE_BRANCH_PREFIX: release
   REGISTRY: ghcr.io
 
   # Za repo "moja-org/moj-repo", ovo je "moja-org".
@@ -54,10 +54,11 @@ jobs:
       image_exists: ${{ steps.check_image.outputs.exists }}
       is_latest_release: ${{ steps.release.outputs.is_latest_release }}
       service_tag: ${{ steps.release.outputs.service_tag }}
+      version: ${{ steps.release.outputs.version }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -89,6 +90,7 @@ jobs:
           IMAGE="${REGISTRY}/${IMAGE_NAMESPACE}/${IMAGE_NAME}"
           IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
 
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
           echo "dockerfile=$DOCKERFILE" >> "$GITHUB_OUTPUT"
           echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
@@ -108,7 +110,7 @@ jobs:
             exit 1
           fi
 
-          git fetch origin "$RELEASE_BRANCH" --tags --force
+          git fetch origin "+refs/heads/*:refs/remotes/origin/*" --tags --force
 
           if ! git rev-parse "$SERVICE_TAG^{tag}" >/dev/null 2>&1 && ! git rev-parse "$SERVICE_TAG^{commit}" >/dev/null 2>&1; then
             echo "Git tag '$SERVICE_TAG' does not exist."
@@ -117,26 +119,50 @@ jobs:
 
           TAG_COMMIT="$(git rev-list -n 1 "$SERVICE_TAG")"
 
-          if ! git merge-base --is-ancestor "$TAG_COMMIT" "origin/$RELEASE_BRANCH"; then
-            echo "Tag '$SERVICE_TAG' is not reachable from origin/$RELEASE_BRANCH."
+          mapfile -t RELEASE_BRANCHES < <(git for-each-ref --format='%(refname:short)' "refs/remotes/origin/${RELEASE_BRANCH_PREFIX}/*")
+
+          if [[ "${#RELEASE_BRANCHES[@]}" -eq 0 ]]; then
+            echo "No remote release branches found under origin/${RELEASE_BRANCH_PREFIX}/*."
             exit 1
           fi
 
+          TAG_RELEASE_BRANCH=""
+          for RELEASE_BRANCH in "${RELEASE_BRANCHES[@]}"; do
+            if git merge-base --is-ancestor "$TAG_COMMIT" "$RELEASE_BRANCH"; then
+              TAG_RELEASE_BRANCH="$RELEASE_BRANCH"
+              break
+            fi
+          done
+
+          if [[ -z "$TAG_RELEASE_BRANCH" ]]; then
+            echo "Tag '$SERVICE_TAG' is not reachable from any origin/${RELEASE_BRANCH_PREFIX}/* branch."
+            exit 1
+          fi
+
+          SERVICE_TAGS="$(
+            for RELEASE_BRANCH in "${RELEASE_BRANCHES[@]}"; do
+              git tag --merged "$RELEASE_BRANCH"
+            done \
+              | grep -E "^${SERVICE}@[0-9]+\.[0-9]+\.[0-9]+$" || true
+          )"
+
           LATEST_SERVICE_VERSION="$(
-            git tag --merged "origin/$RELEASE_BRANCH" \
-              | grep -E "^${SERVICE}@[0-9]+\.[0-9]+\.[0-9]+$" \
+            printf '%s\n' "$SERVICE_TAGS" \
+              | sort -u \
               | sed "s/^${SERVICE}@//" \
               | sort -V \
               | tail -n 1
           )"
 
           if [[ -z "$LATEST_SERVICE_VERSION" ]]; then
-            echo "No semver tags found for service '$SERVICE' on origin/$RELEASE_BRANCH."
+            echo "No semver tags found for service '$SERVICE' on origin/${RELEASE_BRANCH_PREFIX}/* branches."
             exit 1
           fi
 
           echo "Selected service tag: $SERVICE_TAG"
-          echo "Latest service version on $RELEASE_BRANCH: ${SERVICE}@${LATEST_SERVICE_VERSION}"
+          echo "Selected version: $VERSION"
+          echo "Selected tag release branch: $TAG_RELEASE_BRANCH"
+          echo "Latest service version on origin/${RELEASE_BRANCH_PREFIX}/*: ${SERVICE}@${LATEST_SERVICE_VERSION}"
 
           if [[ "$VERSION" == "$LATEST_SERVICE_VERSION" ]]; then
             echo "is_latest_release=true" >> "$GITHUB_OUTPUT"
@@ -145,9 +171,10 @@ jobs:
           fi
 
           echo "service_tag=$SERVICE_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Checkout selected service release tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.release.outputs.service_tag }}
           fetch-depth: 0
@@ -166,7 +193,7 @@ jobs:
           set -euo pipefail
 
           IMAGE="${{ steps.meta.outputs.image }}"
-          VERSION="${{ inputs.version }}"
+          VERSION="${{ steps.release.outputs.version }}"
 
           if docker manifest inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
             echo "Image already exists: $IMAGE:$VERSION"
@@ -188,7 +215,7 @@ jobs:
           file: ${{ steps.meta.outputs.dockerfile }}
           push: true
           tags: |
-            ${{ steps.meta.outputs.image }}:${{ inputs.version }}
+            ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -200,7 +227,7 @@ jobs:
           file: ${{ steps.meta.outputs.dockerfile }}
           push: true
           tags: |
-            ${{ steps.meta.outputs.image }}:${{ inputs.version }}
+            ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
             ${{ steps.meta.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -212,7 +239,7 @@ jobs:
           set -euo pipefail
 
           IMAGE="${{ steps.meta.outputs.image }}"
-          VERSION="${{ inputs.version }}"
+          VERSION="${{ steps.release.outputs.version }}"
 
           docker buildx imagetools create \
             --tag "$IMAGE:latest" \
@@ -271,7 +298,7 @@ jobs:
           DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
           DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.dokploy_app_id }}
           IMAGE: ${{ needs.build.outputs.image }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.build.outputs.version }}
           REGISTRY: ${{ env.REGISTRY }}
         run: |
           set -euo pipefail

@@ -379,6 +379,14 @@ jobs:
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             -d "{\"applicationId\":\"${DOKPLOY_APP_ID}\"}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-deploy-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
 
       - name: Update Dokploy Compose backend image
         if: steps.dokploy.outputs.target_type == 'compose'
@@ -390,21 +398,31 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           DOKPLOY_COMPOSE_ID: ${{ steps.dokploy.outputs.target_id }}
           IMAGE: ${{ needs.build.outputs.image }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
           set -euo pipefail
 
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
           DOCKER_IMAGE="${IMAGE}:${VERSION}"
 
-          curl -fsS -X GET \
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-response.json -w "%{http_code}" -X GET \
             "${DOKPLOY_URL}/api/compose.one?composeId=${DOKPLOY_COMPOSE_ID}" \
             -H "accept: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
-            > dokploy-compose.json
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
+          )"
 
-          CURRENT_ENV="$(jq -r '.env // ""' dokploy-compose.json)"
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-compose-response.json
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
+
+          CURRENT_ENV="$(jq -r '.env // ""' dokploy-compose-response.json)"
 
           UPDATED_ENV="$(
             printf '%s\n' "$CURRENT_ENV" \
@@ -432,14 +450,24 @@ jobs:
               env: $env
             }' > dokploy-compose-env.json
 
-          curl -fsS -X POST \
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-save-env-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/compose.saveEnvironment" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             --data-binary @dokploy-compose-env.json
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-compose-save-env-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
 
       - name: Trigger Dokploy Compose redeploy through Cloudflare Access
         if: steps.dokploy.outputs.target_type == 'compose'
@@ -453,10 +481,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -fsS -X POST \
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-redeploy-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/compose.redeploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
@@ -464,7 +496,7 @@ jobs:
           )"
 
           echo "HTTP_CODE=${HTTP_CODE}"
-          cat dokploy-deploy-response.txt
+          cat dokploy-compose-redeploy-response.txt
 
           if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
             exit 1

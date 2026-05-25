@@ -128,3 +128,89 @@ docker system prune --volumes
 ```
 
 These commands can delete the PostgreSQL volume and remove the saved database data.
+
+---
+
+# Dokploy deployment
+
+Use `docker-compose.dokploy.yml` for the Dokploy Docker Compose app that runs:
+
+- `backend`
+- `sandbox-image-puller`
+- `db`
+
+Keep the frontend as a separate Dokploy Web Application.
+
+The backend service mounts `/var/run/docker.sock` and runs as `root` in this compose file so the Docker CLI inside the backend can create sandbox containers on the Dokploy host.
+
+## Dokploy Compose environment
+
+Set these variables in the Dokploy Docker Compose environment UI:
+
+```env
+BACKEND_CORE_IMAGE=ghcr.io/your-org/backend-core:1.0.0
+CPP_COMPILE_IMAGE=ghcr.io/your-org/cpp-compile:1.0.0
+CPP_RUN_IMAGE=ghcr.io/your-org/cpp-run:1.0.0
+
+POSTGRES_DB=appdb
+POSTGRES_USER=appuser
+POSTGRES_PASSWORD=change-me
+
+MP_JWT_VERIFY_ISSUER=code-evaluation
+
+QUARKUS_HTTP_CORS_ORIGINS=https://your-frontend-domain.com
+QUARKUS_MAILER_FROM=noreply@your-domain.com
+QUARKUS_MAILER_HOST=smtp.example.com
+QUARKUS_MAILER_PORT=587
+QUARKUS_MAILER_USERNAME=smtp-user
+QUARKUS_MAILER_PASSWORD=smtp-password
+QUARKUS_MAILER_START_TLS=REQUIRED
+
+SANDBOX_REGISTRY_URL=ghcr.io
+SANDBOX_REGISTRY_USERNAME=your-github-user
+SANDBOX_REGISTRY_PASSWORD=github-token-with-package-read
+```
+
+Add these as Dokploy file mounts for the Compose app:
+
+```txt
+publicKey.pem
+privateKey.pem
+```
+
+The compose file mounts them into the backend container at:
+
+```txt
+/run/secrets/publicKey.pem
+/run/secrets/privateKey.pem
+```
+
+## GitHub Actions secrets
+
+For backend deploys through the Compose app, define:
+
+```txt
+DOKPLOY_COMPOSE_ID_BACKEND_CORE
+```
+
+For frontend deploys through the Web Application, define:
+
+```txt
+DOKPLOY_APP_ID_FRONTEND
+```
+
+The shared Dokploy secrets are still required:
+
+```txt
+DOKPLOY_URL
+DOKPLOY_API_KEY
+DOKPLOY_REGISTRY_USERNAME
+DOKPLOY_REGISTRY_PASSWORD
+CF_ACCESS_CLIENT_ID
+CF_ACCESS_CLIENT_SECRET
+```
+
+Build and push the sandbox images with the same workflow by selecting `cpp-compile` and `cpp-run`.
+Use `deploy=false` for those two services; they are pulled by the backend when it runs sandbox containers.
+
+If the sandbox images are public, `SANDBOX_REGISTRY_USERNAME` and `SANDBOX_REGISTRY_PASSWORD` can be omitted.

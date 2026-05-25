@@ -22,13 +22,17 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.logging.Logger;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class CppDockerSandboxService {
     private static final Logger LOG = Logger.getLogger(CppDockerSandboxService.class);
 
-    private static final String IMAGE_COMPILE = "cpp-compile:latest";
-    private static final String IMAGE_RUN     = "cpp-run:latest";
+    @ConfigProperty(name = "sandbox.cpp.compile-image", defaultValue = "cpp-compile:latest")
+    String imageCompile;
+
+    @ConfigProperty(name = "sandbox.cpp.run-image", defaultValue = "cpp-run:latest")
+    String imageRun;
 
     private static final String CPUS = "1.0";
     private static final String MEMORY = "256m";
@@ -332,7 +336,7 @@ public class CppDockerSandboxService {
                 // per-job volume for artifacts
                 "-v", volume + ":/runexec:rw",
 
-                IMAGE_COMPILE,
+                imageCompile,
                 "/bin/sh", "-c", inner
         ));
     }
@@ -364,7 +368,7 @@ public class CppDockerSandboxService {
                 // same volume, read-only
                 "-v", volume + ":/runexec:ro",
 
-                IMAGE_RUN
+                imageRun
         ));
     }
 

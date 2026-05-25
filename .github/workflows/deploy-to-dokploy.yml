@@ -29,6 +29,12 @@ on:
         type: boolean
         default: true
 
+      debug_dokploy:
+        description: "Print Dokploy/Cloudflare debug responses"
+        required: false
+        type: boolean
+        default: false
+
 env:
   RELEASE_BRANCH: release
   REGISTRY: ghcr.io
@@ -262,6 +268,43 @@ jobs:
 
           echo "dokploy_app_id=$DOKPLOY_APP_ID" >> "$GITHUB_OUTPUT"
 
+      - name: Test Cloudflare Access to Dokploy
+        if: inputs.debug_dokploy == true
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          curl -i -sS -o dokploy-cloudflare-response.txt \
+            "${DOKPLOY_URL}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
+
+          sed -n '1,30p' dokploy-cloudflare-response.txt
+
+      - name: Test Dokploy API auth
+        if: inputs.debug_dokploy == true
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          curl -i -sS -o dokploy-api-auth-response.txt \
+            "${DOKPLOY_URL}/api/project.all" \
+            -H "accept: application/json" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
+
+          sed -n '1,50p' dokploy-api-auth-response.txt
+
       - name: Update Dokploy Docker image
         shell: bash
         env:
@@ -294,7 +337,8 @@ jobs:
               registryUrl: $registryUrl
             }' > dokploy-docker-provider.json
 
-          curl -fsS -X POST \
+          HTTP_CODE="$(
+            curl -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.saveDockerProvider" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
@@ -302,6 +346,14 @@ jobs:
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             --data-binary @dokploy-docker-provider.json
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-save-docker-provider-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
 
       - name: Trigger Dokploy deployment through Cloudflare Access
         shell: bash
@@ -314,7 +366,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -fsS -X POST \
+          HTTP_CODE="$(
+            curl -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.deploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
@@ -322,3 +375,11 @@ jobs:
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             -d "{\"applicationId\":\"${DOKPLOY_APP_ID}\"}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-deploy-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi

@@ -278,8 +278,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -i -sS -o dokploy-cloudflare-response.txt \
-            "${DOKPLOY_URL}" \
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          curl -L -i -sS -o dokploy-cloudflare-response.txt \
+            "${DOKPLOY_URL}/" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
 
@@ -296,9 +299,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -i -sS -o dokploy-api-auth-response.txt \
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          curl -L -i -sS -o dokploy-api-auth-response.txt \
             "${DOKPLOY_URL}/api/project.all" \
             -H "accept: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
@@ -321,6 +327,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
           DOCKER_IMAGE="${IMAGE}:${VERSION}"
 
           jq -n \
@@ -338,10 +345,11 @@ jobs:
             }' > dokploy-docker-provider.json
 
           HTTP_CODE="$(
-            curl -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
+            curl -L -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.saveDockerProvider" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
@@ -366,11 +374,14 @@ jobs:
         run: |
           set -euo pipefail
 
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
           HTTP_CODE="$(
-            curl -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
+            curl -L -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.deploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \

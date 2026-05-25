@@ -171,7 +171,7 @@ SANDBOX_REGISTRY_USERNAME=your-github-user
 SANDBOX_REGISTRY_PASSWORD=github-token-with-package-read
 ```
 
-Add these as Dokploy file mounts for the Compose app:
+Add these as Dokploy file mounts for the Compose app (inset PKCS#8 values from [this website](https://emn178.github.io/online-tools/rsa/key-generator/)):
 
 ```txt
 publicKey.pem

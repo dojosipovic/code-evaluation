@@ -34,8 +34,7 @@ env:
   REGISTRY: ghcr.io
 
   # Za repo "moja-org/moj-repo", ovo je "moja-org".
-  # Finalni image će biti npr:
-  # ghcr.io/moja-org/my-frontend-production:1.2.3
+  # Finalni image je npr. ghcr.io/moja-org/frontend:1.2.3
   IMAGE_NAMESPACE: ${{ github.repository_owner }}
 
 jobs:
@@ -72,13 +71,13 @@ jobs:
 
           case "$SERVICE" in
             backend-core)
-              DOCKERFILE="services/api/Dockerfile"
-              CONTEXT="services/backend-core"
+              DOCKERFILE="backend-core/src/main/docker/Dockerfile.jvm"
+              CONTEXT="."
               IMAGE_NAME="backend-core"
               ;;
             frontend)
-              DOCKERFILE="services/frontend/Dockerfile"
-              CONTEXT="services/frontend"
+              DOCKERFILE="frontend/Dockerfile"
+              CONTEXT="frontend"
               IMAGE_NAME="frontend"
               ;;
             *)
@@ -178,7 +177,7 @@ jobs:
           fi
 
       - name: Set up Docker Buildx
-        if: steps.check_image.outputs.exists == 'false'
+        if: steps.check_image.outputs.exists == 'false' || steps.release.outputs.is_latest_release == 'true'
         uses: docker/setup-buildx-action@v4
 
       - name: Build and push version image
@@ -205,6 +204,19 @@ jobs:
             ${{ steps.meta.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Update latest tag for existing latest release image
+        if: steps.check_image.outputs.exists == 'true' && steps.release.outputs.is_latest_release == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE="${{ steps.meta.outputs.image }}"
+          VERSION="${{ inputs.version }}"
+
+          docker buildx imagetools create \
+            --tag "$IMAGE:latest" \
+            "$IMAGE:$VERSION"
 
   deploy:
     runs-on: ubuntu-latest
@@ -250,16 +262,63 @@ jobs:
 
           echo "dokploy_app_id=$DOKPLOY_APP_ID" >> "$GITHUB_OUTPUT"
 
+      - name: Update Dokploy Docker image
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
+          DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
+          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.dokploy_app_id }}
+          IMAGE: ${{ needs.build.outputs.image }}
+          VERSION: ${{ inputs.version }}
+          REGISTRY: ${{ env.REGISTRY }}
+        run: |
+          set -euo pipefail
+
+          DOCKER_IMAGE="${IMAGE}:${VERSION}"
+
+          jq -n \
+            --arg applicationId "$DOKPLOY_APP_ID" \
+            --arg dockerImage "$DOCKER_IMAGE" \
+            --arg username "$DOKPLOY_REGISTRY_USERNAME" \
+            --arg password "$DOKPLOY_REGISTRY_PASSWORD" \
+            --arg registryUrl "$REGISTRY" \
+            '{
+              applicationId: $applicationId,
+              dockerImage: $dockerImage,
+              username: (if $username == "" then null else $username end),
+              password: (if $password == "" then null else $password end),
+              registryUrl: $registryUrl
+            }' > dokploy-docker-provider.json
+
+          curl -fsS -X POST \
+            "${DOKPLOY_URL}/api/application.saveDockerProvider" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            --data-binary @dokploy-docker-provider.json
+
       - name: Trigger Dokploy deployment through Cloudflare Access
         shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.dokploy_app_id }}
         run: |
           set -euo pipefail
 
           curl -fsS -X POST \
-            "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
+            "${DOKPLOY_URL}/api/application.deploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
-            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
-            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
-            -d '{"applicationId":"${{ steps.dokploy.outputs.dokploy_app_id }}"}'
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            -d "{\"applicationId\":\"${DOKPLOY_APP_ID}\"}"

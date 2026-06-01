@@ -17,6 +17,8 @@ on:
         options:
           - backend-core
           - frontend
+          - cpp-compile
+          - cpp-run
 
       version:
         description: "Service release version, format x.x.x"
@@ -30,7 +32,7 @@ on:
         default: true
 
 env:
-  RELEASE_BRANCH: release
+  RELEASE_BRANCH_PREFIX: release
   REGISTRY: ghcr.io
 
   # Za repo "moja-org/moj-repo", ovo je "moja-org".
@@ -54,10 +56,11 @@ jobs:
       image_exists: ${{ steps.check_image.outputs.exists }}
       is_latest_release: ${{ steps.release.outputs.is_latest_release }}
       service_tag: ${{ steps.release.outputs.service_tag }}
+      version: ${{ steps.release.outputs.version }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -80,6 +83,16 @@ jobs:
               CONTEXT="frontend"
               IMAGE_NAME="frontend"
               ;;
+            cpp-compile)
+              DOCKERFILE="cpp-compile/Dockerfile"
+              CONTEXT="cpp-compile"
+              IMAGE_NAME="cpp-compile"
+              ;;
+            cpp-run)
+              DOCKERFILE="cpp-run/Dockerfile"
+              CONTEXT="cpp-run"
+              IMAGE_NAME="cpp-run"
+              ;;
             *)
               echo "Unknown service: $SERVICE"
               exit 1
@@ -89,6 +102,7 @@ jobs:
           IMAGE="${REGISTRY}/${IMAGE_NAMESPACE}/${IMAGE_NAME}"
           IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
 
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
           echo "dockerfile=$DOCKERFILE" >> "$GITHUB_OUTPUT"
           echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
@@ -108,7 +122,7 @@ jobs:
             exit 1
           fi
 
-          git fetch origin "$RELEASE_BRANCH" --tags --force
+          git fetch origin "+refs/heads/*:refs/remotes/origin/*" --tags --force
 
           if ! git rev-parse "$SERVICE_TAG^{tag}" >/dev/null 2>&1 && ! git rev-parse "$SERVICE_TAG^{commit}" >/dev/null 2>&1; then
             echo "Git tag '$SERVICE_TAG' does not exist."
@@ -117,26 +131,50 @@ jobs:
 
           TAG_COMMIT="$(git rev-list -n 1 "$SERVICE_TAG")"
 
-          if ! git merge-base --is-ancestor "$TAG_COMMIT" "origin/$RELEASE_BRANCH"; then
-            echo "Tag '$SERVICE_TAG' is not reachable from origin/$RELEASE_BRANCH."
+          mapfile -t RELEASE_BRANCHES < <(git for-each-ref --format='%(refname:short)' "refs/remotes/origin/${RELEASE_BRANCH_PREFIX}/*")
+
+          if [[ "${#RELEASE_BRANCHES[@]}" -eq 0 ]]; then
+            echo "No remote release branches found under origin/${RELEASE_BRANCH_PREFIX}/*."
             exit 1
           fi
 
+          TAG_RELEASE_BRANCH=""
+          for RELEASE_BRANCH in "${RELEASE_BRANCHES[@]}"; do
+            if git merge-base --is-ancestor "$TAG_COMMIT" "$RELEASE_BRANCH"; then
+              TAG_RELEASE_BRANCH="$RELEASE_BRANCH"
+              break
+            fi
+          done
+
+          if [[ -z "$TAG_RELEASE_BRANCH" ]]; then
+            echo "Tag '$SERVICE_TAG' is not reachable from any origin/${RELEASE_BRANCH_PREFIX}/* branch."
+            exit 1
+          fi
+
+          SERVICE_TAGS="$(
+            for RELEASE_BRANCH in "${RELEASE_BRANCHES[@]}"; do
+              git tag --merged "$RELEASE_BRANCH"
+            done \
+              | grep -E "^${SERVICE}@[0-9]+\.[0-9]+\.[0-9]+$" || true
+          )"
+
           LATEST_SERVICE_VERSION="$(
-            git tag --merged "origin/$RELEASE_BRANCH" \
-              | grep -E "^${SERVICE}@[0-9]+\.[0-9]+\.[0-9]+$" \
+            printf '%s\n' "$SERVICE_TAGS" \
+              | sort -u \
               | sed "s/^${SERVICE}@//" \
               | sort -V \
               | tail -n 1
           )"
 
           if [[ -z "$LATEST_SERVICE_VERSION" ]]; then
-            echo "No semver tags found for service '$SERVICE' on origin/$RELEASE_BRANCH."
+            echo "No semver tags found for service '$SERVICE' on origin/${RELEASE_BRANCH_PREFIX}/* branches."
             exit 1
           fi
 
           echo "Selected service tag: $SERVICE_TAG"
-          echo "Latest service version on $RELEASE_BRANCH: ${SERVICE}@${LATEST_SERVICE_VERSION}"
+          echo "Selected version: $VERSION"
+          echo "Selected tag release branch: $TAG_RELEASE_BRANCH"
+          echo "Latest service version on origin/${RELEASE_BRANCH_PREFIX}/*: ${SERVICE}@${LATEST_SERVICE_VERSION}"
 
           if [[ "$VERSION" == "$LATEST_SERVICE_VERSION" ]]; then
             echo "is_latest_release=true" >> "$GITHUB_OUTPUT"
@@ -145,9 +183,10 @@ jobs:
           fi
 
           echo "service_tag=$SERVICE_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Checkout selected service release tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.release.outputs.service_tag }}
           fetch-depth: 0
@@ -166,7 +205,7 @@ jobs:
           set -euo pipefail
 
           IMAGE="${{ steps.meta.outputs.image }}"
-          VERSION="${{ inputs.version }}"
+          VERSION="${{ steps.release.outputs.version }}"
 
           if docker manifest inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
             echo "Image already exists: $IMAGE:$VERSION"
@@ -188,7 +227,7 @@ jobs:
           file: ${{ steps.meta.outputs.dockerfile }}
           push: true
           tags: |
-            ${{ steps.meta.outputs.image }}:${{ inputs.version }}
+            ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -200,7 +239,7 @@ jobs:
           file: ${{ steps.meta.outputs.dockerfile }}
           push: true
           tags: |
-            ${{ steps.meta.outputs.image }}:${{ inputs.version }}
+            ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
             ${{ steps.meta.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -212,7 +251,7 @@ jobs:
           set -euo pipefail
 
           IMAGE="${{ steps.meta.outputs.image }}"
-          VERSION="${{ inputs.version }}"
+          VERSION="${{ steps.release.outputs.version }}"
 
           docker buildx imagetools create \
             --tag "$IMAGE:latest" \
@@ -222,10 +261,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    if: inputs.deploy == true
+    if: inputs.deploy == true && (inputs.service == 'backend-core' || inputs.service == 'frontend')
 
-    # Ovo mora odgovarati stvarnom GitHub Environmentu:
-    # Settings -> Environments -> production
     environment:
       name: ${{ inputs.environment }}
 
@@ -234,7 +271,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
-      - name: Resolve Dokploy application
+      - name: Resolve Dokploy target
         id: dokploy
         shell: bash
         run: |
@@ -244,10 +281,12 @@ jobs:
 
           case "$SERVICE" in
             backend-core)
-              DOKPLOY_APP_ID="${{ secrets.DOKPLOY_APP_ID_BACKEND_CORE }}"
+              DOKPLOY_TARGET_TYPE="compose"
+              DOKPLOY_TARGET_ID="${{ secrets.DOKPLOY_COMPOSE_ID_BACKEND_CORE }}"
               ;;
             frontend)
-              DOKPLOY_APP_ID="${{ secrets.DOKPLOY_APP_ID_FRONTEND }}"
+              DOKPLOY_TARGET_TYPE="application"
+              DOKPLOY_TARGET_ID="${{ secrets.DOKPLOY_APP_ID_FRONTEND }}"
               ;;
             *)
               echo "Unknown service: $SERVICE"
@@ -255,14 +294,16 @@ jobs:
               ;;
           esac
 
-          if [[ -z "$DOKPLOY_APP_ID" ]]; then
-            echo "Dokploy app id is empty for service '$SERVICE'."
+          if [[ -z "$DOKPLOY_TARGET_ID" ]]; then
+            echo "Dokploy target id is empty for service '$SERVICE'."
             exit 1
           fi
 
-          echo "dokploy_app_id=$DOKPLOY_APP_ID" >> "$GITHUB_OUTPUT"
+          echo "target_type=$DOKPLOY_TARGET_TYPE" >> "$GITHUB_OUTPUT"
+          echo "target_id=$DOKPLOY_TARGET_ID" >> "$GITHUB_OUTPUT"
 
       - name: Update Dokploy Docker image
+        if: steps.dokploy.outputs.target_type == 'application'
         shell: bash
         env:
           DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
@@ -271,13 +312,14 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
           DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
-          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.dokploy_app_id }}
+          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.target_id }}
           IMAGE: ${{ needs.build.outputs.image }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.build.outputs.version }}
           REGISTRY: ${{ env.REGISTRY }}
         run: |
           set -euo pipefail
 
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
           DOCKER_IMAGE="${IMAGE}:${VERSION}"
 
           jq -n \
@@ -294,31 +336,168 @@ jobs:
               registryUrl: $registryUrl
             }' > dokploy-docker-provider.json
 
-          curl -fsS -X POST \
+          HTTP_CODE="$(
+            curl -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.saveDockerProvider" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             --data-binary @dokploy-docker-provider.json
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-save-docker-provider-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
 
       - name: Trigger Dokploy deployment through Cloudflare Access
+        if: steps.dokploy.outputs.target_type == 'application'
         shell: bash
         env:
           DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.dokploy_app_id }}
+          DOKPLOY_APP_ID: ${{ steps.dokploy.outputs.target_id }}
         run: |
           set -euo pipefail
 
-          curl -fsS -X POST \
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
             "${DOKPLOY_URL}/api/application.deploy" \
             -H "accept: application/json" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
             -H "x-api-key: ${DOKPLOY_API_KEY}" \
             -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
             -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
             -d "{\"applicationId\":\"${DOKPLOY_APP_ID}\"}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-deploy-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
+
+      - name: Update Dokploy Compose backend image
+        if: steps.dokploy.outputs.target_type == 'compose'
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_COMPOSE_ID: ${{ steps.dokploy.outputs.target_id }}
+          IMAGE: ${{ needs.build.outputs.image }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+          DOCKER_IMAGE="${IMAGE}:${VERSION}"
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-response.json -w "%{http_code}" -X GET \
+            "${DOKPLOY_URL}/api/compose.one?composeId=${DOKPLOY_COMPOSE_ID}" \
+            -H "accept: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-compose-response.json
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
+
+          CURRENT_ENV="$(jq -r '.env // ""' dokploy-compose-response.json)"
+
+          UPDATED_ENV="$(
+            printf '%s\n' "$CURRENT_ENV" \
+              | awk -v key="BACKEND_CORE_IMAGE" -v value="$DOCKER_IMAGE" '
+                  BEGIN { found = 0 }
+                  $0 ~ "^" key "=" {
+                    print key "=" value
+                    found = 1
+                    next
+                  }
+                  { print }
+                  END {
+                    if (found == 0) {
+                      print key "=" value
+                    }
+                  }
+                '
+          )"
+
+          jq -n \
+            --arg composeId "$DOKPLOY_COMPOSE_ID" \
+            --arg env "$UPDATED_ENV" \
+            '{
+              composeId: $composeId,
+              env: $env
+            }' > dokploy-compose-env.json
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-save-env-response.txt -w "%{http_code}" -X POST \
+            "${DOKPLOY_URL}/api/compose.saveEnvironment" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            --data-binary @dokploy-compose-env.json
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-compose-save-env-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
+
+      - name: Trigger Dokploy Compose redeploy through Cloudflare Access
+        if: steps.dokploy.outputs.target_type == 'compose'
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_COMPOSE_ID: ${{ steps.dokploy.outputs.target_id }}
+        run: |
+          set -euo pipefail
+
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-compose-redeploy-response.txt -w "%{http_code}" -X POST \
+            "${DOKPLOY_URL}/api/compose.redeploy" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            -d "{\"composeId\":\"${DOKPLOY_COMPOSE_ID}\"}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-compose-redeploy-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi

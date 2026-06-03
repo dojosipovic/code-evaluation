@@ -17,6 +17,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,5 +75,17 @@ public class Task extends PanacheEntityBase {
     public void removeAllTests() {
         tests.forEach(test -> test.setTask(null));
         tests.clear();
+    }
+
+    public boolean isOwner(String username) {
+        return Objects.equals(user.getUsername(), username);
+    }
+
+    public boolean isTaskShared() {
+        return Boolean.TRUE.equals(shared);
+    }
+
+    public boolean isPublished() {
+        return status == TaskStatus.PUBLISHED;
     }
 }

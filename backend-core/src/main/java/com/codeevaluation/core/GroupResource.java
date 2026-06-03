@@ -1,6 +1,8 @@
 package com.codeevaluation.core;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
+import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupMemberDto;
@@ -8,6 +10,7 @@ import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.helper.PagedParams;
+import com.codeevaluation.core.service.AssignmentService;
 import com.codeevaluation.core.service.GroupService;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -32,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class GroupResource {
 
     private final GroupService groupService;
+    private final AssignmentService assignmentService;
 
     @POST
     @RolesAllowed({ "ADMIN", "PROF" })
@@ -105,5 +109,15 @@ public class GroupResource {
             @BeanParam PagedParams pagedParams
     ) {
         return groupService.getNonMembers(groupId, pagedParams);
+    }
+
+    @POST
+    @Path("/{groupId}/assignments")
+    @RolesAllowed({ "ADMIN", "PROF" })
+    public AssignmentResponseDto createAssignment(
+            @PathParam("groupId") Long groupId,
+            AssignmentCreateDto assignmentCreateDto
+    ) {
+        return assignmentService.create(groupId, assignmentCreateDto);
     }
 }

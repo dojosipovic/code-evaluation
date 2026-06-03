@@ -22,7 +22,7 @@ public class WebAppExceptionMapper implements ExceptionMapper<WebApplicationExce
 
     @Override
     public Response toResponse(WebApplicationException e) {
-        log.warn("Exception: {}", e.getMessage(), e);
+        log.warn("Exception: {}", e.getMessage());
 
         int status = e.getResponse().getStatus();
         String reason = Response.Status.fromStatusCode(status) != null

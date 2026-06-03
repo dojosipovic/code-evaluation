@@ -70,7 +70,7 @@ public class AssignmentValidator {
         if (Duration.between(assignmentCreateDto.startsAt(), assignmentCreateDto.endsAt())
                 .compareTo(MIN_DURATION) < 0) {
             throw new BadRequestException(
-                    "Assignment duration must be at least " + MIN_DURATION + " minutes"
+                    "Assignment duration must be at least " + MIN_DURATION.toMinutes() + " minutes"
             );
         }
     }

@@ -13,6 +13,7 @@ import com.codeevaluation.core.repository.AssignmentRepository;
 import com.codeevaluation.core.repository.GroupRepository;
 import com.codeevaluation.core.repository.TaskRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class AssignmentService {
     private final GroupAccessPolicy groupAccessPolicy;
     private final TaskAccessPolicy taskAccessPolicy;
 
+    @Transactional
     public AssignmentResponseDto create(Long groupId, AssignmentCreateDto assignmentCreateDto) {
         assignmentValidator.validateAssignment(assignmentCreateDto);
 

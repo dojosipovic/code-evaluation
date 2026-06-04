@@ -17,6 +17,57 @@
   </app-task-create-dialog>
 }
 
+<div class="assignments-toolbar">
+  <div class="filter-field search-field">
+    <label for="assignmentSearch">Search</label>
+    <input
+      id="assignmentSearch"
+      pInputText
+      [(ngModel)]="assignmentFilters.search"
+      (ngModelChange)="onSearchInput($event)"
+      (keyup.enter)="onApplyFilters()"
+      placeholder="Pretrazi zadatke grupe" />
+  </div>
+
+  <div class="filter-field">
+    <label for="assignmentSort">Sort</label>
+    <p-select
+      inputId="assignmentSort"
+      [options]="sortOptions"
+      [(ngModel)]="sortField"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="false"
+      (ngModelChange)="onSortChange()">
+    </p-select>
+  </div>
+
+  <div class="filter-field">
+    <label for="assignmentSortDirection">Smjer</label>
+    <p-select
+      inputId="assignmentSortDirection"
+      [options]="sortDirectionOptions"
+      [(ngModel)]="sortDirection"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="false"
+      (ngModelChange)="onSortChange()">
+    </p-select>
+  </div>
+
+  <div class="toolbar-actions">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-refresh"
+      label="Reset"
+      class="p-button-secondary"
+      [disabled]="loading()"
+      (click)="resetFilters()">
+    </button>
+  </div>
+</div>
+
 <div class="assignments-list">
   @if (loading()) {
     @for (_ of skeletonRows; track $index) {

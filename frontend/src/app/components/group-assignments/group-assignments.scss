@@ -15,6 +15,31 @@
   padding-right: 4px;
 }
 
+.assignments-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 190px) minmax(130px, 160px) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.toolbar-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .assignment-panel-header {
   width: 100%;
   min-width: 0;
@@ -159,6 +184,9 @@
   }
 
   .p-tag,
+  .p-inputtext,
+  .p-select,
+  .p-button,
   .p-paginator-rpp-dropdown {
     max-width: 100%;
     border-radius: 10px;
@@ -194,6 +222,14 @@
 }
 
 @media (max-width: 768px) {
+  .assignments-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-actions .p-button {
+    width: 100%;
+  }
+
   .assignment-panel-header {
     align-items: flex-start;
     flex-direction: column;

@@ -5,20 +5,25 @@ import {
   Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   SimpleChanges,
   inject,
   signal
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
+import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { SortDirection } from '../../config/app-types';
 import { GroupService } from '../../services/group.service';
 import { IAssignmentListItem } from '../../models/assignment/IAssignmentListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
@@ -30,10 +35,13 @@ import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
   selector: 'app-group-assignments',
   imports: [
     CommonModule,
+    FormsModule,
     ButtonModule,
     ConfirmDialogModule,
+    InputTextModule,
     PaginatorModule,
     PanelModule,
+    SelectModule,
     SkeletonModule,
     TagModule,
     TooltipModule,
@@ -44,10 +52,13 @@ import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
   templateUrl: './group-assignments.html',
   styleUrl: './group-assignments.scss',
 })
-export class GroupAssignments implements OnChanges, OnDestroy {
+export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   private groupService = inject(GroupService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
+  private searchInput$ = new Subject<string>();
+  private applyFilters$ = new Subject<void>();
+  private lastAppliedSearch = '';
 
   @Input({ required: true }) groupId!: number;
 
@@ -59,11 +70,62 @@ export class GroupAssignments implements OnChanges, OnDestroy {
   totalRecords = 0;
   rows = 10;
   first = 0;
+  sortField = 'startsAt';
+  sortDirection: SortDirection = 'asc';
   viewerTaskId: number | null = null;
   editorTaskId: number | null = null;
   editorOpen = false;
   editorCloneMode = false;
   private countdownTimerId: ReturnType<typeof setTimeout> | null = null;
+
+  assignmentFilters = {
+    search: ''
+  };
+
+  sortOptions = [
+    { label: 'Pocetak', value: 'startsAt' },
+    { label: 'Kraj', value: 'endsAt' },
+    { label: 'Naziv', value: 'name' },
+    { label: 'Bodovi', value: 'points' },
+    { label: 'Naslov zadatka', value: 'taskTitle' },
+    { label: 'Autor', value: 'createdBy' },
+    { label: 'ID', value: 'id' }
+  ];
+
+  sortDirectionOptions = [
+    { label: 'Uzlazno', value: 'asc' },
+    { label: 'Silazno', value: 'desc' }
+  ];
+
+  ngOnInit(): void {
+    this.searchInput$
+      .pipe(
+        debounceTime(800),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(value => {
+        if (value.trim() === this.lastAppliedSearch.trim()) {
+          return;
+        }
+
+        this.assignmentFilters.search = value;
+        this.lastAppliedSearch = value;
+        this.first = 0;
+        this.loadAssignments();
+      });
+
+    this.applyFilters$
+      .pipe(
+        throttleTime(2000, undefined, { leading: true, trailing: false }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.lastAppliedSearch = this.assignmentFilters.search;
+        this.first = 0;
+        this.loadAssignments();
+      });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['groupId']) {
@@ -80,6 +142,29 @@ export class GroupAssignments implements OnChanges, OnDestroy {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
     this.loadAssignments();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchInput$.next(value);
+  }
+
+  onApplyFilters(): void {
+    this.applyFilters$.next();
+  }
+
+  onSortChange(): void {
+    this.first = 0;
+    this.loadAssignments();
+  }
+
+  resetFilters(): void {
+    this.assignmentFilters = {
+      search: ''
+    };
+    this.sortField = 'startsAt';
+    this.sortDirection = 'asc';
+    this.first = 0;
+    this.applyFilters$.next();
   }
 
   openTask(task: ITaskResponse, event?: Event): void {
@@ -229,8 +314,9 @@ export class GroupAssignments implements OnChanges, OnDestroy {
     this.groupService.getAssignments(this.groupId, {
       page: Math.floor(this.first / this.rows),
       size: this.rows,
-      sortBy: 'id',
-      sortDirection: 'desc'
+      search: this.assignmentFilters.search?.trim() || null,
+      sortBy: this.sortField,
+      sortDirection: this.sortDirection
     })
       .pipe(
         finalize(() => this.loading.set(false)),
@@ -240,6 +326,7 @@ export class GroupAssignments implements OnChanges, OnDestroy {
         next: response => {
           this.assignments = response.items;
           this.totalRecords = response.totalItems;
+          this.currentTime.set(Date.now());
           this.scheduleCountdownRefresh();
         },
         error: () => {

@@ -2,6 +2,7 @@ package com.codeevaluation.core;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
@@ -119,5 +120,15 @@ public class GroupResource {
             AssignmentCreateDto assignmentCreateDto
     ) {
         return assignmentService.create(groupId, assignmentCreateDto);
+    }
+
+    @GET
+    @Path("/{groupId}/assignments")
+    @Authenticated
+    public PagedResponse<AssignmentListItemDto> getAssignments(
+            @PathParam("groupId") Long groupId,
+            @BeanParam PagedParams pagedParams
+    ) {
+        return assignmentService.getGroupAssignments(groupId, pagedParams);
     }
 }

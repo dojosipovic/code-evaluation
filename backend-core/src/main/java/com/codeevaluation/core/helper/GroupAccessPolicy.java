@@ -21,4 +21,13 @@ public class GroupAccessPolicy {
     public boolean canCreateAssignment(Group group, User currentUser) {
         return canModifyGroup(group, currentUser);
     }
+
+    public boolean canFetchAssignments(Group group, User currentUser) {
+        return canFetchGroup(group, currentUser);
+    }
+
+    public boolean canSeeAssignmentsTask(Group group, User currentUser) {
+        return currentUser.isAdmin()
+                || group.isOwner(currentUser.getUsername());
+    }
 }

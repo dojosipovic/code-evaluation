@@ -3,8 +3,18 @@
 @if (viewerTaskId !== null) {
   <app-task-view-dialog
     [taskId]="viewerTaskId"
-    (closed)="onTaskViewerClosed()">
+    (closed)="onTaskViewerClosed()"
+    (cloneRequested)="onTaskViewerCloneRequested($event)">
   </app-task-view-dialog>
+}
+
+@if (editorOpen) {
+  <app-task-create-dialog
+    [taskId]="editorTaskId"
+    [cloneMode]="editorCloneMode"
+    (closed)="onTaskEditorClosed()"
+    (saved)="onTaskEditorSaved()">
+  </app-task-create-dialog>
 }
 
 <div class="assignments-list">

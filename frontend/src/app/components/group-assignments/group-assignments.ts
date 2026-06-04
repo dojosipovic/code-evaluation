@@ -13,6 +13,7 @@ import { GroupService } from '../../services/group.service';
 import { IAssignmentListItem } from '../../models/assignment/IAssignmentListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { ITaskResponse } from '../../models/task/ITaskResponse';
+import { TaskCreateDialog } from '../task-create-dialog/task-create-dialog';
 import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
 
 @Component({
@@ -25,6 +26,7 @@ import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
     PanelModule,
     SkeletonModule,
     TagModule,
+    TaskCreateDialog,
     TaskViewDialog
   ],
   providers: [ConfirmationService],
@@ -46,6 +48,9 @@ export class GroupAssignments implements OnChanges {
   rows = 10;
   first = 0;
   viewerTaskId: number | null = null;
+  editorTaskId: number | null = null;
+  editorOpen = false;
+  editorCloneMode = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['groupId']) {
@@ -67,6 +72,23 @@ export class GroupAssignments implements OnChanges {
 
   onTaskViewerClosed(): void {
     this.viewerTaskId = null;
+  }
+
+  onTaskViewerCloneRequested(taskId: number): void {
+    this.viewerTaskId = null;
+    this.editorTaskId = taskId;
+    this.editorCloneMode = true;
+    this.editorOpen = true;
+  }
+
+  onTaskEditorClosed(): void {
+    this.editorOpen = false;
+    this.editorTaskId = null;
+    this.editorCloneMode = false;
+  }
+
+  onTaskEditorSaved(): void {
+    this.onTaskEditorClosed();
   }
 
   getCreatorName(user: IUserResponse | null | undefined): string {

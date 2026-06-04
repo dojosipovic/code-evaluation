@@ -203,6 +203,8 @@
         [first]="first"
         [totalRecords]="totalRecords"
         [rowsPerPageOptions]="[10, 20, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first} - {last} od {totalRecords}"
         (onLazyLoad)="onLazyLoad($event)"
         class="p-datatable-sm tasks-table">
 

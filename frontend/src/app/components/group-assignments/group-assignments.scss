@@ -1,0 +1,164 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.assignments-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.assignment-panel-header {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assignment-title-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignment-id {
+  flex: 0 0 auto;
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.assignment-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.assignment-points {
+  flex: 0 0 auto;
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.assignment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.assignment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.task-tag-button {
+  width: fit-content;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+}
+
+.assignment-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assignment-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tab-empty-state {
+  padding: 28px 8px;
+  color: var(--p-text-muted-color);
+  text-align: center;
+}
+
+:host ::ng-deep {
+  .assignment-panel {
+    border-radius: 8px;
+  }
+
+  .assignment-panel .p-panel-header {
+    min-width: 0;
+    padding: 0.85rem 1rem;
+  }
+
+  .assignment-panel .p-panel-content {
+    padding: 1rem;
+  }
+
+  .p-tag,
+  .p-paginator-rpp-dropdown {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .task-tag-button .p-tag-label {
+    max-width: min(34rem, calc(100vw - 96px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .assignment-task-tag {
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
+    color: var(--p-text-color);
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 0.46rem 0.78rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .assignment-task-tag .p-tag-icon {
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+  }
+
+  .p-paginator {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .assignment-panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,84 @@
+<p-confirmDialog></p-confirmDialog>
+
+@if (viewerTaskId !== null) {
+  <app-task-view-dialog
+    [taskId]="viewerTaskId"
+    (closed)="onTaskViewerClosed()">
+  </app-task-view-dialog>
+}
+
+<div class="assignments-list">
+  @if (loading()) {
+    @for (_ of skeletonRows; track $index) {
+      <p-panel styleClass="assignment-panel">
+        <div class="assignment-skeleton">
+          <div class="assignment-header-row">
+            <p-skeleton width="12rem" height="1.35rem"></p-skeleton>
+            <p-skeleton width="5rem" height="1.5rem" borderRadius="12px"></p-skeleton>
+          </div>
+          <p-skeleton width="100%" height="1rem"></p-skeleton>
+          <p-skeleton width="70%" height="1rem"></p-skeleton>
+        </div>
+      </p-panel>
+    }
+  } @else if (assignments.length) {
+    @for (assignment of assignments; track assignment.id) {
+      <p-panel styleClass="assignment-panel">
+        <ng-template pTemplate="header">
+          <div class="assignment-panel-header">
+            <div class="assignment-title-group">
+              <span class="assignment-id">#{{ assignment.id }}</span>
+              <span class="assignment-title">{{ assignment.name }}</span>
+            </div>
+
+            <span class="assignment-points">{{ assignment.points }} pts</span>
+          </div>
+        </ng-template>
+
+        <div class="assignment-body">
+          <div class="assignment-meta">
+            <span>
+              <i class="pi pi-calendar"></i>
+              {{ assignment.startsAt | date:'dd.MM.yyyy HH:mm' }}
+            </span>
+            <span>
+              <i class="pi pi-flag"></i>
+              {{ assignment.endsAt | date:'dd.MM.yyyy HH:mm' }}
+            </span>
+            <span>
+              <i class="pi pi-user"></i>
+              {{ getCreatorName(assignment.createdBy) }}
+            </span>
+          </div>
+
+          @if (assignment.task) {
+            <button
+              type="button"
+              class="task-tag-button"
+              (click)="openTask(assignment.task, $event)">
+              <p-tag
+                icon="pi pi-receipt"
+                styleClass="assignment-task-tag"
+                [value]="assignment.task.title">
+              </p-tag>
+            </button>
+          }
+        </div>
+      </p-panel>
+    }
+  } @else {
+    <div class="tab-empty-state">
+      Nema zadataka grupe.
+    </div>
+  }
+</div>
+
+@if (!loading() && totalRecords > rows) {
+  <p-paginator
+    [first]="first"
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onPageChange)="onPageChange($event)">
+  </p-paginator>
+}

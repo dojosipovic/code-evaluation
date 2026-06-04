@@ -81,9 +81,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="tasks">
-            <div class="tab-empty-state">
-              Zadaci grupe ce biti prikazani ovdje.
-            </div>
+            <app-group-assignments [groupId]="group.id"></app-group-assignments>
           </p-tabpanel>
         </p-tabpanels>
       </p-tabs>

@@ -17,6 +17,7 @@ import { IGroupResponse } from '../../models/group/IGroupResponse';
 import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 import { AuthService } from '../../services/auth/auth.service';
 import { GroupMembers } from '../../components/group-members/group-members';
+import { GroupAssignments } from '../../components/group-assignments/group-assignments';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -33,7 +34,8 @@ type GroupTab = 'users' | 'tasks';
     SkeletonModule,
     TabsModule,
     GroupCreateUpdateDialog,
-    GroupMembers
+    GroupMembers,
+    GroupAssignments
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',

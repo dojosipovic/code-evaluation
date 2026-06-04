@@ -149,12 +149,14 @@
   }
 </div>
 
-@if (!loading() && totalRecords > rows) {
+@if (!loading() && totalRecords > 0) {
   <p-paginator
     [first]="first"
     [rows]="rows"
     [totalRecords]="totalRecords"
     [rowsPerPageOptions]="[10, 20, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{first} - {last} od {totalRecords}"
     (onPageChange)="onPageChange($event)">
   </p-paginator>
 }

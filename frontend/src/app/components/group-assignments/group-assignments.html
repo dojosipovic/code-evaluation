@@ -107,18 +107,18 @@
         <div class="assignment-body">
           <div class="assignment-meta">
             <span>
-              <i class="pi pi-calendar"></i>
+              <i class="pi pi-play-circle"></i>
               {{ assignment.startsAt | date:'dd.MM.yyyy HH:mm' }}
             </span>
             <span>
-              <i class="pi pi-flag"></i>
+              <i class="pi pi-stop-circle"></i>
               {{ assignment.endsAt | date:'dd.MM.yyyy HH:mm' }}
             </span>
             <span
               class="assignment-duration"
               [pTooltip]="getDurationTooltip(assignment)"
               tooltipPosition="top">
-              <i class="pi pi-clock"></i>
+              <i class="pi pi-hourglass"></i>
               {{ getDurationLabel(assignment) }}
             </span>
             <span>

@@ -74,7 +74,7 @@
 .assignment-points {
   flex: 0 0 auto;
   color: var(--p-text-muted-color);
-  font-size: 12px;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -88,11 +88,11 @@
 .assignment-time-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 1.6rem;
-  padding: 0.2rem 0.52rem;
+  min-height: 1.45rem;
+  padding: 0.16rem 0.44rem;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 0.78rem;
+  font-weight: 700;
   line-height: 1;
 
   &.time-close {

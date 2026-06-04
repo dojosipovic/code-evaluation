@@ -41,7 +41,15 @@
               <span class="assignment-title">{{ assignment.name }}</span>
             </div>
 
-            <span class="assignment-points">{{ assignment.points }} pts</span>
+            <div class="assignment-stats">
+              <span
+                class="assignment-time-chip"
+                [ngClass]="getStartTimeClass(assignment)"
+                [title]="getStartTimeTitle(assignment)">
+                {{ getStartTimeLabel(assignment) }}
+              </span>
+              <span class="assignment-points">Bodovi: {{ assignment.points }}</span>
+            </div>
           </div>
         </ng-template>
 
@@ -54,6 +62,13 @@
             <span>
               <i class="pi pi-flag"></i>
               {{ assignment.endsAt | date:'dd.MM.yyyy HH:mm' }}
+            </span>
+            <span
+              class="assignment-duration"
+              [pTooltip]="getDurationTooltip(assignment)"
+              tooltipPosition="top">
+              <i class="pi pi-clock"></i>
+              {{ getDurationLabel(assignment) }}
             </span>
             <span>
               <i class="pi pi-user"></i>

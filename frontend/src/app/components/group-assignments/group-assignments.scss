@@ -53,6 +53,39 @@
   font-weight: 700;
 }
 
+.assignment-stats {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.assignment-time-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  padding: 0.2rem 0.52rem;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+
+  &.time-close {
+    background: color-mix(in srgb, var(--p-red-500) 12%, transparent);
+    color: var(--p-red-500);
+  }
+
+  &.time-far {
+    background: color-mix(in srgb, var(--p-green-500) 12%, transparent);
+    color: var(--p-green-600);
+  }
+
+  &.time-neutral {
+    background: var(--p-content-hover-background);
+    color: var(--p-text-muted-color);
+  }
+}
+
 .assignment-body {
   display: flex;
   flex-direction: column;
@@ -71,6 +104,10 @@
     align-items: center;
     gap: 6px;
   }
+}
+
+.assignment-duration {
+  cursor: help;
 }
 
 .task-tag-button {

@@ -17,6 +17,13 @@
   </app-task-create-dialog>
 }
 
+<app-assignment-create-dialog
+  [groupId]="groupId"
+  [visible]="assignmentCreatorOpen"
+  (visibleChange)="onAssignmentCreatorVisibleChange($event)"
+  (saved)="onAssignmentCreated()">
+</app-assignment-create-dialog>
+
 <div class="assignments-toolbar">
   <div class="filter-field search-field">
     <label for="assignmentSearch">Search</label>
@@ -65,6 +72,16 @@
       [disabled]="loading()"
       (click)="resetFilters()">
     </button>
+
+    <button
+      pButton
+      type="button"
+      icon="pi pi-plus"
+      aria-label="Kreiraj assignment"
+      title="Kreiraj assignment"
+      [disabled]="loading()"
+      (click)="openAssignmentCreator()">
+    </button>
   </div>
 </div>
 
@@ -84,7 +101,7 @@
     }
   } @else if (assignments.length) {
     @for (assignment of assignments; track assignment.id) {
-      <p-panel styleClass="assignment-panel">
+      <p-panel [styleClass]="getAssignmentPanelClass(assignment)">
         <ng-template pTemplate="header">
           <div class="assignment-panel-header">
             <div class="assignment-title-group">

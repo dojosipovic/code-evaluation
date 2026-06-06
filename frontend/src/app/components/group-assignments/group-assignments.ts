@@ -28,6 +28,7 @@ import { GroupService } from '../../services/group.service';
 import { IAssignmentListItem } from '../../models/assignment/IAssignmentListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { ITaskResponse } from '../../models/task/ITaskResponse';
+import { AssignmentCreateDialog } from '../assignment-create-dialog/assignment-create-dialog';
 import { TaskCreateDialog } from '../task-create-dialog/task-create-dialog';
 import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
 
@@ -45,6 +46,7 @@ import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
     SkeletonModule,
     TagModule,
     TooltipModule,
+    AssignmentCreateDialog,
     TaskCreateDialog,
     TaskViewDialog
   ],
@@ -76,6 +78,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   editorTaskId: number | null = null;
   editorOpen = false;
   editorCloneMode = false;
+  assignmentCreatorOpen = false;
   private countdownTimerId: ReturnType<typeof setTimeout> | null = null;
 
   assignmentFilters = {
@@ -167,6 +170,20 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     this.applyFilters$.next();
   }
 
+  openAssignmentCreator(): void {
+    this.assignmentCreatorOpen = true;
+  }
+
+  onAssignmentCreatorVisibleChange(visible: boolean): void {
+    this.assignmentCreatorOpen = visible;
+  }
+
+  onAssignmentCreated(): void {
+    this.assignmentCreatorOpen = false;
+    this.first = 0;
+    this.loadAssignments();
+  }
+
   openTask(task: ITaskResponse, event?: Event): void {
     event?.stopPropagation();
     this.viewerTaskId = task.id;
@@ -205,12 +222,24 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
 
   getStartTimeLabel(assignment: IAssignmentListItem): string {
     const startsAt = new Date(assignment.startsAt).getTime();
+    const endsAt = new Date(assignment.endsAt).getTime();
+    const now = this.currentTime();
 
     if (!Number.isFinite(startsAt)) {
       return '-';
     }
 
-    return this.formatCompactDuration(Math.abs(startsAt - this.currentTime()), 1, true);
+    if (Number.isFinite(endsAt) && now > endsAt) {
+      return 'Zavrseno';
+    }
+
+    if (now >= startsAt) {
+      return Number.isFinite(endsAt)
+        ? `U tijeku (${this.formatCompactDuration(Math.max(endsAt - now, 0), 1, true)})`
+        : 'U tijeku';
+    }
+
+    return this.formatCompactDuration(startsAt - now, 1, true);
   }
 
   getStartTimeTitle(assignment: IAssignmentListItem): string {
@@ -227,7 +256,9 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     }
 
     if (now >= startsAt) {
-      return `Zadatak je otvoren prije ${this.formatCompactDuration(now - startsAt, 1, true)}`;
+      return Number.isFinite(endsAt)
+        ? `Zadatak je u tijeku jos ${this.formatCompactDuration(endsAt - now, 1, true)}`
+        : 'Zadatak je u tijeku';
     }
 
     return `Otvara se za ${this.formatCompactDuration(startsAt - now, 1, true)}`;
@@ -235,14 +266,30 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
 
   getStartTimeClass(assignment: IAssignmentListItem): string {
     const startsAt = new Date(assignment.startsAt).getTime();
+    const endsAt = new Date(assignment.endsAt).getTime();
+    const now = this.currentTime();
 
     if (!Number.isFinite(startsAt)) {
       return 'time-neutral';
     }
 
-    const distanceFromNow = Math.abs(startsAt - this.currentTime());
+    if (Number.isFinite(endsAt) && now > endsAt) {
+      return 'time-neutral';
+    }
+
+    if (now >= startsAt) {
+      return 'time-active';
+    }
+
+    const distanceFromNow = startsAt - now;
 
     return distanceFromNow <= 24 * 60 * 60 * 1000 ? 'time-close' : 'time-far';
+  }
+
+  getAssignmentPanelClass(assignment: IAssignmentListItem): string {
+    return this.isAssignmentActive(assignment)
+      ? 'assignment-panel assignment-panel-active'
+      : 'assignment-panel';
   }
 
   getDurationTooltip(assignment: IAssignmentListItem): string {
@@ -302,6 +349,14 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     }
 
     return parts.join(' ');
+  }
+
+  private isAssignmentActive(assignment: IAssignmentListItem): boolean {
+    const startsAt = new Date(assignment.startsAt).getTime();
+    const endsAt = new Date(assignment.endsAt).getTime();
+    const now = this.currentTime();
+
+    return Number.isFinite(startsAt) && Number.isFinite(endsAt) && now >= startsAt && now <= endsAt;
   }
 
   private loadAssignments(): void {
@@ -369,9 +424,12 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   private getNextCountdownDelay(): number {
     const now = this.currentTime();
     const distances = this.assignments
-      .map(assignment => new Date(assignment.startsAt).getTime())
-      .filter(startsAt => Number.isFinite(startsAt))
-      .map(startsAt => Math.abs(startsAt - now));
+      .flatMap(assignment => [
+        new Date(assignment.startsAt).getTime(),
+        new Date(assignment.endsAt).getTime()
+      ])
+      .filter(timestamp => Number.isFinite(timestamp) && timestamp > now)
+      .map(timestamp => timestamp - now);
 
     if (!distances.length) {
       return 60 * 1000;

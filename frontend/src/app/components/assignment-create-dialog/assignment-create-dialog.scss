@@ -1,0 +1,112 @@
+:host {
+  display: block;
+}
+
+.assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+.field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+}
+
+.task-picker {
+  width: 100%;
+  min-height: 3.25rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.task-picker-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--p-text-muted-color);
+  font-weight: 600;
+}
+
+.error-text {
+  color: var(--p-red-500);
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep {
+  .p-inputtext,
+  .p-inputnumber,
+  .p-datepicker,
+  .p-button,
+  .p-tag {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .p-datepicker,
+  .p-inputnumber,
+  .p-inputnumber-input {
+    width: 100%;
+  }
+
+  .assignment-task-tag {
+    max-width: 100%;
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
+    color: var(--p-text-color);
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 0.46rem 0.78rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .assignment-task-tag .p-tag-label {
+    max-width: min(28rem, calc(100vw - 96px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .assignment-task-tag .p-tag-icon {
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .date-grid {
+    grid-template-columns: 1fr;
+  }
+}

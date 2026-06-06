@@ -37,6 +37,7 @@
 
 .toolbar-actions {
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
 }
 
@@ -103,6 +104,10 @@
   &.time-far {
     background: color-mix(in srgb, var(--p-green-500) 12%, transparent);
     color: var(--p-green-600);
+  }
+
+  &.time-active {
+    color: var(--p-primary-color);
   }
 
   &.time-neutral {
@@ -174,6 +179,13 @@
     border-radius: 8px;
   }
 
+  .assignment-panel-active {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--p-content-background), var(--p-content-background)) padding-box,
+      conic-gradient(from var(--a), transparent 0 72%, var(--p-primary-color), transparent) border-box;
+    animation: spin 7s linear infinite;
+  }
+
   .assignment-panel .p-panel-header {
     min-width: 0;
     padding: 0.85rem 1rem;
@@ -221,13 +233,20 @@
   }
 }
 
+@property --a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes spin { to { --a: 360deg; } }
+
 @media (max-width: 768px) {
   .assignments-toolbar {
     grid-template-columns: 1fr;
   }
 
-  .toolbar-actions .p-button {
-    width: 100%;
+  .toolbar-actions {
+    justify-content: stretch;
+
+    .p-button {
+      flex: 1 1 0;
+    }
   }
 
   .assignment-panel-header {

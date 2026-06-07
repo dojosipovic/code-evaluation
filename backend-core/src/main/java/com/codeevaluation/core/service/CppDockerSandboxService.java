@@ -12,7 +12,9 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -152,13 +154,13 @@ public class CppDockerSandboxService {
             }
 
             // 2) paralelni runovi
-            List<Future<TestRunResult>> futures = new ArrayList<>(inputs.size());
+            Map<Integer, Future<TestRunResult>> futures = new LinkedHashMap<>();
 
             for (int i = 0; i < inputs.size(); i++) {
                 final int idx = i;
                 final String in = inputs.get(i) == null ? "" : inputs.get(i);
 
-                futures.add(pool.submit(() -> {
+                futures.put(idx, pool.submit(() -> {
                     RunResult r = runDockerRaw(buildRunCmd(volume), runTimeout, in);
 
                     TestRunResult tr = new TestRunResult();
@@ -174,6 +176,7 @@ public class CppDockerSandboxService {
                         int signal = r.getExitCode() - 128;
                         tr.setStderr("Runtime error (signal " + signal + ")");
                     }
+
                     return tr;
                 }));
             }
@@ -181,32 +184,37 @@ public class CppDockerSandboxService {
             // pokupi rezultate (redoslijed očuvamo po indexu)
             TestRunResult[] ordered = new TestRunResult[inputs.size()];
 
-            for (Future<TestRunResult> f : futures) {
+            for (Map.Entry<Integer, Future<TestRunResult>> entry : futures.entrySet()) {
+                int idx = entry.getKey();
+                Future<TestRunResult> f = entry.getValue();
+
                 try {
                     TestRunResult tr = f.get(runTimeout.toMillis() + 2000, TimeUnit.MILLISECONDS);
-                    ordered[tr.getIndex()] = tr;
+                    ordered[idx] = tr;
                 } catch (TimeoutException te) {
                     // ako neka Future zapne duže od očekivanog, označi timeout
                     TestRunResult tr = new TestRunResult();
-                    tr.setIndex(findFirstEmpty(ordered));
+                    tr.setIndex(idx);
                     tr.setExitCode(-1);
                     tr.setDurationMs(runTimeout.toMillis());
                     tr.setStdout("");
-                    tr.setStderr("");
+                    tr.setStderr("Time limit exceeded");
                     tr.setTimedOut(true);
                     tr.setTimeout(runTimeout.toString());
-                    ordered[tr.getIndex()] = tr;
+
+                    ordered[idx] = tr;
                 } catch (Exception e) {
                     // bilo koja greška u workeru
                     TestRunResult tr = new TestRunResult();
-                    tr.setIndex(findFirstEmpty(ordered));
+                    tr.setIndex(idx);
                     tr.setExitCode(1);
                     tr.setDurationMs(0);
                     tr.setStdout("");
                     tr.setStderr("Internal error: " + e.getMessage());
                     tr.setTimedOut(false);
                     tr.setTimeout(null);
-                    ordered[tr.getIndex()] = tr;
+
+                    ordered[idx] = tr;
                 }
             }
 

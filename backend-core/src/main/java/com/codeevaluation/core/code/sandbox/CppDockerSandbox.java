@@ -1,4 +1,4 @@
-package com.codeevaluation.core.service;
+package com.codeevaluation.core.code.sandbox;
 
 import com.codeevaluation.core.api.dto.run.RunBatchResponseDto;
 import com.codeevaluation.core.api.dto.run.TestRunResult;
@@ -27,8 +27,8 @@ import java.time.Duration;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
-public class CppDockerSandboxService {
-    private static final Logger LOG = Logger.getLogger(CppDockerSandboxService.class);
+public class CppDockerSandbox {
+    private static final Logger LOG = Logger.getLogger(CppDockerSandbox.class);
 
     @ConfigProperty(name = "sandbox.cpp.compile-image", defaultValue = "cpp-compile:latest")
     String imageCompile;
@@ -232,15 +232,6 @@ public class CppDockerSandboxService {
                 // ignore
             }
         }
-    }
-
-    private static int findFirstEmpty(TestRunResult[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == null) {
-                return i;
-            }
-        }
-        return 0;
     }
 
     public RunBatchResponseDto compileAndRunBatch(

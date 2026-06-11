@@ -200,7 +200,7 @@ public class CppDockerSandbox {
                     tr.setStdout("");
                     tr.setStderr("Time limit exceeded");
                     tr.setTimedOut(true);
-                    tr.setTimeout(runTimeout.toString());
+                    tr.setTimeout(formatTimeout(runTimeout));
 
                     ordered[idx] = tr;
                 } catch (Exception e) {
@@ -373,11 +373,14 @@ public class CppDockerSandbox {
 
     private RunResult runDockerRaw(List<String> cmd, Duration timeout, String stdin) {
         long start = System.nanoTime();
+        String containerName = extractContainerName(cmd);
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(false);
+        ExecutorService es = null;
+        Process p = null;
 
         try {
-            Process p = pb.start();
+            p = pb.start();
 
             // Provide stdin (for compile we send C++ source), then close to signal EOF.
             try (OutputStream os = p.getOutputStream()) {
@@ -388,13 +391,15 @@ public class CppDockerSandbox {
                 LOG.debugf("stdin write/close failed (ignored): %s", e.getMessage());
             }
 
-            ExecutorService es = Executors.newFixedThreadPool(2);
-            Future<String> outF = es.submit(() -> readLimited(p.getInputStream(), MAX_OUT_CHARS));
-            Future<String> errF = es.submit(() -> readLimited(p.getErrorStream(), MAX_OUT_CHARS));
+            Process process = p;
+            es = Executors.newFixedThreadPool(2);
+            Future<String> outF = es.submit(() -> readLimited(process.getInputStream(), MAX_OUT_CHARS));
+            Future<String> errF = es.submit(() -> readLimited(process.getErrorStream(), MAX_OUT_CHARS));
 
             boolean finished = p.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
             if (!finished) {
-                p.destroyForcibly();
+                destroyProcess(p);
+                cleanupContainer(containerName);
                 es.shutdownNow();
                 return RunResult.timeout(timeout);
             }
@@ -418,9 +423,63 @@ public class CppDockerSandbox {
         } catch (IOException e) {
             throw new InternalServerErrorException("Failed to start docker: " + e.getMessage());
         } catch (InterruptedException e) {
+            if (p != null) {
+                destroyProcess(p);
+            }
+            cleanupContainer(containerName);
             Thread.currentThread().interrupt();
             throw new InternalServerErrorException("Interrupted");
+        } finally {
+            if (es != null) {
+                es.shutdownNow();
+            }
         }
+    }
+
+    private void destroyProcess(Process p) {
+        p.destroyForcibly();
+        try {
+            if (!p.waitFor(2, TimeUnit.SECONDS)) {
+                LOG.warn("Timed out waiting for docker client process to exit");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void cleanupContainer(String containerName) {
+        if (containerName == null || containerName.isBlank()) {
+            return;
+        }
+
+        try {
+            RunResult cleanup = runDockerRaw(
+                    List.of("docker", "rm", "-f", containerName),
+                    Duration.ofSeconds(5),
+                    null
+            );
+
+            if (cleanup.getExitCode() != 0) {
+                String stderr = cleanup.getStderr() == null ? "" : cleanup.getStderr();
+                if (!stderr.contains("No such container")) {
+                    LOG.warnf(
+                            "Failed to remove container %s: exit=%d stderr=%s",
+                            containerName, cleanup.getExitCode(), stderr
+                    );
+                }
+            }
+        } catch (Exception e) {
+            LOG.warnf("Failed to remove container %s: %s", containerName, e.getMessage());
+        }
+    }
+
+    private String extractContainerName(List<String> cmd) {
+        for (int i = 0; i < cmd.size() - 1; i++) {
+            if ("--name".equals(cmd.get(i))) {
+                return cmd.get(i + 1);
+            }
+        }
+        return null;
     }
 
     private static String readLimited(InputStream is, int maxChars) throws IOException {
@@ -450,5 +509,13 @@ public class CppDockerSandbox {
         } catch (Exception e) {
             return "";
         }
+    }
+
+    private static String formatTimeout(Duration timeout) {
+        long millis = timeout.toMillis();
+        if (millis % 1000 == 0) {
+            return (millis / 1000) + "s";
+        }
+        return millis + "ms";
     }
 }

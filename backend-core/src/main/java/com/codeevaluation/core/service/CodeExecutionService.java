@@ -1,6 +1,5 @@
 package com.codeevaluation.core.service;
 
-import com.codeevaluation.core.api.dto.run.RunBatchRequestDto;
 import com.codeevaluation.core.api.dto.run.RunBatchResponseDto;
 import com.codeevaluation.core.api.dto.run.RunRequestDto;
 import com.codeevaluation.core.api.dto.run.TestCase;

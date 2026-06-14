@@ -8,12 +8,8 @@ import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.TaskTest;
 import com.codeevaluation.core.service.dto.RunResult;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import lombok.Builder;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
 @Builder

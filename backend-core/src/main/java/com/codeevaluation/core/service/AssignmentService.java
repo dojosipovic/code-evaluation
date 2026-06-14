@@ -2,16 +2,11 @@ package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunResponseDto;
-import com.codeevaluation.core.api.dto.assignment.AssignmentRunTestResultDto;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
-import com.codeevaluation.core.api.dto.run.RunBatchResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
-import com.codeevaluation.core.api.dto.run.TestRunResult;
-import com.codeevaluation.core.api.dto.run.RunRequestDto;
-import com.codeevaluation.core.enumeration.TestResult;
 import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
 import com.codeevaluation.core.helper.GroupAccessPolicy;
@@ -28,7 +23,6 @@ import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.AssignmentRepository;
 import com.codeevaluation.core.repository.GroupRepository;
 import com.codeevaluation.core.repository.TaskRepository;
-import com.codeevaluation.core.service.dto.RunResult;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -39,21 +33,12 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor
 public class AssignmentService {
-    private static final List<String> RUNTIME_ERROR_STDERR_MARKERS = List.of(
-            "fork failed",
-            "resource temporarily unavailable",
-            "cannot allocate memory",
-            "out of memory",
-            "pids-limit"
-    );
 
     private final AssignmentRepository assignmentRepository;
     private final GroupRepository groupRepository;

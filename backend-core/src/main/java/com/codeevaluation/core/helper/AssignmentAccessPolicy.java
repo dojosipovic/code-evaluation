@@ -1,6 +1,5 @@
 package com.codeevaluation.core.helper;
 
-import com.codeevaluation.core.enumeration.TestVisibility;
 import com.codeevaluation.core.model.Group;
 import com.codeevaluation.core.model.User;
 import lombok.experimental.UtilityClass;

@@ -2,7 +2,6 @@ package com.codeevaluation.core;
 
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunResponseDto;
-import com.codeevaluation.core.api.dto.run.RunRequestDto;
 import com.codeevaluation.core.service.AssignmentService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.Consumes;

@@ -76,4 +76,19 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
 
         return find(query.toString(), sort, params).page(Page.of(page, size));
     }
+
+    public java.util.Optional<Assignment> findByIdWithTaskAndTests(Long assignmentId) {
+        return find(
+                """
+                    select distinct a from Assignment a
+                    join fetch a.group g
+                    join fetch a.task t
+                    left join fetch t.tests tests
+                    left join fetch t.user taskUser
+                    join fetch a.createdBy createdBy
+                    where a.id = :assignmentId
+                """,
+                Map.of("assignmentId", assignmentId)
+        ).firstResultOptional();
+    }
 }

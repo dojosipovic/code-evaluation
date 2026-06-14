@@ -30,6 +30,6 @@ public class RunResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public RunBatchResponseDto runCppBatch(RunBatchRequestDto req) {
-        return codeExecutionService.runBatch(req);
+        return codeExecutionService.runBatch(req.code(), req.tests());
     }
 }

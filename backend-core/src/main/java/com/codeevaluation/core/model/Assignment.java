@@ -53,4 +53,8 @@ public class Assignment {
     public boolean isOwner(String username) {
         return Objects.equals(createdBy.getUsername(), username);
     }
+
+    public boolean isActive(Instant currentTime) {
+        return startsAt.isBefore(currentTime) && endsAt.isAfter(currentTime);
+    }
 }

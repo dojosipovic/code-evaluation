@@ -18,14 +18,27 @@ public record AssignmentResponseDto(
 ) {
 
     public static AssignmentResponseDto from(Assignment assignment) {
+        return buildGeneralInfo(assignment)
+                .task(TaskResponseDto.from(assignment.getTask()))
+                .build();
+    }
+
+    public static AssignmentResponseDto from(
+            Assignment assignment,
+            boolean showTestExpectedOutput
+    ) {
+        return buildGeneralInfo(assignment)
+                .task(TaskResponseDto.from(assignment.getTask(), showTestExpectedOutput))
+                .build();
+    }
+
+    private static AssignmentResponseDtoBuilder buildGeneralInfo(Assignment assignment) {
         return AssignmentResponseDto.builder()
                 .id(assignment.getId())
                 .name(assignment.getName())
                 .startsAt(assignment.getStartsAt())
                 .endsAt(assignment.getEndsAt())
                 .points(assignment.getPoints())
-                .task(TaskResponseDto.from(assignment.getTask()))
-                .createdBy(UserDto.from(assignment.getCreatedBy()))
-                .build();
+                .createdBy(UserDto.from(assignment.getCreatedBy()));
     }
 }

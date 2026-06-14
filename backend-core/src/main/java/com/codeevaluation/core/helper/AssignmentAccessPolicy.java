@@ -11,4 +11,10 @@ public class AssignmentAccessPolicy {
         return currentUser.isAdmin()
                 || group.isOwner(currentUser.getUsername());
     }
+
+    public boolean canSeeAssignment(Group group, User currentUser) {
+        return currentUser.isAdmin()
+                || group.isOwner(currentUser.getUsername())
+                || group.isMember(currentUser.getUsername());
+    }
 }

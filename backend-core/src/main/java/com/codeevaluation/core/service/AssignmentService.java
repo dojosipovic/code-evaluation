@@ -75,6 +75,21 @@ public class AssignmentService {
         );
     }
 
+    public AssignmentResponseDto get(Long assignmentId) {
+        Assignment assignment = assignmentRepository.findByIdWithTaskAndTests(assignmentId)
+                .orElseThrow(() -> new NotFoundException("Assignment not found"));
+        User currentUser = currentUserProvider.getCurrentUser();
+        Group group = assignment.getGroup();
+        if (!AssignmentAccessPolicy.canSeeAssignment(group, currentUser)) {
+            throw new ForbiddenException("You cannot see this assignment");
+        }
+
+        boolean showTestExpectedOutput =
+                AssignmentAccessPolicy.showTestExpectedOutput(group, currentUser);
+
+        return AssignmentResponseDto.from(assignment, showTestExpectedOutput);
+    }
+
     public PagedResponse<AssignmentListItemDto> getGroupAssignments(
             Long groupId,
             PagedParams pagedParams

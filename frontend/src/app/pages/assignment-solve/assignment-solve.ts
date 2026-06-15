@@ -11,7 +11,6 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { IAssignmentResponse } from '../../models/assignment/IAssignmentResponse';
@@ -22,8 +21,6 @@ import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 import { ITestResponse } from '../../models/task/ITestResponse';
 import { AssignmentService } from '../../services/assignment.service';
 
-type SolveTab = 'tests' | 'results';
-
 @Component({
   selector: 'app-assignment-solve',
   imports: [
@@ -33,7 +30,6 @@ type SolveTab = 'tests' | 'results';
     ButtonModule,
     MessageModule,
     ProgressSpinnerModule,
-    TabsModule,
     TagModule,
     TooltipModule
   ],
@@ -71,7 +67,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   assignment: IAssignmentResponse | null = null;
   runResponse: IAssignmentRunResponse | null = null;
-  activeTab: SolveTab = 'tests';
+  activeCaseIndex = 0;
   code = '';
   leftPanePx = 430;
   topPanePx = 420;
@@ -153,10 +149,8 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return `${this.runResponse.passedCount}/${this.runResponse.totalCount}`;
   }
 
-  onTabChange(value: string | number | undefined): void {
-    if (value === 'tests' || value === 'results') {
-      this.activeTab = value;
-    }
+  selectCase(index: number): void {
+    this.activeCaseIndex = index;
   }
 
   runCode(): void {
@@ -177,7 +171,6 @@ export class AssignmentSolve implements OnInit, OnDestroy {
       .subscribe({
         next: response => {
           this.runResponse = response;
-          this.activeTab = 'results';
         },
         error: () => {
           this.messageService.add({
@@ -209,7 +202,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     this.scheduleEditorLayout();
   }
 
-  trackByTestIndex(index: number): number {
+  trackByCaseIndex(index: number): number {
     return index;
   }
 
@@ -239,6 +232,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
         return 'Runtime Error';
       case TestResultEnum.TIME_LIMIT_EXCEEDED:
         return 'Time Limit';
+      case TestResultEnum.INTERNAL_ERROR:
       default:
         return 'Internal Error';
     }
@@ -254,6 +248,73 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   getResultClass(result: TestResultEnum): string {
     return result === TestResultEnum.PASSED ? 'result-passed' : 'result-failed';
+  }
+
+  get cases(): {
+    index: number;
+    test: ITestResponse;
+    result: IAssignmentRunTestResult | null;
+  }[] {
+    const tests = this.assignment?.task.tests ?? [];
+    const resultsByIndex = new Map((this.runResponse?.results ?? []).map(result => [result.index, result]));
+
+    return tests.map((test, index) => ({
+      index,
+      test,
+      result: resultsByIndex.get(index) ?? null
+    }));
+  }
+
+  get selectedCase(): {
+    index: number;
+    test: ITestResponse;
+    result: IAssignmentRunTestResult | null;
+  } | null {
+    return this.cases[this.activeCaseIndex] ?? this.cases[0] ?? null;
+  }
+
+  canShowCaseExpectedOutput(test: ITestResponse): boolean {
+    return test.visibility === TestVisibilityEnum.PUBLIC && !!test.output?.trim();
+  }
+
+  getCaseResult(index: number): IAssignmentRunTestResult | null {
+    return this.runResponse?.results.find(result => result.index === index) ?? null;
+  }
+
+  hasCompileFailed(): boolean {
+    return !!this.runResponse && this.runResponse.compile.exitCode !== 0;
+  }
+
+  getCompileOutput(): string {
+    if (!this.runResponse) {
+      return '';
+    }
+
+    return this.runResponse.compile.stderr || this.runResponse.compile.stdout || '';
+  }
+
+  getCaseOutput(result: IAssignmentRunTestResult | null): string {
+    if (!result) {
+      return '';
+    }
+
+    return result.stdout || result.stderr || '';
+  }
+
+  getCaseStatusClass(result: IAssignmentRunTestResult | null): string {
+    if (!result) {
+      return 'status-neutral';
+    }
+
+    return result.testResult === TestResultEnum.PASSED ? 'status-passed' : 'status-failed';
+  }
+
+  getCaseStatusLabel(result: IAssignmentRunTestResult | null): string {
+    if (!result) {
+      return 'Not run';
+    }
+
+    return result.testResult === TestResultEnum.PASSED ? 'Passed' : 'Failed';
   }
 
   private startDragging(mode: 'horizontal' | 'vertical'): void {
@@ -354,6 +415,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
         next: assignment => {
           this.assignment = assignment;
           this.code = assignment.task.includeStarterCode ? assignment.task.starterCode.code : '';
+          this.activeCaseIndex = 0;
           this.editorOptions = {
             ...this.editorOptions,
             language: assignment.task.starterCode.language || 'cpp'

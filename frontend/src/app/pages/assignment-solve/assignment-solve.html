@@ -102,129 +102,104 @@
         </div>
 
         <section class="tests-pane">
-          <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
-            <p-tablist>
-              <p-tab value="tests">Tests</p-tab>
-              <p-tab value="results">Results</p-tab>
-            </p-tablist>
+          @if (runResponse && hasCompileFailed() && getCompileOutput()) {
+            <div class="compile-output solve-compile-output">
+              <label>Compile output</label>
+              <pre>{{ getCompileOutput() }}</pre>
+            </div>
+          }
 
-            <p-tabpanels>
-              <p-tabpanel value="tests">
-                <div class="test-list compact-list">
-                  @for (test of publicTests; track $index) {
-                    <div class="compact-test">
-                      <div class="compact-test-header">
-                        <span>Case {{ $index + 1 }}</span>
-                        <p-tag severity="success" value="Public"></p-tag>
-                      </div>
-                      <label>Input</label>
-                      <pre>{{ test.input }}</pre>
+          @if (cases.length === 0) {
+            <div class="empty-results">
+              <i class="pi pi-inbox"></i>
+              <span>No test cases are available.</span>
+            </div>
+          } @else {
+            <div class="case-tabs-shell">
+              <div class="case-tab-list" role="tablist" aria-label="Test cases">
+                @for (testCase of cases; track trackByCaseIndex($index)) {
+                  <button
+                    type="button"
+                    class="case-tab-button"
+                    [class.active]="activeCaseIndex === $index"
+                    [attr.title]="getCaseStatusLabel(testCase.result)"
+                    (click)="selectCase($index)">
+                    <span class="case-status-dot" [ngClass]="getCaseStatusClass(testCase.result)"></span>
+                    Case {{ $index + 1 }}
+                  </button>
+                }
+              </div>
+
+              @if (selectedCase) {
+                <div class="case-panel">
+                  <div class="case-panel-header">
+                    <div>
+                      <span>Case {{ selectedCase.index + 1 }}</span>
+                      <small>
+                        {{ selectedCase.test.visibility === 'PUBLIC' ? 'Public' : 'Hidden' }}
+                      </small>
+                    </div>
+
+                    @if (selectedCase.result) {
+                      <p-tag
+                        [severity]="getResultSeverity(selectedCase.result.testResult)"
+                        [value]="getResultLabel(selectedCase.result.testResult)">
+                      </p-tag>
+                    } @else if (selectedCase.test.visibility === 'PUBLIC') {
+                      <p-tag severity="success" value="Public"></p-tag>
+                    } @else {
+                      <p-tag icon="pi pi-lock" severity="secondary" value="Hidden"></p-tag>
+                    }
+                  </div>
+
+                  <div class="case-input">
+                    <label>Input</label>
+                    <pre>{{ selectedCase.test.input }}</pre>
+                  </div>
+
+                  <div class="case-compare">
+                    <div>
                       <label>Expected</label>
-                      @if (hasPublicExpectedOutput(test)) {
-                        <pre>{{ test.output }}</pre>
+                      @if (canShowCaseExpectedOutput(selectedCase.test)) {
+                        <pre>{{ selectedCase.test.output }}</pre>
                       } @else {
                         <div class="redacted">Hidden for this assignment</div>
                       }
                     </div>
-                  }
 
-                  @if (hiddenTestsCount > 0) {
-                    <div class="compact-test hidden-test">
-                      <div class="compact-test-header">
-                        <span>Hidden cases</span>
-                        <p-tag icon="pi pi-lock" severity="secondary" [value]="hiddenTestsCount + ''"></p-tag>
-                      </div>
-                      <div class="redacted">Inputs and outputs are hidden.</div>
+                    <div>
+                      <label>Output</label>
+                      @if (selectedCase.result) {
+                        @if (isHiddenResult(selectedCase.result)) {
+                          <div class="redacted">Hidden test output is not shown.</div>
+                        } @else if (getCaseOutput(selectedCase.result)) {
+                          <pre>{{ getCaseOutput(selectedCase.result) }}</pre>
+                        } @else {
+                          <div class="redacted">No output was returned.</div>
+                        }
+                      } @else if (runResponse) {
+                        <div class="redacted">Run the code to see the output for this case.</div>
+                      } @else {
+                        <div class="redacted">No run results yet.</div>
+                      }
+                    </div>
+                  </div>
+
+                  @if (selectedCase.result) {
+                    <div class="runtime-line">
+                      <span>{{ selectedCase.result.durationMs }} ms</span>
+                      @if (selectedCase.result.timedOut) {
+                        <span>Timeout {{ selectedCase.result.timeout }}</span>
+                      }
+                      @if (selectedCase.result.exitCode !== 0) {
+                        <span>Exit {{ selectedCase.result.exitCode }}</span>
+                      }
                     </div>
                   }
                 </div>
-              </p-tabpanel>
-
-              <p-tabpanel value="results">
-                @if (!runResponse) {
-                  <div class="empty-results">
-                    <i class="pi pi-play-circle"></i>
-                    <span>Run your code to see test results.</span>
-                  </div>
-                } @else {
-                  <div class="result-summary">
-                    <div>
-                      <span class="summary-label">Passed</span>
-                      <strong>{{ passedLabel }}</strong>
-                    </div>
-                    <div>
-                      <span class="summary-label">Compile</span>
-                      <strong>{{ runResponse.compile.exitCode === 0 ? 'OK' : 'Failed' }}</strong>
-                    </div>
-                  </div>
-
-                  @if (runResponse.compile.stderr || runResponse.compile.stdout) {
-                    <div class="compile-output">
-                      <label>Compile output</label>
-                      <pre>{{ runResponse.compile.stderr || runResponse.compile.stdout }}</pre>
-                    </div>
-                  }
-
-                  <div class="test-list">
-                    @for (result of runResponse.results; track result.index) {
-                      <div class="result-card" [ngClass]="getResultClass(result.testResult)">
-                        <div class="result-card-header">
-                          <div>
-                            <span>Case {{ result.index + 1 }}</span>
-                            @if (isHiddenResult(result)) {
-                              <small>Hidden</small>
-                            } @else {
-                              <small>Public</small>
-                            }
-                          </div>
-
-                          <p-tag
-                            [severity]="getResultSeverity(result.testResult)"
-                            [value]="getResultLabel(result.testResult)">
-                          </p-tag>
-                        </div>
-
-                        <div class="runtime-line">
-                          <span>{{ result.durationMs }} ms</span>
-                          @if (result.timedOut) {
-                            <span>Timeout {{ result.timeout }}</span>
-                          }
-                          @if (result.exitCode !== 0) {
-                            <span>Exit {{ result.exitCode }}</span>
-                          }
-                        </div>
-
-                        @if (isHiddenResult(result)) {
-                          <div class="redacted">Hidden test output is not shown.</div>
-                        } @else {
-                          <div class="result-grid">
-                            <div>
-                              <label>Input</label>
-                              <pre>{{ result.input }}</pre>
-                            </div>
-
-                            @if (canShowExpectedOutput(result)) {
-                              <div>
-                                <label>Expected</label>
-                                <pre>{{ result.expectedOutput }}</pre>
-                              </div>
-                            }
-
-                            @if (canShowRunOutput(result)) {
-                              <div>
-                                <label>Your Output</label>
-                                <pre>{{ result.stdout || result.stderr }}</pre>
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </p-tabpanel>
-            </p-tabpanels>
-          </p-tabs>
+              }
+            </div>
+          }
         </section>
       </section>
     </div>

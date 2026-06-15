@@ -43,6 +43,10 @@
   backdrop-filter: blur(12px);
 }
 
+.solve-progress {
+  padding: 0.35rem 0.75rem 0 0.75rem;
+}
+
 .solve-workspace {
   width: 100%;
   max-width: 100%;
@@ -298,7 +302,7 @@ label {
   padding: 0.75rem;
   min-height: 0;
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .case-tab-list {
@@ -308,7 +312,7 @@ label {
   border-bottom: 1px solid var(--p-content-border-color);
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.15rem;
 }
 
 .case-tab-button {
@@ -318,8 +322,9 @@ label {
   border-radius: 8px 8px 0 0;
   background: color-mix(in srgb, var(--p-content-hover-background) 55%, transparent);
   color: var(--p-text-muted-color);
+  font-size: 0.82rem;
   font-weight: 800;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.85rem;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -332,9 +337,9 @@ label {
 
 .case-status-dot {
   display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
-  margin-right: 0.55rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.45rem;
   border-radius: 999px;
   background: var(--p-content-border-color);
   vertical-align: middle;
@@ -360,9 +365,15 @@ label {
 
 .case-panel,
 .compile-output {
+  min-height: 0;
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   background: color-mix(in srgb, var(--p-content-background) 88%, var(--p-content-hover-background));
+}
+
+.case-panel {
+  flex: 1;
+  overflow: auto;
 }
 
 .case-panel-header {
@@ -429,6 +440,20 @@ label {
 }
 
 :host ::ng-deep {
+  .solve-progress .p-progressbar {
+    height: 0.32rem;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .solve-progress .p-progressbar-value {
+    transition: width 180ms ease-out;
+  }
+
+  .solve-progress .p-progressbar-indeterminate .p-progressbar-value::before {
+    animation-duration: 1s;
+  }
+
   .editor-host .ngx-monaco-editor,
   .editor-host .editor-container,
   .editor-host .monaco-editor {

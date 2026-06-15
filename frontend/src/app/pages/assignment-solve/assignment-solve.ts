@@ -10,6 +10,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -29,6 +30,7 @@ import { AssignmentService } from '../../services/assignment.service';
     MonacoEditorModule,
     ButtonModule,
     MessageModule,
+    ProgressBarModule,
     ProgressSpinnerModule,
     TagModule,
     TooltipModule
@@ -54,6 +56,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private dragMode: 'horizontal' | 'vertical' | null = null;
   private monacoEditor: any = null;
   private layoutFrameId: number | null = null;
+  private progressAnimationFrameId: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
   private readonly onPointerUp = () => this.stopDragging();
@@ -64,6 +67,10 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   readonly loading = signal(true);
   readonly running = signal(false);
+  readonly runProgressMode = signal<'hidden' | 'indeterminate' | 'determinate'>('hidden');
+  readonly runProgressValue = signal(0);
+  readonly runProgressPassed = signal(0);
+  readonly runProgressTotal = signal(0);
 
   assignment: IAssignmentResponse | null = null;
   runResponse: IAssignmentRunResponse | null = null;
@@ -113,6 +120,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopDragging();
+    this.stopProgressAnimation();
 
     if (this.layoutFrameId !== null) {
       cancelAnimationFrame(this.layoutFrameId);
@@ -146,7 +154,11 @@ export class AssignmentSolve implements OnInit, OnDestroy {
       return '-';
     }
 
-    return `${this.runResponse.passedCount}/${this.runResponse.totalCount}`;
+    return `${this.runProgressPassed()}/${this.runProgressTotal()}`;
+  }
+
+  get showRunProgress(): boolean {
+    return this.runProgressMode() !== 'hidden';
   }
 
   selectCase(index: number): void {
@@ -159,6 +171,11 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     }
 
     this.running.set(true);
+    this.stopProgressAnimation();
+    this.runProgressMode.set('indeterminate');
+    this.runProgressValue.set(0);
+    this.runProgressPassed.set(0);
+    this.runProgressTotal.set(0);
 
     this.assignmentService.runAssignment(this.assignment.id, { code: this.code })
       .pipe(
@@ -171,8 +188,10 @@ export class AssignmentSolve implements OnInit, OnDestroy {
       .subscribe({
         next: response => {
           this.runResponse = response;
+          this.animateProgressTo(response.passedCount, response.totalCount);
         },
         error: () => {
+          this.runProgressMode.set('hidden');
           this.messageService.add({
             severity: 'error',
             summary: 'Greska',
@@ -317,6 +336,46 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return result.testResult === TestResultEnum.PASSED ? 'Passed' : 'Failed';
   }
 
+  private animateProgressTo(passedCount: number, totalCount: number): void {
+    this.stopProgressAnimation();
+
+    this.runProgressTotal.set(totalCount);
+    this.runProgressPassed.set(0);
+    this.runProgressValue.set(0);
+    this.runProgressMode.set('determinate');
+
+    const durationMs = 600;
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const interpolatedPassed = Math.round(passedCount * eased);
+      const interpolatedValue = totalCount > 0 ? Math.round((interpolatedPassed / totalCount) * 100) : 0;
+
+      this.runProgressPassed.set(interpolatedPassed);
+      this.runProgressValue.set(interpolatedValue);
+
+      if (progress < 1) {
+        this.progressAnimationFrameId = requestAnimationFrame(step);
+      } else {
+        this.progressAnimationFrameId = null;
+        this.runProgressPassed.set(passedCount);
+        this.runProgressValue.set(totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 0);
+      }
+    };
+
+    this.progressAnimationFrameId = requestAnimationFrame(step);
+  }
+
+  private stopProgressAnimation(): void {
+    if (this.progressAnimationFrameId !== null) {
+      cancelAnimationFrame(this.progressAnimationFrameId);
+      this.progressAnimationFrameId = null;
+    }
+  }
+
   private startDragging(mode: 'horizontal' | 'vertical'): void {
     this.dragMode = mode;
     document.body.classList.add('solve-resizing');
@@ -402,6 +461,11 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private loadAssignment(assignmentId: number): void {
     this.loading.set(true);
     this.runResponse = null;
+    this.runProgressMode.set('hidden');
+    this.runProgressValue.set(0);
+    this.runProgressPassed.set(0);
+    this.runProgressTotal.set(0);
+    this.stopProgressAnimation();
 
     this.assignmentService.getAssignment(assignmentId)
       .pipe(
@@ -423,6 +487,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
         },
         error: () => {
           this.assignment = null;
+          this.runProgressMode.set('hidden');
           this.messageService.add({
             severity: 'error',
             summary: 'Greska',

@@ -102,6 +102,16 @@
         </div>
 
         <section class="tests-pane">
+          @if (showRunProgress) {
+            <div class="solve-progress">
+              <p-progressbar
+                [mode]="runProgressMode() === 'indeterminate' ? 'indeterminate' : 'determinate'"
+                [value]="runProgressValue()"
+                [showValue]="false">
+              </p-progressbar>
+            </div>
+          }
+
           @if (runResponse && hasCompileFailed() && getCompileOutput()) {
             <div class="compile-output solve-compile-output">
               <label>Compile output</label>

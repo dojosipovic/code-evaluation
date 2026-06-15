@@ -11,6 +11,7 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
@@ -37,6 +38,7 @@ import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     ButtonModule,
     ConfirmDialogModule,
     InputTextModule,
@@ -351,7 +353,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     return parts.join(' ');
   }
 
-  private isAssignmentActive(assignment: IAssignmentListItem): boolean {
+  isAssignmentActive(assignment: IAssignmentListItem): boolean {
     const startsAt = new Date(assignment.startsAt).getTime();
     const endsAt = new Date(assignment.endsAt).getTime();
     const now = this.currentTime();

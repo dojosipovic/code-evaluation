@@ -1,0 +1,232 @@
+@if (loading()) {
+  <div class="solve-loading">
+    <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+    <span>Ucitavanje assignmenta...</span>
+  </div>
+} @else if (assignment) {
+  <main class="solve-page">
+    <header class="solve-header">
+      <div class="title-block">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-arrow-left"
+          class="icon-button"
+          aria-label="Nazad"
+          (click)="goBack()">
+        </button>
+
+        <div class="title-copy">
+          <div class="assignment-name">{{ assignment.name }}</div>
+          <h1>{{ assignment.task.title }}</h1>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <p-tag icon="pi pi-code" [value]="languageLabel"></p-tag>
+        <p-tag icon="pi pi-star" [value]="assignment.points + ' bodova'"></p-tag>
+        <span class="time-range">
+          {{ assignment.startsAt | date:'dd.MM.yyyy HH:mm' }} - {{ assignment.endsAt | date:'dd.MM.yyyy HH:mm' }}
+        </span>
+      </div>
+    </header>
+
+    <div
+      #workspace
+      class="solve-workspace">
+      <section class="problem-pane" [style.flex]="'0 0 ' + leftPanePx + 'px'">
+        <div class="pane-toolbar">
+          <span class="pane-title">Description</span>
+          <span class="subtle">{{ hiddenTestsCount }} hidden tests</span>
+        </div>
+
+        <div class="problem-scroll">
+          <article class="markdown-content" [innerHTML]="renderedMarkdown"></article>
+        </div>
+      </section>
+
+      <div
+        class="splitter-gutter splitter-gutter-horizontal"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="startHorizontalResize($event)">
+        <div class="splitter-handle splitter-handle-horizontal"></div>
+      </div>
+
+      <section
+        #rightColumn
+        class="right-column">
+        <section class="code-pane" [style.flex]="'0 0 ' + topPanePx + 'px'">
+          <div class="pane-toolbar">
+            <span class="pane-title">Code</span>
+
+            <button
+              pButton
+              type="button"
+              severity="success"
+              icon="pi pi-play"
+              [disabled]="running()"
+              [attr.aria-label]="running() ? 'Running code' : 'Run code'"
+              (click)="runCode()">
+              @if (running()) {
+                <p-progress-spinner
+                  strokeWidth="8"
+                  fill="transparent"
+                  animationDuration=".5s"
+                  class="run-spinner">
+                </p-progress-spinner>
+                <span>Running</span>
+              } @else {
+                <span>Run</span>
+              }
+            </button>
+          </div>
+
+          <div #editorShell class="editor-shell">
+            <ngx-monaco-editor
+              class="editor-host"
+              [(ngModel)]="code"
+              (onInit)="onEditorInit($event)"
+              [options]="editorOptions">
+            </ngx-monaco-editor>
+          </div>
+        </section>
+
+        <div
+          class="splitter-gutter splitter-gutter-vertical"
+          role="separator"
+          aria-orientation="horizontal"
+          (mousedown)="startVerticalResize($event)">
+          <div class="splitter-handle splitter-handle-vertical"></div>
+        </div>
+
+        <section class="tests-pane">
+          <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
+            <p-tablist>
+              <p-tab value="tests">Tests</p-tab>
+              <p-tab value="results">Results</p-tab>
+            </p-tablist>
+
+            <p-tabpanels>
+              <p-tabpanel value="tests">
+                <div class="test-list compact-list">
+                  @for (test of publicTests; track $index) {
+                    <div class="compact-test">
+                      <div class="compact-test-header">
+                        <span>Case {{ $index + 1 }}</span>
+                        <p-tag severity="success" value="Public"></p-tag>
+                      </div>
+                      <label>Input</label>
+                      <pre>{{ test.input }}</pre>
+                      <label>Expected</label>
+                      @if (hasPublicExpectedOutput(test)) {
+                        <pre>{{ test.output }}</pre>
+                      } @else {
+                        <div class="redacted">Hidden for this assignment</div>
+                      }
+                    </div>
+                  }
+
+                  @if (hiddenTestsCount > 0) {
+                    <div class="compact-test hidden-test">
+                      <div class="compact-test-header">
+                        <span>Hidden cases</span>
+                        <p-tag icon="pi pi-lock" severity="secondary" [value]="hiddenTestsCount + ''"></p-tag>
+                      </div>
+                      <div class="redacted">Inputs and outputs are hidden.</div>
+                    </div>
+                  }
+                </div>
+              </p-tabpanel>
+
+              <p-tabpanel value="results">
+                @if (!runResponse) {
+                  <div class="empty-results">
+                    <i class="pi pi-play-circle"></i>
+                    <span>Run your code to see test results.</span>
+                  </div>
+                } @else {
+                  <div class="result-summary">
+                    <div>
+                      <span class="summary-label">Passed</span>
+                      <strong>{{ passedLabel }}</strong>
+                    </div>
+                    <div>
+                      <span class="summary-label">Compile</span>
+                      <strong>{{ runResponse.compile.exitCode === 0 ? 'OK' : 'Failed' }}</strong>
+                    </div>
+                  </div>
+
+                  @if (runResponse.compile.stderr || runResponse.compile.stdout) {
+                    <div class="compile-output">
+                      <label>Compile output</label>
+                      <pre>{{ runResponse.compile.stderr || runResponse.compile.stdout }}</pre>
+                    </div>
+                  }
+
+                  <div class="test-list">
+                    @for (result of runResponse.results; track result.index) {
+                      <div class="result-card" [ngClass]="getResultClass(result.testResult)">
+                        <div class="result-card-header">
+                          <div>
+                            <span>Case {{ result.index + 1 }}</span>
+                            @if (isHiddenResult(result)) {
+                              <small>Hidden</small>
+                            } @else {
+                              <small>Public</small>
+                            }
+                          </div>
+
+                          <p-tag
+                            [severity]="getResultSeverity(result.testResult)"
+                            [value]="getResultLabel(result.testResult)">
+                          </p-tag>
+                        </div>
+
+                        <div class="runtime-line">
+                          <span>{{ result.durationMs }} ms</span>
+                          @if (result.timedOut) {
+                            <span>Timeout {{ result.timeout }}</span>
+                          }
+                          @if (result.exitCode !== 0) {
+                            <span>Exit {{ result.exitCode }}</span>
+                          }
+                        </div>
+
+                        @if (isHiddenResult(result)) {
+                          <div class="redacted">Hidden test output is not shown.</div>
+                        } @else {
+                          <div class="result-grid">
+                            <div>
+                              <label>Input</label>
+                              <pre>{{ result.input }}</pre>
+                            </div>
+
+                            @if (canShowExpectedOutput(result)) {
+                              <div>
+                                <label>Expected</label>
+                                <pre>{{ result.expectedOutput }}</pre>
+                              </div>
+                            }
+
+                            @if (canShowRunOutput(result)) {
+                              <div>
+                                <label>Your Output</label>
+                                <pre>{{ result.stdout || result.stderr }}</pre>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </p-tabpanel>
+            </p-tabpanels>
+          </p-tabs>
+        </section>
+      </section>
+    </div>
+  </main>
+}

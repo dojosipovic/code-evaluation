@@ -10,10 +10,12 @@ import { Register } from './pages/register/register';
 import { Tasks } from './pages/tasks/tasks';
 import { Groups } from './pages/groups/groups';
 import { GroupView } from './pages/group-view/group-view';
+import { AssignmentSolve } from './pages/assignment-solve/assignment-solve';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
     { path: 'register', canActivate: [guestGuard], component: Register },
+    { path: 'assignment/:id/solve', canActivate: [authGuard], component: AssignmentSolve },
     {
         path: '',
         component: AppLayout,

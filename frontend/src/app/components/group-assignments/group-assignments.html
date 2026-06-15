@@ -110,6 +110,17 @@
             </div>
 
             <div class="assignment-stats">
+              @if (isAssignmentActive(assignment)) {
+                <button
+                  pButton
+                  type="button"
+                  severity="success"
+                  icon="pi pi-play"
+                  label="Start"
+                  [routerLink]="['/assignment', assignment.id, 'solve']">
+                </button>
+              }
+
               <span
                 class="assignment-time-chip"
                 [ngClass]="getStartTimeClass(assignment)"

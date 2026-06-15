@@ -44,7 +44,7 @@
 }
 
 .solve-progress {
-  padding: 0.35rem 0.75rem 0 0.75rem;
+  padding: 0.25rem 0.75rem 0 0.75rem;
 }
 
 .solve-workspace {
@@ -441,7 +441,7 @@ label {
 
 :host ::ng-deep {
   .solve-progress .p-progressbar {
-    height: 0.32rem;
+    height: 0.22rem;
     border-radius: 999px;
     overflow: hidden;
   }

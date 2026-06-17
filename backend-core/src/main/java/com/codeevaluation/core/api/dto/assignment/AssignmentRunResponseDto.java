@@ -60,12 +60,12 @@ public record AssignmentRunResponseDto(
         for (int i = 0; i < tests.size(); i++) {
             TaskTest test = tests.get(i);
             TestRunResult runResult = runBatchResponse.getResults().get(i);
-            String expectedOutput = showTestOutput(test, showHiddenOutputs)
-                    ? test.getOutput()
-                    : null;
+            boolean showOutput = showTestOutput(test, showHiddenOutputs);
+            String expectedOutput = showOutput ? test.getOutput() : null;
 
             var result = AssignmentRunTestResultDto.from(i, test, runResult).toBuilder()
                     .expectedOutput(expectedOutput)
+                    .showExpectedOutput(showOutput)
                     .build();
 
             if (Objects.equals(result.testResult(), TestResult.PASSED)) {

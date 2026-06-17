@@ -12,6 +12,7 @@ public record AssignmentRunTestResultDto(
         int index,
         String input,
         String expectedOutput,
+        boolean showExpectedOutput,
         TestVisibility visibility,
         int exitCode,
         long durationMs,
@@ -31,6 +32,7 @@ public record AssignmentRunTestResultDto(
                 .index(index)
                 .input(test.getInput())
                 .expectedOutput(test.getOutput())
+                .showExpectedOutput(true)
                 .visibility(test.getVisibility())
                 .exitCode(runResult.getExitCode())
                 .durationMs(runResult.getDurationMs())

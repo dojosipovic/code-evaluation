@@ -4,6 +4,42 @@
     <span>Ucitavanje assignmenta...</span>
   </div>
 } @else if (assignment) {
+  @if (compilePopupVisible() && hasCompileFailed() && getCompileOutput()) {
+    <div
+      style="position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgb(0 0 0 / 45%)"
+      tabindex="0"
+      (click)="closeCompilePopup()"
+      (keydown.enter)="closeCompilePopup()"
+      (keydown.space)="closeCompilePopup()">
+      <div
+        style="width:min(46rem,calc(100vw - 2rem));max-height:min(32rem,calc(100vh - 2rem));display:flex;flex-direction:column;border:1px solid var(--p-content-border-color);border-radius:12px;background:var(--p-content-background);box-shadow:0 24px 80px rgb(0 0 0 / 35%);overflow:hidden"
+        tabindex="0"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        (keydown.space)="$event.stopPropagation()">
+        <div
+          style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.85rem 1rem;border-bottom:1px solid var(--p-content-border-color)">
+          <div>
+            <span style="display:block;font-size:1rem;font-weight:800">Compile output</span>
+            <small>Code compilation failed.</small>
+          </div>
+
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            icon="pi pi-times"
+            style="width:2rem;height:2rem"
+            aria-label="Close compile output"
+            (click)="closeCompilePopup()">
+          </button>
+        </div>
+
+        <pre style="margin:0;flex:1;border:0;border-radius:0;background:color-mix(in srgb, var(--p-content-hover-background) 70%, transparent)">{{ getCompileOutput() }}</pre>
+      </div>
+    </div>
+  }
+
   <main class="solve-page">
     <header class="solve-header">
       <div class="title-block">
@@ -65,7 +101,6 @@
               pButton
               type="button"
               class="run-code-button"
-              style="min-width:7rem;justify-content:center"
               [disabled]="running()"
               [attr.aria-label]="running() ? 'Running code' : 'Run code'"
               (click)="runCode()">
@@ -80,7 +115,6 @@
                 </p-progress-spinner>
               } @else {
                 <i class="pi pi-play"></i>
-                <span>Run</span>
               }
             </button>
           </div>
@@ -124,13 +158,6 @@
                 [value]="runProgressValue()"
                 [showValue]="false">
               </p-progressbar>
-            </div>
-          }
-
-          @if (runResponse && hasCompileFailed() && getCompileOutput()) {
-            <div class="compile-output solve-compile-output">
-              <label>Compile output</label>
-              <pre>{{ getCompileOutput() }}</pre>
             </div>
           }
 
@@ -178,13 +205,13 @@
                   </div>
 
                   <div class="case-input">
-                    <label>Input</label>
+                    <span class="field-caption">Input</span>
                     <pre>{{ selectedCase.test.input }}</pre>
                   </div>
 
                   <div class="case-compare">
                     <div>
-                      <label>Expected</label>
+                      <span class="field-caption">Expected</span>
                       @if (canShowCaseExpectedOutput(selectedCase.test)) {
                         <pre>{{ selectedCase.test.output }}</pre>
                       } @else {
@@ -193,7 +220,7 @@
                     </div>
 
                     <div>
-                      <label>Output</label>
+                      <span class="field-caption">Output</span>
                       @if (selectedCase.result) {
                         @if (isHiddenResult(selectedCase.result)) {
                           <div class="redacted">Hidden test output is not shown.</div>

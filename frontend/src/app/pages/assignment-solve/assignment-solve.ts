@@ -71,6 +71,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   readonly loading = signal(true);
   readonly running = signal(false);
+  readonly compilePopupVisible = signal(false);
   readonly runProgressMode = signal<'hidden' | 'indeterminate' | 'determinate'>('hidden');
   readonly runProgressValue = signal(0);
   readonly runProgressPassed = signal(0);
@@ -175,6 +176,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     }
 
     this.running.set(true);
+    this.compilePopupVisible.set(false);
     this.stopProgressAnimation();
     this.runProgressMode.set('indeterminate');
     this.runProgressValue.set(0);
@@ -192,6 +194,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
       .subscribe({
         next: response => {
           this.runResponse = response;
+          this.compilePopupVisible.set(response.compile.exitCode !== 0 && !!(response.compile.stderr || response.compile.stdout));
           this.animateProgressTo(response.passedCount, response.totalCount);
         },
         error: () => {
@@ -314,6 +317,10 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     }
 
     return this.runResponse.compile.stderr || this.runResponse.compile.stdout || '';
+  }
+
+  closeCompilePopup(): void {
+    this.compilePopupVisible.set(false);
   }
 
   getCaseOutput(result: IAssignmentRunTestResult | null): string {
@@ -467,6 +474,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private loadAssignment(assignmentId: number): void {
     this.loading.set(true);
     this.runResponse = null;
+    this.compilePopupVisible.set(false);
     this.runProgressMode.set('hidden');
     this.runProgressValue.set(0);
     this.runProgressPassed.set(0);

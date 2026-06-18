@@ -45,6 +45,7 @@
   padding: 0.25rem 0.75rem 0 0.75rem;
 }
 
+
 .solve-workspace {
   width: 100%;
   min-width: 0;
@@ -205,29 +206,6 @@ pre {
   line-height: 1.45;
 }
 
-.compact-test,
-.result-card,
-.compile-output {
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--p-content-background) 88%, var(--p-content-hover-background));
-}
-
-.compact-test-header,
-.result-card-header {
-  font-weight: 800;
-}
-
-.result-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.75rem;
-}
-
-.single-column {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 label {
   display: block;
   margin-bottom: 0.35rem;
@@ -357,8 +335,7 @@ label {
   background: var(--p-text-muted-color);
 }
 
-.case-panel,
-.compile-output {
+.case-panel {
   padding: 0.85rem;
   min-height: 0;
   border: 1px solid var(--p-content-border-color);
@@ -401,14 +378,6 @@ label {
   border: 1px solid var(--p-content-border-color);
   padding: 0.75rem;
   background: color-mix(in srgb, var(--p-content-hover-background) 45%, transparent);
-}
-
-.compile-output {
-  margin: 0.75rem 0.75rem 0;
-}
-
-.case-result-empty {
-  justify-content: center;
 }
 
 .case-panel small {
@@ -481,10 +450,19 @@ label {
     --p-progressspinner-color-four: var(--p-primary-color);
   }
 
+  .run-code-button {
+    height: 1.9rem;
+    min-width: 5rem;
+    padding: 0 0.75rem;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+
   .icon-button {
     width: 2.4rem;
     height: 2.4rem;
   }
+
 }
 
 @media (max-width: 920px) {
@@ -511,7 +489,6 @@ label {
   }
 
   .sample-grid,
-  .result-grid,
   .result-summary {
     grid-template-columns: 1fr;
   }

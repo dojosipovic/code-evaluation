@@ -74,8 +74,8 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   totalRecords = 0;
   rows = 10;
   first = 0;
-  sortField = 'startsAt';
-  sortDirection: SortDirection = 'asc';
+  sortField = 'endsAt';
+  sortDirection: SortDirection = 'desc';
   viewerTaskId: number | null = null;
   editorTaskId: number | null = null;
   editorOpen = false;
@@ -166,8 +166,8 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     this.assignmentFilters = {
       search: ''
     };
-    this.sortField = 'startsAt';
-    this.sortDirection = 'asc';
+    this.sortField = 'endsAt';
+    this.sortDirection = 'desc';
     this.first = 0;
     this.applyFilters$.next();
   }

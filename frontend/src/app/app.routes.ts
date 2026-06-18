@@ -30,7 +30,7 @@ export const routes: Routes = [
             { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },
 
             { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },
-            { path: 'groups/:id', redirectTo: 'groups/:id/users', pathMatch: 'full' },
+            { path: 'groups/:id', redirectTo: 'groups/:id/tasks', pathMatch: 'full' },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

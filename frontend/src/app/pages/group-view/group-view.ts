@@ -50,7 +50,7 @@ export class GroupView implements OnInit {
   private authService = inject(AuthService);
 
   readonly loading = signal(false);
-  readonly activeTab = signal<GroupTab>('users');
+  readonly activeTab = signal<GroupTab>('tasks');
 
   group: IGroupResponse | null = null;
   updateGroupDialogVisible = false;
@@ -63,7 +63,7 @@ export class GroupView implements OnInit {
         const groupId = Number(params.get('id'));
 
         if (tab !== 'users' && tab !== 'tasks') {
-          this.router.navigate(['/groups', groupId, 'users'], { replaceUrl: true });
+          this.router.navigate(['/groups', groupId, 'tasks'], { replaceUrl: true });
           return;
         }
 

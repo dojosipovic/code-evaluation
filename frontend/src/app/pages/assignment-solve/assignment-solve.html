@@ -64,8 +64,8 @@
             <button
               pButton
               type="button"
-              severity="success"
-              icon="pi pi-play"
+              class="run-code-button"
+              style="min-width:7rem;justify-content:center"
               [disabled]="running()"
               [attr.aria-label]="running() ? 'Running code' : 'Run code'"
               (click)="runCode()">
@@ -74,22 +74,37 @@
                   strokeWidth="8"
                   fill="transparent"
                   animationDuration=".5s"
-                  class="run-spinner">
+                  class="run-spinner"
+                  [style.width.rem]="1.2"
+                  [style.height.rem]="1.2">
                 </p-progress-spinner>
-                <span>Running</span>
               } @else {
+                <i class="pi pi-play"></i>
                 <span>Run</span>
               }
             </button>
           </div>
 
-          <div #editorShell class="editor-shell">
+          <div #editorShell class="editor-shell" [class.editor-shell-running]="running()">
             <ngx-monaco-editor
               class="editor-host"
               [(ngModel)]="code"
               (onInit)="onEditorInit($event)"
               [options]="editorOptions">
             </ngx-monaco-editor>
+
+            @if (running()) {
+              <div class="editor-running-overlay">
+                <p-progress-spinner
+                  strokeWidth="8"
+                  fill="transparent"
+                  animationDuration=".5s"
+                  class="editor-run-spinner"
+                  [style.width.rem]="3"
+                  [style.height.rem]="3">
+                </p-progress-spinner>
+              </div>
+            }
           </div>
         </section>
 

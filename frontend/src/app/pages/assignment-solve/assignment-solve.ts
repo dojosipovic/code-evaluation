@@ -44,8 +44,8 @@ interface MonacoLayoutEditor {
 })
 export class AssignmentSolve implements OnInit, OnDestroy {
   private readonly horizontalGutterPx = 8;
-  private readonly minLeftPanePx = 260;
-  private readonly minRightPanePx = 640;
+  private readonly minLeftPanePx = 0;
+  private readonly minRightPanePx = 320;
   private readonly minCodePanePx = 260;
   private readonly minTestsPanePx = 220;
   private route = inject(ActivatedRoute);

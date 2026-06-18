@@ -22,6 +22,10 @@ import { TestVisibilityEnum } from '../../models/enum/TestVisibilityEnum';
 import { ITestResponse } from '../../models/task/ITestResponse';
 import { AssignmentService } from '../../services/assignment.service';
 
+interface MonacoLayoutEditor {
+  layout: () => void;
+}
+
 @Component({
   selector: 'app-assignment-solve',
   imports: [
@@ -54,7 +58,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
   private dragMode: 'horizontal' | 'vertical' | null = null;
-  private monacoEditor: any = null;
+  private monacoEditor: MonacoLayoutEditor | null = null;
   private layoutFrameId: number | null = null;
   private progressAnimationFrameId: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
@@ -215,8 +219,8 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     this.startDragging('vertical');
   }
 
-  onEditorInit(editor: any): void {
-    this.monacoEditor = editor;
+  onEditorInit(editorInstance: MonacoLayoutEditor): void {
+    this.monacoEditor = editorInstance;
     this.bindEditorResizeObserver();
     this.scheduleEditorLayout();
   }
@@ -426,7 +430,9 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   }
 
   private scheduleEditorLayout(): void {
-    if (!this.monacoEditor) {
+    const editorInstance = this.monacoEditor;
+
+    if (!editorInstance) {
       return;
     }
 
@@ -436,7 +442,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
     this.layoutFrameId = requestAnimationFrame(() => {
       this.layoutFrameId = null;
-      this.monacoEditor.layout();
+      editorInstance.layout();
     });
   }
 

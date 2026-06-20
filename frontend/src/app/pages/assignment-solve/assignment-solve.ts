@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
+import { diffChars } from 'diff';
 import { marked } from 'marked';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { MessageService } from 'primeng/api';
@@ -24,6 +25,11 @@ import { AssignmentService } from '../../services/assignment.service';
 
 interface MonacoLayoutEditor {
   layout: () => void;
+}
+
+interface DiffSegment {
+  value: string;
+  kind: 'same' | 'expected' | 'actual';
 }
 
 @Component({
@@ -307,6 +313,17 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return result.expectedOutput;
   }
 
+  formatTestText(value: string | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    return value
+      .replace(/\r\n/g, '\\r\\n\r\n')
+      .replace(/\n/g, '\\n\n')
+      .replace(/\r/g, '\\r\r');
+  }
+
   hasCaseInput(input: string | null | undefined): boolean {
     return !!input?.trim();
   }
@@ -339,6 +356,21 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return result.stdout || result.stderr || '';
   }
 
+  canShowOutputDiff(result: IAssignmentRunTestResult | null): boolean {
+    return !!result
+      && this.canShowExpectedOutput(result)
+      && result.expectedOutput !== null
+      && !!this.getCaseOutput(result);
+  }
+
+  getExpectedDiffSegments(result: IAssignmentRunTestResult): DiffSegment[] {
+    return this.getDiffSegments(result, 'expected');
+  }
+
+  getActualDiffSegments(result: IAssignmentRunTestResult): DiffSegment[] {
+    return this.getDiffSegments(result, 'actual');
+  }
+
   getCaseStatusClass(result: IAssignmentRunTestResult | null): string {
     if (!result) {
       return 'status-neutral';
@@ -353,6 +385,24 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     }
 
     return result.testResult === TestResultEnum.PASSED ? 'Passed' : 'Failed';
+  }
+
+  private getDiffSegments(result: IAssignmentRunTestResult, side: 'expected' | 'actual'): DiffSegment[] {
+    const expected = result.expectedOutput ?? '';
+    const actual = this.getCaseOutput(result);
+
+    return diffChars(expected, actual)
+      .filter(part => {
+        if (side === 'expected') {
+          return !part.added;
+        }
+
+        return !part.removed;
+      })
+      .map(part => ({
+        value: this.formatTestText(part.value),
+        kind: part.added ? 'actual' : part.removed ? 'expected' : 'same'
+      }));
   }
 
   private animateProgressTo(passedCount: number, totalCount: number): void {

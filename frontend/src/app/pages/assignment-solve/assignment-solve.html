@@ -207,7 +207,7 @@
                   <div class="case-input">
                     <span class="field-caption">Input</span>
                     @if (hasCaseInput(selectedCase.test.input)) {
-                      <pre>{{ selectedCase.test.input }}</pre>
+                      <pre>{{ formatTestText(selectedCase.test.input) }}</pre>
                     } @else {
                       <div class="redacted">No input is provided.</div>
                     }
@@ -219,7 +219,11 @@
                       @if (selectedCase.result) {
                         @if (canShowExpectedOutput(selectedCase.result)) {
                           @if (selectedCase.result.expectedOutput !== null) {
-                            <pre>{{ getExpectedOutputText(selectedCase.result) }}</pre>
+                            @if (canShowOutputDiff(selectedCase.result)) {
+                              <pre class="diff-view">@for (part of getExpectedDiffSegments(selectedCase.result); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                            } @else {
+                              <pre>{{ formatTestText(getExpectedOutputText(selectedCase.result)) }}</pre>
+                            }
                           } @else {
                             <div class="redacted">No output is expected.</div>
                           }
@@ -228,7 +232,7 @@
                         }
                       } @else if (selectedCase.test.visibility === 'PUBLIC') {
                         @if (selectedCase.test.output !== null) {
-                          <pre>{{ selectedCase.test.output }}</pre>
+                          <pre>{{ formatTestText(selectedCase.test.output) }}</pre>
                         } @else {
                           <div class="redacted">No output is expected.</div>
                         }
@@ -240,8 +244,10 @@
                     <div>
                       <span class="field-caption">Output</span>
                       @if (selectedCase.result) {
-                        @if (getCaseOutput(selectedCase.result)) {
-                          <pre>{{ getCaseOutput(selectedCase.result) }}</pre>
+                        @if (canShowOutputDiff(selectedCase.result)) {
+                          <pre class="diff-view">@for (part of getActualDiffSegments(selectedCase.result); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                        } @else if (getCaseOutput(selectedCase.result)) {
+                          <pre>{{ formatTestText(getCaseOutput(selectedCase.result)) }}</pre>
                         } @else {
                           <div class="redacted">No output was returned.</div>
                         }

@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
+import confetti from 'canvas-confetti';
 import { diffChars } from 'diff';
 import { marked } from 'marked';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -202,6 +203,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
           this.runResponse = response;
           this.compilePopupVisible.set(response.compile.exitCode !== 0 && !!(response.compile.stderr || response.compile.stdout));
           this.animateProgressTo(response.passedCount, response.totalCount);
+          this.triggerPerfectRunCelebration(response.passedCount, response.totalCount);
         },
         error: () => {
           this.runProgressMode.set('hidden');
@@ -403,6 +405,32 @@ export class AssignmentSolve implements OnInit, OnDestroy {
         value: this.formatTestText(part.value),
         kind: part.added ? 'actual' : part.removed ? 'expected' : 'same'
       }));
+  }
+
+  private triggerPerfectRunCelebration(passedCount: number, totalCount: number): void {
+    if (totalCount === 0 || passedCount !== totalCount) {
+      return;
+    }
+
+    void this.zone.runOutsideAngular(() => {
+      const burst = (originX: number, angle: number) => confetti({
+        particleCount: 140,
+        angle,
+        spread: 100,
+        startVelocity: 58,
+        gravity: 0.9,
+        scalar: 1.05,
+        origin: { x: originX, y: 1 }
+      });
+
+      burst(0, 50);
+      burst(1, 130);
+
+      setTimeout(() => {
+        burst(0.08, 60);
+        burst(0.92, 120);
+      }, 180);
+    });
   }
 
   private animateProgressTo(passedCount: number, totalCount: number): void {

@@ -205,22 +205,17 @@ pre {
   line-height: 1.45;
 }
 
-pre.diff-view { white-space: pre-wrap; }
 .diff-segment-expected,
 .diff-segment-actual {
   font-weight: 800;
-  border-radius: 3px;
-  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 20%);
 }
 
 .diff-segment-expected {
   background: color-mix(in srgb, var(--p-red-500) 42%, transparent);
-  color: #fff;
 }
 
 .diff-segment-actual {
   background: color-mix(in srgb, var(--p-green-500) 42%, transparent);
-  color: #fff;
 }
 
 label {

@@ -4,13 +4,14 @@ import { TestVisibilityEnum } from "../enum/TestVisibilityEnum";
 export interface IAssignmentRunTestResult {
     index: number;
     input: string;
-    expectedOutput: string;
-    testVisibility: TestVisibilityEnum;
+    showExpectedOutput: boolean;
+    expectedOutput: string | null;
+    visibility: TestVisibilityEnum;
     exitCode: number;
     durationMs: number;
     stdout: string;
     stderr: string;
     timedOut: boolean;
-    timeout: string;
+    timeout: string | null;
     testResult: TestResultEnum;
 }

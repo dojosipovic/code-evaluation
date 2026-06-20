@@ -233,11 +233,11 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   }
 
   isHiddenResult(result: IAssignmentRunTestResult): boolean {
-    return result.testVisibility === TestVisibilityEnum.HIDDEN;
+    return result.visibility === TestVisibilityEnum.HIDDEN;
   }
 
   canShowExpectedOutput(result: IAssignmentRunTestResult): boolean {
-    return !this.isHiddenResult(result) && !!result.expectedOutput?.trim();
+    return result.showExpectedOutput;
   }
 
   canShowRunOutput(result: IAssignmentRunTestResult): boolean {
@@ -299,8 +299,16 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return this.cases[this.activeCaseIndex] ?? this.cases[0] ?? null;
   }
 
-  canShowCaseExpectedOutput(test: ITestResponse): boolean {
-    return test.visibility === TestVisibilityEnum.PUBLIC && !!test.output?.trim();
+  getExpectedOutputText(result: IAssignmentRunTestResult): string {
+    if (result.expectedOutput === null) {
+      return 'No output is expected.';
+    }
+
+    return result.expectedOutput;
+  }
+
+  hasCaseInput(input: string | null | undefined): boolean {
+    return !!input?.trim();
   }
 
   getCaseResult(index: number): IAssignmentRunTestResult | null {

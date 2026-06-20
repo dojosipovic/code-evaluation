@@ -206,25 +206,41 @@
 
                   <div class="case-input">
                     <span class="field-caption">Input</span>
-                    <pre>{{ selectedCase.test.input }}</pre>
+                    @if (hasCaseInput(selectedCase.test.input)) {
+                      <pre>{{ selectedCase.test.input }}</pre>
+                    } @else {
+                      <div class="redacted">No input is provided.</div>
+                    }
                   </div>
 
                   <div class="case-compare">
                     <div>
                       <span class="field-caption">Expected</span>
-                      @if (canShowCaseExpectedOutput(selectedCase.test)) {
-                        <pre>{{ selectedCase.test.output }}</pre>
+                      @if (selectedCase.result) {
+                        @if (canShowExpectedOutput(selectedCase.result)) {
+                          @if (selectedCase.result.expectedOutput !== null) {
+                            <pre>{{ getExpectedOutputText(selectedCase.result) }}</pre>
+                          } @else {
+                            <div class="redacted">No output is expected.</div>
+                          }
+                        } @else {
+                          <div class="redacted">Hidden for this test</div>
+                        }
+                      } @else if (selectedCase.test.visibility === 'PUBLIC') {
+                        @if (selectedCase.test.output !== null) {
+                          <pre>{{ selectedCase.test.output }}</pre>
+                        } @else {
+                          <div class="redacted">No output is expected.</div>
+                        }
                       } @else {
-                        <div class="redacted">Hidden for this assignment</div>
+                        <div class="redacted">Hidden for this test</div>
                       }
                     </div>
 
                     <div>
                       <span class="field-caption">Output</span>
                       @if (selectedCase.result) {
-                        @if (isHiddenResult(selectedCase.result)) {
-                          <div class="redacted">Hidden test output is not shown.</div>
-                        } @else if (getCaseOutput(selectedCase.result)) {
+                        @if (getCaseOutput(selectedCase.result)) {
                           <pre>{{ getCaseOutput(selectedCase.result) }}</pre>
                         } @else {
                           <div class="redacted">No output was returned.</div>

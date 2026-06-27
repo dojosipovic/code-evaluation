@@ -12,5 +12,6 @@
     <include file="db/changelog/004-task-and-test.xml"/>
     <include file="db/changelog/005-group-and-member.xml"/>
     <include file="db/changelog/006-assignment.xml"/>
+    <include file="db/changelog/007-submission.xml"/>
 
 </databaseChangeLog>

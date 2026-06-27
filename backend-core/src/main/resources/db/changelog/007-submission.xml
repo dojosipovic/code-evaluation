@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="007-create-submission-table" author="dominik">
+        <createTable tableName="submission">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="assignment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="task_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="language" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="final_score" type="DECIMAL(10,2)"/>
+
+            <column name="submitted_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="submission"
+                columnNames="assignment_id,user_id"
+                constraintName="uk_submission_assignment_user"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission"
+                baseColumnNames="assignment_id"
+                constraintName="fk_submission_assignment"
+                referencedTableName="assignment"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission"
+                baseColumnNames="task_id"
+                constraintName="fk_submission_task"
+                referencedTableName="task"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission"
+                baseColumnNames="user_id"
+                constraintName="fk_submission_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_submission_assignment_id" tableName="submission">
+            <column name="assignment_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_task_id" tableName="submission">
+            <column name="task_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_user_id" tableName="submission">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-file-table" author="dominik">
+        <createTable tableName="submission_file">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="submission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file_path" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="content_base64" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="content" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="submission_file"
+                columnNames="submission_id,file_path"
+                constraintName="uk_submission_file_submission_path"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_file"
+                baseColumnNames="submission_id"
+                constraintName="fk_submission_file_submission"
+                referencedTableName="submission"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_file_submission_id" tableName="submission_file">
+            <column name="submission_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-test-run-table" author="dominik">
+        <createTable tableName="submission_test_run">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="submission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total_tests" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="passed_tests" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="runtime_ms" type="BIGINT"/>
+
+            <column name="memory_bytes" type="BIGINT"/>
+
+            <column name="log_output" type="TEXT"/>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_test_run"
+                baseColumnNames="submission_id"
+                constraintName="fk_submission_test_run_submission"
+                referencedTableName="submission"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_test_run_submission_id" tableName="submission_test_run">
+            <column name="submission_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-test-result-table" author="dominik">
+        <createTable tableName="submission_test_result">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="submission_test_run_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="task_test_id" type="BIGINT"/>
+
+            <column name="result" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="visibility" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="test_input" type="TEXT"/>
+
+            <column name="expected_output" type="TEXT"/>
+
+            <column name="actual_output" type="TEXT"/>
+
+            <column name="runtime_ms" type="BIGINT"/>
+
+            <column name="error_output" type="TEXT"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_test_result"
+                baseColumnNames="submission_test_run_id"
+                constraintName="fk_submission_test_result_submission_test_run"
+                referencedTableName="submission_test_run"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_test_result"
+                baseColumnNames="task_test_id"
+                constraintName="fk_submission_test_result_task_test"
+                referencedTableName="task_test"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+
+        <createIndex indexName="idx_submission_test_result_submission_test_run_id" tableName="submission_test_result">
+            <column name="submission_test_run_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-plagiarism-run-table" author="dominik">
+        <createTable tableName="submission_plagiarism_run">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="assignment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="task_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="min_similarity" type="DECIMAL(12,11)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="report_file_base64" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_plagiarism_run"
+                baseColumnNames="assignment_id"
+                constraintName="fk_submission_plagiarism_run_assignment"
+                referencedTableName="assignment"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_plagiarism_run"
+                baseColumnNames="task_id"
+                constraintName="fk_submission_plagiarism_run_task"
+                referencedTableName="task"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_plagiarism_run_assignment_id" tableName="submission_plagiarism_run">
+            <column name="assignment_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_plagiarism_run_task_id" tableName="submission_plagiarism_run">
+            <column name="task_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-similarity-table" author="dominik">
+        <createTable tableName="submission_similarity">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="plagiarism_run_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_submission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="target_submission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="similarity_score" type="DECIMAL(12,11)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="submission_similarity"
+                columnNames="plagiarism_run_id,source_submission_id,target_submission_id"
+                constraintName="uk_submission_similarity_run_submission_pair"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_similarity"
+                baseColumnNames="plagiarism_run_id"
+                constraintName="fk_submission_similarity_run"
+                referencedTableName="submission_plagiarism_run"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_similarity"
+                baseColumnNames="source_submission_id"
+                constraintName="fk_submission_similarity_source_submission"
+                referencedTableName="submission"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_similarity"
+                baseColumnNames="target_submission_id"
+                constraintName="fk_submission_similarity_target_submission"
+                referencedTableName="submission"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_similarity_run_id" tableName="submission_similarity">
+            <column name="plagiarism_run_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_similarity_source_submission_id" tableName="submission_similarity">
+            <column name="source_submission_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_similarity_target_submission_id" tableName="submission_similarity">
+            <column name="target_submission_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-cluster-table" author="dominik">
+        <createTable tableName="submission_cluster">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="plagiarism_run_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="similarity" type="DECIMAL(12,11)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_cluster"
+                baseColumnNames="plagiarism_run_id"
+                constraintName="fk_submission_cluster_run"
+                referencedTableName="submission_plagiarism_run"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_cluster_run_id" tableName="submission_cluster">
+            <column name="plagiarism_run_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-submission-cluster-member-table" author="dominik">
+        <createTable tableName="submission_cluster_member">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="cluster_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="submission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="submission_cluster_member"
+                columnNames="cluster_id,submission_id"
+                constraintName="uk_submission_cluster_member_cluster_submission"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_cluster_member"
+                baseColumnNames="cluster_id"
+                constraintName="fk_submission_cluster_member_cluster"
+                referencedTableName="submission_cluster"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="submission_cluster_member"
+                baseColumnNames="submission_id"
+                constraintName="fk_submission_cluster_member_submission"
+                referencedTableName="submission"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_submission_cluster_member_cluster_id" tableName="submission_cluster_member">
+            <column name="cluster_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_submission_cluster_member_submission_id" tableName="submission_cluster_member">
+            <column name="submission_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

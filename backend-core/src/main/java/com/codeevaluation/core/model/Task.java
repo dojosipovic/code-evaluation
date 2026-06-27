@@ -64,6 +64,14 @@ public class Task extends PanacheEntityBase {
     @OrderBy("id ASC")
     private List<TaskTest> tests = new ArrayList<>();
 
+    @OneToMany(mappedBy = "task")
+    @OrderBy("id ASC")
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "task")
+    @OrderBy("id ASC")
+    private List<SubmissionPlagiarismRun> plagiarismRuns = new ArrayList<>();
+
     public void addTest(TaskTest test) {
         tests.add(test);
         test.setTask(this);

@@ -8,8 +8,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,6 +52,12 @@ public class Assignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User createdBy;
+
+    @OneToMany(mappedBy = "assignment")
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "assignment")
+    private List<SubmissionPlagiarismRun> plagiarismRuns = new ArrayList<>();
 
     public boolean isOwner(String username) {
         return Objects.equals(createdBy.getUsername(), username);

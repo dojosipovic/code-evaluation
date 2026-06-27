@@ -15,37 +15,42 @@ import de.jplag.cpp.CPPLanguage;
 import de.jplag.exceptions.ExitException;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
+import org.jboss.logging.Logger;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import jakarta.ws.rs.InternalServerErrorException;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
 public class JplagService {
 
+    private static final Logger LOG = Logger.getLogger(JplagService.class);
+    private static final Duration ASYNC_CLEANUP_DELAY = Duration.ofSeconds(2);
     private final Decoder b64 = Base64.getDecoder();
+    private final Path workRoot = resolveWorkRoot();
 
     public PlagResult analyze(ScanRequest request) {
         String runId = UUID.randomUUID().toString();
         Path rootDir = null;
 
         try {
-            rootDir = Files.createTempDirectory("jplag-root-" + runId + "-");
+            LOG.infov("Starting plagiarism analysis runId={0}, submissions={1}, minSimilarity={2}, includeClusters={3}",
+                    runId, request.getSubmissions().size(), request.getMinSimilarity(), request.isIncludeClusters());
+            Files.createDirectories(workRoot);
+            rootDir = Files.createTempDirectory(workRoot, "jplag-root-" + runId + "-");
 
             for (FilePayload s : request.getSubmissions()) {
                 String id = s.getId();
@@ -93,38 +98,6 @@ public class JplagService {
             Path reportFile = rootDir.resolve("report.plag");
             ReportObjectFactory reportFactory = new ReportObjectFactory(reportFile.toFile());
             reportFactory.createAndSaveReport(result);
-            String fixed =
-                    """
-                    {
-                        "language": "cpp",
-                        "baseCodeSubmissionDirectory": "BaseCode",
-                        "submissionDirectories": [
-                          "."
-                        ],
-                      "clusteringOptions": {
-                            "similarityMetric": "AVG",
-                            "spectralKernelBandwidth": 20.0,
-                            "spectralGaussianProcessVariance": 0.0025000000000000005,
-                            "spectralMinRuns": 5,
-                            "spectralMaxRuns": 50,
-                            "spectralMaxKMeansIterationPerRun": 200,
-                            "agglomerativeThreshold": 0.2,
-                            "preprocessor": "CUMULATIVE_DISTRIBUTION_FUNCTION",
-                            "enabled": true,
-                            "algorithm": "SPECTRAL",
-                            "agglomerativeInterClusterSimilarity": "AVERAGE",
-                            "preprocessorThreshold": 0.2,
-                            "preprocessorPercentile": 0.5
-                        }
-                    }
-                    """;
-
-            URI uri = URI.create("jar:" + reportFile.toUri());
-
-            try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true"))) {
-                Path optionsJson = zipFs.getPath("/options.json");
-                Files.writeString(optionsJson, fixed, StandardOpenOption.CREATE);
-            }
             byte[] bytes = Files.readAllBytes(reportFile);
             String base64 = Base64.getEncoder().encodeToString(bytes);
 
@@ -135,11 +108,20 @@ public class JplagService {
 
             List<PairResult> pairs = extractPairs(result, request.getMinSimilarity());
 
+            LOG.infov("Finished plagiarism analysis runId={0}, pairs={1}, clusters={2}",
+                    runId, pairs.size(), clusters == null ? 0 : clusters.size());
             return new PlagResult(runId, request.getMinSimilarity(), pairs, clusters, base64);
         } catch (IOException | ExitException e) {
+            LOG.errorv(e, "Plagiarism analysis failed runId={0}", runId);
             throw new InternalServerErrorException("JPlag analiza nije uspjela", e);
+        } catch (RuntimeException e) {
+            LOG.errorv(e, "Unexpected plagiarism analysis failure runId={0}", runId);
+            throw e;
         } finally {
-            safeDeleteRecursive(rootDir);
+            if (!safeDeleteRecursive(rootDir)) {
+                scheduleAsyncCleanup(rootDir);
+            }
+            safeDeleteIfEmpty(workRoot);
         }
     }
 
@@ -148,47 +130,132 @@ public class JplagService {
 
         List<PairResult> out = new ArrayList<>();
         for (JPlagComparison c : comps) {
-
-            double sim = c.similarity(); // ili getSimilarity()
-            if (sim > 1.0) {
-                sim = sim / 100.0;
-            }
-            if (sim < minSimilarity) {
-                continue;
-            }
-
             String a = c.firstSubmission().getName();  // ili getDisplayName()
             String b = c.secondSubmission().getName();
 
-            PairResult p = new PairResult(a, b, sim);
-            out.add(p);
+            double simFromFirst = normalizeSimilarity(c.similarityOfFirst());
+            if (simFromFirst >= minSimilarity) {
+                out.add(new PairResult(a, b, simFromFirst));
+            }
+
+            double simFromSecond = normalizeSimilarity(c.similarityOfSecond());
+            if (simFromSecond >= minSimilarity) {
+                out.add(new PairResult(b, a, simFromSecond));
+            }
         }
 
         out.sort(Comparator.comparingDouble(PairResult::getSimilarity).reversed());
         return out;
     }
 
-    private void safeDeleteRecursive(Path dir) {
+    private double normalizeSimilarity(double similarity) {
+        if (similarity > 1.0) {
+            return similarity / 100.0;
+        }
+        return similarity;
+    }
+
+    private Path resolveWorkRoot() {
+        Path preferred = Path.of(System.getProperty("user.dir"), ".jplag-work")
+                .toAbsolutePath()
+                .normalize();
+        if (isWritableDirectory(preferred.getParent())) {
+            return preferred;
+        }
+
+        Path fallback = Path.of(System.getProperty("java.io.tmpdir"), "jplag-work")
+                .toAbsolutePath()
+                .normalize();
+        LOG.infov("Using fallback JPlag work directory {0} instead of {1}", fallback, preferred);
+        return fallback;
+    }
+
+    private boolean isWritableDirectory(Path dir) {
+        if (dir == null) {
+            return false;
+        }
+        try {
+            Files.createDirectories(dir);
+            return Files.isWritable(dir);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private boolean safeDeleteRecursive(Path dir) {
+        if (dir == null) {
+            return true;
+        }
+
+        for (int attempt = 1; attempt <= 5; attempt++) {
+            if (!Files.exists(dir)) {
+                return true;
+            }
+
+            try (var paths = Files.walk(dir)) {
+                paths
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException ignored) {
+                                // retry on next attempt
+                            }
+                        });
+            } catch (IOException ignored) {
+                // retry below
+            }
+
+            if (!Files.exists(dir)) {
+                return true;
+            }
+
+            try {
+                Thread.sleep(100L * attempt);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        if (Files.exists(dir)) {
+            LOG.warnv("Failed to fully delete JPlag work directory {0}", dir);
+            return false;
+        }
+        return true;
+    }
+
+    private void scheduleAsyncCleanup(Path dir) {
         if (dir == null) {
             return;
         }
 
-        if (!Files.exists(dir)) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(ASYNC_CLEANUP_DELAY.toMillis());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            if (safeDeleteRecursive(dir)) {
+                safeDeleteIfEmpty(workRoot);
+                LOG.infov("Asynchronous cleanup removed JPlag work directory {0}", dir);
+            } else {
+                LOG.warnv("Asynchronous cleanup also failed for JPlag work directory {0}", dir);
+            }
+        });
+    }
+
+    private void safeDeleteIfEmpty(Path dir) {
+        if (dir == null) {
             return;
         }
 
-        try (var paths = Files.walk(dir)) {
-            paths
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.deleteIfExists(path);
-                        } catch (IOException ignored) {
-                            // ignore
-                        }
-                    });
-        } catch (IOException e) {
-            // opcionalno: log
+        try {
+            Files.deleteIfExists(dir);
+        } catch (IOException ignored) {
+            // ignore if not empty or temporarily unavailable
         }
     }
 
@@ -223,7 +290,7 @@ public class JplagService {
             }
 
             for (Cluster<de.jplag.Submission> c : clusters) {
-                if (c.getMembers().size() < 2) {
+                if (c.getMembers().size() < 3) {
                     continue;
                 }
 

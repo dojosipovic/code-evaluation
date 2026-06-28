@@ -65,6 +65,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   private lastAppliedSearch = '';
 
   @Input({ required: true }) groupId!: number;
+  @Input() canManage = false;
 
   readonly loading = signal(false);
   readonly currentTime = signal(Date.now());
@@ -173,6 +174,10 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   }
 
   openAssignmentCreator(): void {
+    if (!this.canManage) {
+      return;
+    }
+
     this.assignmentCreatorOpen = true;
   }
 

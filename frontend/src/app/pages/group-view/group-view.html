@@ -73,7 +73,10 @@
         <p-tabpanels>
           <p-tabpanel value="tasks">
             <ng-template #content>
-              <app-group-assignments [groupId]="group.id"></app-group-assignments>
+              <app-group-assignments
+                [groupId]="group.id"
+                [canManage]="canEditGroup()">
+              </app-group-assignments>
             </ng-template>
           </p-tabpanel>
 

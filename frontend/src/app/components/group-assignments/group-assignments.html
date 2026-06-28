@@ -73,15 +73,17 @@
       (click)="resetFilters()">
     </button>
 
-    <button
-      pButton
-      type="button"
-      icon="pi pi-plus"
-      aria-label="Kreiraj assignment"
-      title="Kreiraj assignment"
-      [disabled]="loading()"
-      (click)="openAssignmentCreator()">
-    </button>
+    @if (canManage) {
+      <button
+        pButton
+        type="button"
+        icon="pi pi-plus"
+        aria-label="Kreiraj assignment"
+        title="Kreiraj assignment"
+        [disabled]="loading()"
+        (click)="openAssignmentCreator()">
+      </button>
+    }
   </div>
 </div>
 

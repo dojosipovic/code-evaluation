@@ -6,6 +6,8 @@ import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
 import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
@@ -22,7 +24,9 @@ import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.AssignmentRepository;
 import com.codeevaluation.core.repository.GroupRepository;
+import com.codeevaluation.core.repository.SubmissionRepository;
 import com.codeevaluation.core.repository.TaskRepository;
+import com.codeevaluation.core.util.FileUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -33,8 +37,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -43,6 +47,7 @@ public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final GroupRepository groupRepository;
     private final TaskRepository taskRepository;
+    private final SubmissionRepository submissionRepository;
     private final PagedSearchAssignmentImpl pagedSearchAssignment;
     private final CodeExecutionService codeExecutionService;
 
@@ -140,5 +145,32 @@ public class AssignmentService {
                 AssignmentAccessPolicy.showTestExpectedOutput(group, currentUser);
 
         return AssignmentRunResponseDto.from(assignment, runBatchResponse, showTestExpectedOutput);
+    }
+
+    @Transactional
+    public AssignmentSubmitResponseDto submitAssignment(
+            Long assignmentId, AssignmentSubmitRequestDto req
+    ) {
+        if (req == null || StringUtils.isBlank(req.code())) {
+            throw new BadRequestException("Missing code");
+        }
+
+        Assignment assignment = assignmentRepository.findByIdWithTaskAndTests(assignmentId)
+                .orElseThrow(() -> new NotFoundException("Assignment not found"));
+        User currentUser = currentUserProvider.getCurrentUser();
+        Group group = assignment.getGroup();
+
+        if (!AssignmentAccessPolicy.canSubmitAssignment(group, currentUser)) {
+            throw new ForbiddenException("You cannot submit this assignment");
+        }
+        if (!assignment.isActive(Instant.now())) {
+            throw new WebApplicationException("Assignment has expired",
+                    Response.Status.CONFLICT);
+        }
+
+        String codeBase64 = FileUtil.toBase64(req.code());
+        return AssignmentSubmitResponseDto.from(
+                submissionRepository.createOrUpdate(req, assignment, currentUser, codeBase64)
+        );
     }
 }

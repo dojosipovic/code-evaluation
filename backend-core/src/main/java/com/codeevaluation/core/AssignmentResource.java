@@ -3,6 +3,8 @@ package com.codeevaluation.core;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunResponseDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
 import com.codeevaluation.core.service.AssignmentService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.Consumes;
@@ -36,6 +38,15 @@ public class AssignmentResource {
             @PathParam("assignmentId") Long assignmentId,
             AssignmentRunRequestDto req) {
         return assignmentService.runAssignment(assignmentId, req);
+    }
+
+    @POST
+    @Path("/{assignmentId}/submit")
+    @Authenticated
+    public AssignmentSubmitResponseDto submitAssignment(
+            @PathParam("assignmentId") Long assignmentId,
+            AssignmentSubmitRequestDto req) {
+        return assignmentService.submitAssignment(assignmentId, req);
     }
 
     /*

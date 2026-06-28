@@ -17,4 +17,10 @@ public class AssignmentAccessPolicy {
                 || group.isOwner(currentUser.getUsername())
                 || group.isMember(currentUser.getUsername());
     }
+
+    public boolean canSubmitAssignment(Group group, User currentUser) {
+        return currentUser.isAdmin()
+                || group.isOwner(currentUser.getUsername())
+                || group.isMember(currentUser.getUsername());
+    }
 }

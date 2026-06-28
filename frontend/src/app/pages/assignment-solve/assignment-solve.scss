@@ -84,7 +84,6 @@
 
 .assignment-name,
 .subtle,
-.summary-label,
 label,
 small {
   color: var(--p-text-muted-color);
@@ -113,12 +112,6 @@ h1 {
   flex: 0 0 auto;
   justify-content: flex-end;
   gap: 0.6rem;
-}
-
-.time-range {
-  color: var(--p-text-muted-color);
-  font-size: 0.82rem;
-  font-weight: 650;
 }
 
 .problem-pane,
@@ -349,15 +342,12 @@ label {
 
 .case-panel {
   padding: 0.85rem;
+  flex: 1;
   min-height: 0;
+  overflow: auto;
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   background: color-mix(in srgb, var(--p-content-background) 88%, var(--p-content-hover-background));
-}
-
-.case-panel {
-  flex: 1;
-  overflow: auto;
 }
 
 .case-panel-header {
@@ -497,11 +487,6 @@ label {
   h1,
   .assignment-name {
     max-width: calc(100vw - 6rem);
-  }
-
-  .sample-grid,
-  .result-summary {
-    grid-template-columns: 1fr;
   }
 
   .solve-workspace {

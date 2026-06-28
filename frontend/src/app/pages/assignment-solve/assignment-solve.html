@@ -62,9 +62,16 @@
       <div class="header-meta">
         <p-tag icon="pi pi-code" [value]="languageLabel"></p-tag>
         <p-tag icon="pi pi-star" [value]="assignment.points + ' bodova'"></p-tag>
-        <span class="time-range">
-          {{ assignment.startsAt | date:'dd.MM.yyyy HH:mm' }} - {{ assignment.endsAt | date:'dd.MM.yyyy HH:mm' }}
-        </span>
+        <div
+          class="time-left"
+          style="display:flex;align-items:center;gap:.55rem;padding:.4rem .72rem;border:1px solid;border-radius:999px;box-shadow:inset 0 1px 0 rgb(255 255 255 / 4%)"
+          [style.borderColor]="countdownBorderColor"
+          [style.background]="countdownBackground">
+          <i class="pi pi-clock" [style.color]="countdownAccentColor"></i>
+          <span style="font-size:1.08rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1" [style.color]="countdownAccentColor">
+            {{ countdownLabel }}
+          </span>
+        </div>
       </div>
     </header>
 

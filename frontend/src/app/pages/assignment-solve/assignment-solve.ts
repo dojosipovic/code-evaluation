@@ -55,6 +55,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private readonly minRightPanePx = 320;
   private readonly minCodePanePx = 260;
   private readonly minTestsPanePx = 220;
+  private readonly dangerTimerThresholdMs = 2 * 60 * 1000;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -69,6 +70,8 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   private layoutFrameId: number | null = null;
   private progressAnimationFrameId: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private countdownTimerId: ReturnType<typeof setTimeout> | null = null;
+  private hasExpiredAssignment = false;
   private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
   private readonly onPointerUp = () => this.stopDragging();
 
@@ -83,6 +86,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   readonly runProgressValue = signal(0);
   readonly runProgressPassed = signal(0);
   readonly runProgressTotal = signal(0);
+  readonly currentTime = signal(Date.now());
 
   assignment: IAssignmentResponse | null = null;
   runResponse: IAssignmentRunResponse | null = null;
@@ -133,6 +137,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopDragging();
     this.stopProgressAnimation();
+    this.clearCountdownTimer();
 
     if (this.layoutFrameId !== null) {
       cancelAnimationFrame(this.layoutFrameId);
@@ -171,6 +176,41 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   get showRunProgress(): boolean {
     return this.runProgressMode() !== 'hidden';
+  }
+
+  get countdownLabel(): string {
+    const totalSeconds = Math.max(0, Math.floor(this.remainingTimeMs / 1000));
+    const days = Math.floor(totalSeconds / (24 * 60 * 60));
+    const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+    const seconds = totalSeconds % 60;
+    const timeLabel = `${this.padTimeUnit(hours)}:${this.padTimeUnit(minutes)}:${this.padTimeUnit(seconds)}`;
+
+    return days > 0 ? `${days}d ${timeLabel}` : timeLabel;
+  }
+
+  get countdownAccentColor(): string {
+    if (this.remainingTimeMs <= 0) {
+      return 'var(--p-red-500)';
+    }
+
+    if (this.remainingTimeMs <= this.dangerTimerThresholdMs) {
+      return 'var(--p-red-500)';
+    }
+
+    return 'var(--p-text-color)';
+  }
+
+  get countdownBorderColor(): string {
+    return this.remainingTimeMs <= this.dangerTimerThresholdMs
+      ? 'color-mix(in srgb, var(--p-red-500) 48%, var(--p-content-border-color))'
+      : 'var(--p-content-border-color)';
+  }
+
+  get countdownBackground(): string {
+    return this.remainingTimeMs <= this.dangerTimerThresholdMs
+      ? 'color-mix(in srgb, var(--p-red-500) 10%, var(--p-content-hover-background))'
+      : 'color-mix(in srgb, var(--p-content-hover-background) 60%, transparent)';
   }
 
   selectCase(index: number): void {
@@ -557,8 +597,24 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return Math.min(Math.max(value, min), max);
   }
 
+  private get remainingTimeMs(): number {
+    const endsAt = this.assignment ? new Date(this.assignment.endsAt).getTime() : NaN;
+
+    if (!Number.isFinite(endsAt)) {
+      return 0;
+    }
+
+    return Math.max(endsAt - this.currentTime(), 0);
+  }
+
+  private padTimeUnit(value: number): string {
+    return value.toString().padStart(2, '0');
+  }
+
   private loadAssignment(assignmentId: number): void {
     this.loading.set(true);
+    this.hasExpiredAssignment = false;
+    this.clearCountdownTimer();
     this.runResponse = null;
     this.compilePopupVisible.set(false);
     this.runProgressMode.set('hidden');
@@ -580,10 +636,12 @@ export class AssignmentSolve implements OnInit, OnDestroy {
           this.assignment = assignment;
           this.code = assignment.task.includeStarterCode ? assignment.task.starterCode.code : '';
           this.activeCaseIndex = 0;
+          this.currentTime.set(Date.now());
           this.editorOptions = {
             ...this.editorOptions,
             language: assignment.task.starterCode.language || 'cpp'
           };
+          this.handleCountdownTick();
         },
         error: () => {
           this.assignment = null;
@@ -596,5 +654,60 @@ export class AssignmentSolve implements OnInit, OnDestroy {
           this.router.navigate(['/dashboard']);
         }
       });
+  }
+
+  private handleCountdownTick(): void {
+    if (!this.assignment) {
+      this.clearCountdownTimer();
+      return;
+    }
+
+    const endsAt = new Date(this.assignment.endsAt).getTime();
+
+    if (!Number.isFinite(endsAt)) {
+      this.clearCountdownTimer();
+      return;
+    }
+
+    const now = Date.now();
+    this.currentTime.set(now);
+
+    if (now >= endsAt) {
+      this.clearCountdownTimer();
+      this.closeExpiredAssignment();
+      return;
+    }
+
+    this.scheduleCountdownRefresh();
+  }
+
+  private scheduleCountdownRefresh(): void {
+    this.clearCountdownTimer();
+
+    const delay = 1000 - (Date.now() % 1000);
+    this.countdownTimerId = setTimeout(() => this.handleCountdownTick(), Math.max(250, delay));
+  }
+
+  private clearCountdownTimer(): void {
+    if (this.countdownTimerId === null) {
+      return;
+    }
+
+    clearTimeout(this.countdownTimerId);
+    this.countdownTimerId = null;
+  }
+
+  private closeExpiredAssignment(): void {
+    if (this.hasExpiredAssignment) {
+      return;
+    }
+
+    this.hasExpiredAssignment = true;
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Vrijeme je isteklo',
+      detail: 'Assignment je zatvoren jer vise nema preostalog vremena.'
+    });
+    this.router.navigate(['/dashboard'], { replaceUrl: true });
   }
 }

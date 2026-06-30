@@ -10,7 +10,7 @@ import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.helper.GroupAccessPolicy;
 import com.codeevaluation.core.helper.GroupValidator;
 import com.codeevaluation.core.helper.PagedContext;
-import com.codeevaluation.core.helper.PagedParams;
+import com.codeevaluation.core.api.query.PagedParams;
 import com.codeevaluation.core.helper.PagedSearchGroupImpl;
 import com.codeevaluation.core.helper.PagedSearchGroupMemberImpl;
 import com.codeevaluation.core.model.Group;

@@ -1,4 +1,4 @@
-package com.codeevaluation.core;
+package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
@@ -6,6 +6,7 @@ import com.codeevaluation.core.api.dto.task.TaskListItemDto;
 import com.codeevaluation.core.api.dto.task.TaskPatchDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
+import com.codeevaluation.core.api.query.TaskListQueryParams;
 import com.codeevaluation.core.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.BeanParam;

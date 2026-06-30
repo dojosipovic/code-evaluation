@@ -1,4 +1,4 @@
-package com.codeevaluation.core.helper;
+package com.codeevaluation.core.api.query;
 
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.QueryParam;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class PagedParams {
+public class PagedParams {
 
     @QueryParam("page")
     @DefaultValue("0")

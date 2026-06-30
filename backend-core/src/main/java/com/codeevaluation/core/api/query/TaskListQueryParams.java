@@ -1,7 +1,6 @@
-package com.codeevaluation.core;
+package com.codeevaluation.core.api.query;
 
 import com.codeevaluation.core.enumeration.TaskStatus;
-import com.codeevaluation.core.helper.PagedParams;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;

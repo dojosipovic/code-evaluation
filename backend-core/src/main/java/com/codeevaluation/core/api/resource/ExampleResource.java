@@ -1,4 +1,4 @@
-package com.codeevaluation.core;
+package com.codeevaluation.core.api.resource;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

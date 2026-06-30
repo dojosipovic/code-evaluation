@@ -1,6 +1,6 @@
 package com.codeevaluation.core.helper;
 
-import com.codeevaluation.core.TaskListQueryParams;
+import com.codeevaluation.core.api.query.TaskListQueryParams;
 import com.codeevaluation.core.api.dto.task.TaskFilterParams;
 import jakarta.inject.Singleton;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.codeevaluation.core;
+package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.auth.LoginRequestDto;
 import com.codeevaluation.core.api.dto.auth.LoginResponseDto;

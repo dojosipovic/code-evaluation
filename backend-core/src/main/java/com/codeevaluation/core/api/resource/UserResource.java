@@ -1,4 +1,4 @@
-package com.codeevaluation.core;
+package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.user.UserDto;

@@ -1,6 +1,6 @@
 package com.codeevaluation.core.service;
 
-import com.codeevaluation.core.TaskListQueryParams;
+import com.codeevaluation.core.api.query.TaskListQueryParams;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
 import com.codeevaluation.core.api.dto.task.TaskFilterParams;

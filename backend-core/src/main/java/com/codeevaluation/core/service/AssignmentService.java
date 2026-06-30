@@ -13,7 +13,7 @@ import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
 import com.codeevaluation.core.helper.GroupAccessPolicy;
 import com.codeevaluation.core.helper.PagedContext;
-import com.codeevaluation.core.helper.PagedParams;
+import com.codeevaluation.core.api.query.PagedParams;
 import com.codeevaluation.core.helper.PagedSearchAssignmentImpl;
 import com.codeevaluation.core.helper.TaskAccessPolicy;
 import com.codeevaluation.core.model.Assignment;

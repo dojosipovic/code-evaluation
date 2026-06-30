@@ -48,12 +48,4 @@ public class AssignmentResource {
             AssignmentSubmitRequestDto req) {
         return assignmentService.submitAssignment(assignmentId, req);
     }
-
-    /*
-    @POST
-    @Path("/{assignmentId}/submit")
-    @Authenticated
-    public Response submit() {
-
-    }*/
 }

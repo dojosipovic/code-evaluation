@@ -1,4 +1,4 @@
-package com.codeevaluation.core.error;
+package com.codeevaluation.core.api.dto;
 
 import java.time.Instant;
 

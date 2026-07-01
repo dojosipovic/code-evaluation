@@ -7,11 +7,15 @@ import com.codeevaluation.core.api.dto.submission.SubmissionListItemDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.helper.PagedSearchSubmissionImpl;
+import com.codeevaluation.core.helper.SubmissionAccessPolicy;
 import com.codeevaluation.core.model.Submission;
+import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.repository.SubmissionRepository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +47,14 @@ public class SubmissionService {
     }
 
     public SubmissionResponseDto getSubmission(Long submissionId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        Submission submission = submissionRepository.findByIdWithRelations(submissionId)
+                .orElseThrow(() -> new NotFoundException("Submission not found"));
+
+        User currentUser = currentUserProvider.getCurrentUser();
+        if (!SubmissionAccessPolicy.canSeeSubmission(submission, currentUser)) {
+            throw new ForbiddenException("You cannot see this submission");
+        }
+
+        return SubmissionResponseDto.from(submission);
     }
 }

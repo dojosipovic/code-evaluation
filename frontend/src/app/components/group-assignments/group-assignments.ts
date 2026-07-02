@@ -316,6 +316,10 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     return this.formatCompactDuration(endsAt - startsAt, 3);
   }
 
+  hasSubmission(assignment: IAssignmentListItem): boolean {
+    return assignment.submissionId !== null && assignment.submissionId !== undefined;
+  }
+
   private formatCompactDuration(milliseconds: number, maxParts = 1, roundUpSingleUnit = false): string {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
     const units = [

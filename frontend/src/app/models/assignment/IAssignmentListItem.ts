@@ -3,7 +3,7 @@ import { IUserResponse } from "../user/IUserResponse";
 
 export interface IAssignmentListItem {
     id: number;
-    submissionId: number;
+    submissionId: number | null;
     name: string;
     startsAt: string;
     endsAt: string;

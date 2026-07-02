@@ -157,18 +157,27 @@
             </span>
           </div>
 
-          @if (assignment.task) {
-            <button
-              type="button"
-              class="task-tag-button"
-              (click)="openTask(assignment.task, $event)">
-              <p-tag
-                icon="pi pi-receipt"
-                styleClass="assignment-task-tag"
-                [value]="assignment.task.title">
-              </p-tag>
-            </button>
-          }
+          <div class="assignment-badges">
+            @if (assignment.task) {
+              <button
+                type="button"
+                class="task-tag-button"
+                (click)="openTask(assignment.task, $event)">
+                <p-tag
+                  icon="pi pi-receipt"
+                  styleClass="assignment-task-tag"
+                  [value]="assignment.task.title">
+                </p-tag>
+              </button>
+            }
+
+            <p-tag
+              [icon]="hasSubmission(assignment) ? 'pi pi-check' : 'pi pi-times'"
+              [severity]="hasSubmission(assignment) ? 'success' : 'danger'"
+              styleClass="assignment-submission-tag"
+              [value]="hasSubmission(assignment) ? 'Predano' : 'Nije predano'">
+            </p-tag>
+          </div>
         </div>
       </p-panel>
     }

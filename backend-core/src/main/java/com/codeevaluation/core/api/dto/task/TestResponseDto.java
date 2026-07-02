@@ -43,7 +43,9 @@ public class TestResponseDto {
         return taskTests.stream().map(TestResponseDto::from).toList();
     }
 
-    public static List<TestResponseDto> from(List<TaskTest> taskTests, boolean showTestExpectedOutput) {
+    public static List<TestResponseDto> from(
+            List<TaskTest> taskTests, boolean showTestExpectedOutput
+    ) {
         return taskTests.stream().map(tt -> from(tt, showTestExpectedOutput)).toList();
     }
 

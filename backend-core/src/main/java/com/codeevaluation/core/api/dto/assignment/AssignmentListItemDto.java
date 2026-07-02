@@ -29,7 +29,9 @@ public record AssignmentListItemDto(
                 .id(assignment.getId())
                 .submissionId(
                         assignment.getSubmissions().stream()
-                                .filter(submission -> submission.getUser().getId().equals(currentUserId))
+                                .filter(submission ->
+                                        submission.getUser().getId().equals(currentUserId)
+                                )
                                 .map(Submission::getId)
                                 .findFirst()
                                 .orElse(null)

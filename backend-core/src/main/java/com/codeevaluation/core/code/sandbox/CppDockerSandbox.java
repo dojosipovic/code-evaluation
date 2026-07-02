@@ -393,8 +393,12 @@ public class CppDockerSandbox {
 
             Process process = p;
             es = Executors.newFixedThreadPool(2);
-            Future<String> outF = es.submit(() -> readLimited(process.getInputStream(), MAX_OUT_CHARS));
-            Future<String> errF = es.submit(() -> readLimited(process.getErrorStream(), MAX_OUT_CHARS));
+            Future<String> outF = es.submit(
+                    () -> readLimited(process.getInputStream(), MAX_OUT_CHARS)
+            );
+            Future<String> errF = es.submit(
+                    () -> readLimited(process.getErrorStream(), MAX_OUT_CHARS)
+            );
 
             boolean finished = p.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
             if (!finished) {

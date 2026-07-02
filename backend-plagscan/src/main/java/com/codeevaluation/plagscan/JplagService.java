@@ -15,7 +15,7 @@ import de.jplag.cpp.CPPLanguage;
 import de.jplag.exceptions.ExitException;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
-import org.jboss.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import jakarta.ws.rs.InternalServerErrorException;
@@ -35,9 +35,9 @@ import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
+@Slf4j
 public class JplagService {
 
-    private static final Logger LOG = Logger.getLogger(JplagService.class);
     private static final Duration ASYNC_CLEANUP_DELAY = Duration.ofSeconds(2);
     private final Decoder b64 = Base64.getDecoder();
     private final Path workRoot = resolveWorkRoot();
@@ -47,8 +47,11 @@ public class JplagService {
         Path rootDir = null;
 
         try {
-            LOG.infov("Starting plagiarism analysis runId={0}, submissions={1}, minSimilarity={2}, includeClusters={3}",
-                    runId, request.getSubmissions().size(), request.getMinSimilarity(), request.isIncludeClusters());
+            log.info("Starting plagiarism analysis runId={},submissions={}, minSimilarity={},"
+                            + "includeClusters={}",
+                    runId, request.getSubmissions().size(), request.getMinSimilarity(),
+                    request.isIncludeClusters()
+            );
             Files.createDirectories(workRoot);
             rootDir = Files.createTempDirectory(workRoot, "jplag-root-" + runId + "-");
 
@@ -108,14 +111,14 @@ public class JplagService {
 
             List<PairResult> pairs = extractPairs(result, request.getMinSimilarity());
 
-            LOG.infov("Finished plagiarism analysis runId={0}, pairs={1}, clusters={2}",
+            log.info("Finished plagiarism analysis runId={}, pairs={}, clusters={}",
                     runId, pairs.size(), clusters == null ? 0 : clusters.size());
             return new PlagResult(runId, request.getMinSimilarity(), pairs, clusters, base64);
         } catch (IOException | ExitException e) {
-            LOG.errorv(e, "Plagiarism analysis failed runId={0}", runId);
+            log.error("Plagiarism analysis failed runId={}", runId, e);
             throw new InternalServerErrorException("JPlag analiza nije uspjela", e);
         } catch (RuntimeException e) {
-            LOG.errorv(e, "Unexpected plagiarism analysis failure runId={0}", runId);
+            log.error("Unexpected plagiarism analysis failure runId={}", runId, e);
             throw e;
         } finally {
             if (!safeDeleteRecursive(rootDir)) {
@@ -166,7 +169,7 @@ public class JplagService {
         Path fallback = Path.of(System.getProperty("java.io.tmpdir"), "jplag-work")
                 .toAbsolutePath()
                 .normalize();
-        LOG.infov("Using fallback JPlag work directory {0} instead of {1}", fallback, preferred);
+        log.info("Using fallback JPlag work directory {} instead of {}", fallback, preferred);
         return fallback;
     }
 
@@ -219,7 +222,7 @@ public class JplagService {
         }
 
         if (Files.exists(dir)) {
-            LOG.warnv("Failed to fully delete JPlag work directory {0}", dir);
+            log.warn("Failed to fully delete JPlag work directory {}", dir);
             return false;
         }
         return true;
@@ -240,9 +243,9 @@ public class JplagService {
 
             if (safeDeleteRecursive(dir)) {
                 safeDeleteIfEmpty(workRoot);
-                LOG.infov("Asynchronous cleanup removed JPlag work directory {0}", dir);
+                log.info("Asynchronous cleanup removed JPlag work directory {}", dir);
             } else {
-                LOG.warnv("Asynchronous cleanup also failed for JPlag work directory {0}", dir);
+                log.warn("Asynchronous cleanup also failed for JPlag work directory {}", dir);
             }
         });
     }

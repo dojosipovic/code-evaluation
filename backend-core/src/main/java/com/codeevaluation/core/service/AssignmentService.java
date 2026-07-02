@@ -8,6 +8,7 @@ import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
+import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
 import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
@@ -91,8 +92,12 @@ public class AssignmentService {
 
         boolean showTestExpectedOutput =
                 AssignmentAccessPolicy.showTestExpectedOutput(group, currentUser);
+        SubmissionResponseDto submission = submissionRepository
+                .findByUserIdAndAssignmentIdWithRelations(currentUser.getId(), assignmentId)
+                .map(SubmissionResponseDto::from)
+                .orElse(null);
 
-        return AssignmentResponseDto.from(assignment, showTestExpectedOutput);
+        return AssignmentResponseDto.from(assignment, submission, showTestExpectedOutput);
     }
 
     public PagedResponse<AssignmentListItemDto> getGroupAssignments(

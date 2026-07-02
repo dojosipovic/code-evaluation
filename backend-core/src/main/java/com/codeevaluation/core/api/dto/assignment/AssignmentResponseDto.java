@@ -1,5 +1,6 @@
 package com.codeevaluation.core.api.dto.assignment;
 
+import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.model.Assignment;
@@ -9,10 +10,12 @@ import lombok.Builder;
 @Builder
 public record AssignmentResponseDto(
         Long id,
+        Long groupId,
         String name,
         Instant startsAt,
         Instant endsAt,
         Integer points,
+        SubmissionResponseDto submission,
         TaskResponseDto task,
         UserDto createdBy
 ) {
@@ -25,9 +28,11 @@ public record AssignmentResponseDto(
 
     public static AssignmentResponseDto from(
             Assignment assignment,
+            SubmissionResponseDto submission,
             boolean showTestExpectedOutput
     ) {
         return buildGeneralInfo(assignment)
+                .submission(submission)
                 .task(TaskResponseDto.from(assignment.getTask(), showTestExpectedOutput))
                 .build();
     }
@@ -35,6 +40,7 @@ public record AssignmentResponseDto(
     private static AssignmentResponseDtoBuilder buildGeneralInfo(Assignment assignment) {
         return AssignmentResponseDto.builder()
                 .id(assignment.getId())
+                .groupId(assignment.getGroup().getId())
                 .name(assignment.getName())
                 .startsAt(assignment.getStartsAt())
                 .endsAt(assignment.getEndsAt())

@@ -34,6 +34,21 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
         ).firstResultOptional();
     }
 
+    public Optional<Submission> findByUserIdAndAssignmentIdWithRelations(Long userId, Long assignmentId) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.user
+                join fetch s.assignment
+                join fetch s.task
+                left join fetch s.files
+                where s.user.id = ?1 and s.assignment.id = ?2
+                """,
+                userId,
+                assignmentId
+        ).firstResultOptional();
+    }
+
     public Optional<Submission> findByIdWithRelations(Long submissionId) {
         return find(
                 """

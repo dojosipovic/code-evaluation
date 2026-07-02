@@ -5,6 +5,8 @@ import { Observable } from "rxjs";
 import { IAssignmentResponse } from "../models/assignment/IAssignmentResponse";
 import { IAssignmentRun } from "../models/assignment/IAssignmentRun";
 import { IAssignmentRunResponse } from "../models/assignment/IAssignmentRunResponse";
+import { IAssignmentSubmit } from "../models/assignment/IAssignmentSubmit";
+import { IAssignmentSubmitResponse } from "../models/assignment/IAssignmentSubmitResponse";
 
 @Injectable({ providedIn: 'root' })
 export class AssignmentService {
@@ -21,6 +23,10 @@ export class AssignmentService {
 
     runAssignment(assignmentId: number, payload: IAssignmentRun): Observable<IAssignmentRunResponse> {
         return this.http.post<IAssignmentRunResponse>(`${this.baseUrl}/${assignmentId}/run`, payload);
+    }
+
+    submitAssignment(assignmentId: number, payload: IAssignmentSubmit): Observable<IAssignmentSubmitResponse> {
+        return this.http.post<IAssignmentSubmitResponse>(`${this.baseUrl}/${assignmentId}/submit`, payload);
     }
 
 }

@@ -93,6 +93,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   runResponse: IAssignmentRunResponse | null = null;
   activeCaseIndex = 0;
   code = '';
+  submissionId: number | null = null;
   leftPanePx = 430;
   topPanePx = 420;
 
@@ -177,6 +178,10 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   get showRunProgress(): boolean {
     return this.runProgressMode() !== 'hidden';
+  }
+
+  get hasSubmission(): boolean {
+    return this.submissionId !== null;
   }
 
   get countdownLabel(): string {
@@ -273,7 +278,8 @@ export class AssignmentSolve implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => {
+        next: response => {
+          this.submissionId = response.id;
           this.messageService.add({
             severity: 'success',
             summary: 'Uspjeh',
@@ -645,6 +651,23 @@ export class AssignmentSolve implements OnInit, OnDestroy {
     return value.toString().padStart(2, '0');
   }
 
+  private loadSubmittedCode(): void {
+    const submission = this.assignment?.submission;
+
+    if (!submission) {
+      return;
+    }
+
+    this.submissionId = submission.id;
+    this.code = submission.code;
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Info',
+      detail: 'Ucitan predan kod'
+    });
+    this.cdr.detectChanges();
+  }
+
   private loadAssignment(assignmentId: number): void {
     this.loading.set(true);
     this.hasExpiredAssignment = false;
@@ -675,6 +698,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
             ...this.editorOptions,
             language: assignment.task.starterCode.language || 'cpp'
           };
+          this.loadSubmittedCode();
           this.handleCountdownTick();
         },
         error: () => {

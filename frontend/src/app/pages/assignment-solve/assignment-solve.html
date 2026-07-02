@@ -105,6 +105,15 @@
             <span class="pane-title">Code</span>
 
             <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="display:inline-flex;align-items:center;gap:.4rem;font-size:.86rem;font-weight:700;color:var(--p-text-muted-color)">
+                <i
+                  class="pi"
+                  [ngClass]="hasSubmission ? 'pi-check' : 'pi-times'"
+                  [style.color]="hasSubmission ? 'var(--p-green-500)' : 'var(--p-red-500)'">
+                </i>
+                {{ hasSubmission ? 'Predano' : 'Nije predano' }}
+              </span>
+
               <button
                 pButton
                 type="button"

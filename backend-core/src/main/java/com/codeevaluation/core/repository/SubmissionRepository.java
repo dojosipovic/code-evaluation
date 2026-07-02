@@ -42,6 +42,7 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 join fetch s.assignment a
                 join fetch s.task
                 join fetch a.group
+                left join fetch s.files
                 where s.id = ?1
                 """,
                 submissionId

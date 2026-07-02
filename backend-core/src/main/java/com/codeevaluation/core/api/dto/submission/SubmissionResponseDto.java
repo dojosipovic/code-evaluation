@@ -1,7 +1,6 @@
 package com.codeevaluation.core.api.dto.submission;
 
 import com.codeevaluation.core.api.dto.user.UserDto;
-import com.codeevaluation.core.enumeration.ProgrammingLanguage;
 import com.codeevaluation.core.enumeration.SubmissionStatus;
 import com.codeevaluation.core.model.Submission;
 import java.math.BigDecimal;
@@ -15,7 +14,7 @@ public record SubmissionResponseDto(
         Long taskId,
         UserDto user,
         SubmissionStatus status,
-        ProgrammingLanguage language,
+        String code,
         BigDecimal finalScore,
         Instant submittedAt
 ) {
@@ -27,7 +26,7 @@ public record SubmissionResponseDto(
                 .taskId(submission.getTask().getId())
                 .user(UserDto.from(submission.getUser()))
                 .status(submission.getStatus())
-                .language(submission.getLanguage())
+                .code(submission.getFiles().getFirst().getContent())
                 .finalScore(submission.getFinalScore())
                 .submittedAt(submission.getSubmittedAt())
                 .build();

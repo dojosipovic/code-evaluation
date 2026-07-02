@@ -112,7 +112,9 @@ public class AssignmentService {
         PanacheQuery<Assignment> query =
                 assignmentRepository.getGroupAssignments(groupId, pagedContext);
 
-        List<AssignmentListItemDto> items = AssignmentListItemDto.from(query.list(), showTasks);
+        List<AssignmentListItemDto> items =
+                AssignmentListItemDto.from(query.list(), showTasks, currentUser.getId());
+
         long totalItems = query.count();
         int page = pagedContext.page();
         int size = pagedContext.size();

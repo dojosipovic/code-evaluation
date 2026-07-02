@@ -44,10 +44,11 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
     public PanacheQuery<Assignment> getGroupAssignments(Long groupId, PagedContext pagedContext) {
         StringBuilder query = new StringBuilder(
                 """
-                    from Assignment a
+                    select distinct a from Assignment a
                     join fetch a.createdBy createdBy
                     join fetch a.task task
                     join fetch task.user taskUser
+                    left join fetch a.submissions submission
                     where a.group.id = :groupId
                 """);
 

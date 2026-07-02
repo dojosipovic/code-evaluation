@@ -81,6 +81,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
 
   readonly loading = signal(true);
   readonly running = signal(false);
+  readonly submitting = signal(false);
   readonly compilePopupVisible = signal(false);
   readonly runProgressMode = signal<'hidden' | 'indeterminate' | 'determinate'>('hidden');
   readonly runProgressValue = signal(0);
@@ -218,7 +219,7 @@ export class AssignmentSolve implements OnInit, OnDestroy {
   }
 
   runCode(): void {
-    if (!this.assignment || this.running()) {
+    if (!this.assignment || this.running() || this.submitting()) {
       return;
     }
 
@@ -251,6 +252,39 @@ export class AssignmentSolve implements OnInit, OnDestroy {
             severity: 'error',
             summary: 'Greska',
             detail: 'Nije moguce pokrenuti kod'
+          });
+        }
+      });
+  }
+
+  submitAssignment(): void {
+    if (!this.assignment || this.running() || this.submitting()) {
+      return;
+    }
+
+    this.submitting.set(true);
+
+    this.assignmentService.submitAssignment(this.assignment.id, { code: this.code })
+      .pipe(
+        finalize(() => {
+          this.submitting.set(false);
+          this.cdr.detectChanges();
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Uspjeh',
+            detail: 'Zadatak je uspjesno predan'
+          });
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Greska',
+            detail: 'Nije moguce predati zadatak'
           });
         }
       });

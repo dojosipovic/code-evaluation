@@ -104,26 +104,52 @@
           <div class="pane-toolbar">
             <span class="pane-title">Code</span>
 
-            <button
-              pButton
-              type="button"
-              class="run-code-button"
-              [disabled]="running()"
-              [attr.aria-label]="running() ? 'Running code' : 'Run code'"
-              (click)="runCode()">
-              @if (running()) {
-                <p-progress-spinner
-                  strokeWidth="8"
-                  fill="transparent"
-                  animationDuration=".5s"
-                  class="run-spinner"
-                  [style.width.rem]="1.2"
-                  [style.height.rem]="1.2">
-                </p-progress-spinner>
-              } @else {
-                <i class="pi pi-play"></i>
-              }
-            </button>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <button
+                pButton
+                type="button"
+                class="run-code-button"
+                severity="info"
+                style="min-width:6.75rem"
+                [disabled]="running() || submitting()"
+                [attr.aria-label]="submitting() ? 'Submitting assignment' : 'Submit assignment'"
+                (click)="submitAssignment()">
+                @if (submitting()) {
+                  <p-progress-spinner
+                    strokeWidth="8"
+                    fill="transparent"
+                    animationDuration=".5s"
+                    class="run-spinner"
+                    [style.width.rem]="1.2"
+                    [style.height.rem]="1.2">
+                  </p-progress-spinner>
+                } @else {
+                  <i class="pi pi-send"></i>
+                  <span>Predaj</span>
+                }
+              </button>
+
+              <button
+                pButton
+                type="button"
+                class="run-code-button"
+                [disabled]="running() || submitting()"
+                [attr.aria-label]="running() ? 'Running code' : 'Run code'"
+                (click)="runCode()">
+                @if (running()) {
+                  <p-progress-spinner
+                    strokeWidth="8"
+                    fill="transparent"
+                    animationDuration=".5s"
+                    class="run-spinner"
+                    [style.width.rem]="1.2"
+                    [style.height.rem]="1.2">
+                  </p-progress-spinner>
+                } @else {
+                  <i class="pi pi-play"></i>
+                }
+              </button>
+            </div>
           </div>
 
           <div #editorShell class="editor-shell" [class.editor-shell-running]="running()">

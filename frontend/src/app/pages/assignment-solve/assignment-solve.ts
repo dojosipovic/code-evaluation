@@ -766,6 +766,14 @@ export class AssignmentSolve implements OnInit, OnDestroy {
       summary: 'Vrijeme je isteklo',
       detail: 'Assignment je zatvoren jer vise nema preostalog vremena.'
     });
+
+    const groupId = this.assignment?.groupId;
+
+    if (Number.isFinite(groupId)) {
+      this.router.navigate(['/groups', groupId, 'tasks'], { replaceUrl: true });
+      return;
+    }
+
     this.router.navigate(['/dashboard'], { replaceUrl: true });
   }
 }

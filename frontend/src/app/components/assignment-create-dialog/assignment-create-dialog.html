@@ -1,0 +1,143 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '38rem' }"
+  header="Novi assignment">
+
+  <form [formGroup]="form" class="assignment-form">
+    <div class="field">
+      <label for="assignmentName">Naslov</label>
+      <input
+        id="assignmentName"
+        pInputText
+        maxlength="15"
+        formControlName="name"
+        placeholder="Unesi naslov" />
+
+      @if ((form.controls.name.dirty || form.controls.name.touched) && form.controls.name.errors?.['required']) {
+        <small class="error-text">Naslov je obavezan.</small>
+      }
+
+      @if ((form.controls.name.dirty || form.controls.name.touched) && form.controls.name.errors?.['maxlength']) {
+        <small class="error-text">Naslov moze imati maksimalno 15 znakova.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="assignmentTaskPicker">Zadatak</label>
+      <button
+        id="assignmentTaskPicker"
+        pRipple
+        type="button"
+        class="task-picker"
+        [class.has-task]="selectedTask"
+        (click)="openTaskSelectDialog()">
+        @if (selectedTask) {
+          <p-tag
+            icon="pi pi-receipt"
+            styleClass="assignment-task-tag"
+            [value]="selectedTask.title">
+          </p-tag>
+        } @else {
+          <span class="task-picker-placeholder">
+            <i class="pi pi-receipt"></i>
+            Odaberi zadatak
+          </span>
+        }
+      </button>
+
+      @if (!selectedTask && form.touched) {
+        <small class="error-text">Zadatak je obavezan.</small>
+      }
+    </div>
+
+    <div class="date-grid">
+      <div class="field">
+        <label for="assignmentStartsAt">Pocetak</label>
+        <p-datepicker
+          inputId="assignmentStartsAt"
+          formControlName="startsAt"
+          [minDate]="minSelectableDate"
+          [showTime]="true"
+          hourFormat="24"
+          [showIcon]="true"
+          appendTo="body"
+          dateFormat="dd.mm.yy"
+          placeholder="Odaberi pocetak"
+          (onSelect)="onScheduleChanged()">
+        </p-datepicker>
+
+        @if ((form.controls.startsAt.dirty || form.controls.startsAt.touched) && form.controls.startsAt.errors?.['required']) {
+          <small class="error-text">Pocetak je obavezan.</small>
+        }
+
+        @if ((form.controls.startsAt.dirty || form.controls.startsAt.touched) && form.errors?.['startInPast']) {
+          <small class="error-text">Pocetak ne moze biti u proslosti.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="assignmentEndsAt">Kraj</label>
+        <p-datepicker
+          inputId="assignmentEndsAt"
+          formControlName="endsAt"
+          [minDate]="minimumEndDate"
+          [showTime]="true"
+          hourFormat="24"
+          [showIcon]="true"
+          appendTo="body"
+          dateFormat="dd.mm.yy"
+          placeholder="Odaberi kraj"
+          (onSelect)="onScheduleChanged()">
+        </p-datepicker>
+
+        @if ((form.controls.endsAt.dirty || form.controls.endsAt.touched) && form.controls.endsAt.errors?.['required']) {
+          <small class="error-text">Kraj je obavezan.</small>
+        }
+
+        @if ((form.controls.endsAt.dirty || form.controls.endsAt.touched) && form.errors?.['endBeforeStart']) {
+          <small class="error-text">Kraj ne moze biti prije pocetka.</small>
+        }
+
+        @if ((form.controls.endsAt.dirty || form.controls.endsAt.touched) && form.errors?.['minimumDuration']) {
+          <small class="error-text">Trajanje mora biti najmanje 15 minuta.</small>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="assignmentPoints">Bodovi</label>
+      <p-inputNumber
+        inputId="assignmentPoints"
+        formControlName="points"
+        [min]="0"
+        [showButtons]="true">
+      </p-inputNumber>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Odustani"
+      severity="secondary"
+      [outlined]="true"
+      (click)="cancel()">
+    </button>
+
+    <button
+      pButton
+      type="button"
+      label="Kreiraj"
+      icon="pi pi-plus"
+      [loading]="submitting"
+      [disabled]="form.invalid || !selectedTask"
+      (click)="submit()">
+    </button>
+  </ng-template>
+</p-dialog>

@@ -52,8 +52,15 @@
         </p-accordion-panel>
       </p-accordion>
 
-      <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tabs lazy [value]="activeTab()" (valueChange)="onTabChange($event)">
         <p-tablist>
+          <p-tab value="tasks">
+            <div class="tab-label">
+              <i class="pi pi-receipt"></i>
+              <span>Zadaci</span>
+            </div>
+          </p-tab>
+
           <p-tab value="users">
             <div class="tab-label">
               <i class="pi pi-users"></i>
@@ -61,29 +68,27 @@
               <p-badge [value]="group.memberCount"></p-badge>
             </div>
           </p-tab>
-
-          <p-tab value="tasks">
-            <div class="tab-label">
-              <i class="pi pi-receipt"></i>
-              <span>Zadaci</span>
-            </div>
-          </p-tab>
         </p-tablist>
 
         <p-tabpanels>
-          <p-tabpanel value="users">
-            <app-group-members
-              [groupId]="group.id"
-              [canManage]="canEditGroup()"
-              (memberAdded)="onMemberAdded()"
-              (memberRemoved)="onMemberRemoved()">
-            </app-group-members>
+          <p-tabpanel value="tasks">
+            <ng-template #content>
+              <app-group-assignments
+                [groupId]="group.id"
+                [canManage]="canEditGroup()">
+              </app-group-assignments>
+            </ng-template>
           </p-tabpanel>
 
-          <p-tabpanel value="tasks">
-            <div class="tab-empty-state">
-              Zadaci grupe ce biti prikazani ovdje.
-            </div>
+          <p-tabpanel value="users">
+            <ng-template #content>
+              <app-group-members
+                [groupId]="group.id"
+                [canManage]="canEditGroup()"
+                (memberAdded)="onMemberAdded()"
+                (memberRemoved)="onMemberRemoved()">
+              </app-group-members>
+            </ng-template>
           </p-tabpanel>
         </p-tabpanels>
       </p-tabs>

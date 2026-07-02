@@ -10,10 +10,12 @@ import { Register } from './pages/register/register';
 import { Tasks } from './pages/tasks/tasks';
 import { Groups } from './pages/groups/groups';
 import { GroupView } from './pages/group-view/group-view';
+import { AssignmentSolve } from './pages/assignment-solve/assignment-solve';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
     { path: 'register', canActivate: [guestGuard], component: Register },
+    { path: 'assignment/:id/solve', canActivate: [authGuard], component: AssignmentSolve },
     {
         path: '',
         component: AppLayout,
@@ -28,7 +30,7 @@ export const routes: Routes = [
             { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },
 
             { path: 'users', redirectTo: 'users/users', pathMatch: 'full' },
-            { path: 'groups/:id', redirectTo: 'groups/:id/users', pathMatch: 'full' },
+            { path: 'groups/:id', redirectTo: 'groups/:id/tasks', pathMatch: 'full' },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

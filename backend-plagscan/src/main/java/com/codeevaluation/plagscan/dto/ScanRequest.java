@@ -12,8 +12,7 @@ import java.util.List;
 public class ScanRequest {
     @NotNull
     @NotEmpty
-    @Valid
-    private List<FilePayload> submissions;
+    private List<@Valid FilePayload> submissions;
 
     @Valid
     private BaseCode baseCode;

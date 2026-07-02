@@ -1,5 +1,6 @@
 package com.codeevaluation.core.helper;
 
+import com.codeevaluation.core.api.query.PagedParams;
 import io.quarkus.panache.common.Sort;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

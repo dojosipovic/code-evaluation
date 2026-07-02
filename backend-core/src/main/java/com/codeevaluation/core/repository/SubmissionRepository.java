@@ -1,0 +1,221 @@
+package com.codeevaluation.core.repository;
+
+import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
+import com.codeevaluation.core.api.dto.submission.SubmissionFilterParams;
+import com.codeevaluation.core.enumeration.Role;
+import com.codeevaluation.core.enumeration.ProgrammingLanguage;
+import com.codeevaluation.core.enumeration.SubmissionStatus;
+import com.codeevaluation.core.helper.PagedContext;
+import com.codeevaluation.core.model.Assignment;
+import com.codeevaluation.core.model.Submission;
+import com.codeevaluation.core.model.SubmissionFile;
+import com.codeevaluation.core.model.User;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Sort;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+
+@ApplicationScoped
+public class SubmissionRepository implements PanacheRepository<Submission> {
+
+    private static final String DEFAULT_FILE_PATH = "src/main.cpp";
+
+    public Optional<Submission> findByUserIdAndAssignmentId(Long userId, Long assignmentId) {
+        return find(
+                "user.id = ?1 and assignment.id = ?2",
+                userId,
+                assignmentId
+        ).firstResultOptional();
+    }
+
+    public Optional<Submission> findByUserIdAndAssignmentIdWithRelations(
+            Long userId, Long assignmentId
+    ) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.user
+                join fetch s.assignment
+                join fetch s.task
+                left join fetch s.files
+                where s.user.id = ?1 and s.assignment.id = ?2
+                """,
+                userId,
+                assignmentId
+        ).firstResultOptional();
+    }
+
+    public Optional<Submission> findByIdWithRelations(Long submissionId) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.user
+                join fetch s.assignment a
+                join fetch s.task
+                join fetch a.group
+                left join fetch s.files
+                where s.id = ?1
+                """,
+                submissionId
+        ).firstResultOptional();
+    }
+
+    @Transactional
+    public Submission createOrUpdate(
+            AssignmentSubmitRequestDto req,
+            Assignment assignment,
+            User user,
+            String codeBase64
+    ) {
+        return findByUserIdAndAssignmentId(user.getId(), assignment.getId())
+                .map(submission -> update(submission, assignment, codeBase64, req.code()))
+                .orElseGet(() -> create(req, assignment, user, codeBase64));
+    }
+
+    @Transactional
+    public Submission create(
+            AssignmentSubmitRequestDto req,
+            Assignment assignment,
+            User user,
+            String codeBase64
+    ) {
+        Submission submission = new Submission();
+        submission.setAssignment(assignment);
+        submission.setTask(assignment.getTask());
+        submission.setUser(user);
+        submission.setStatus(SubmissionStatus.SUBMITTED);
+        submission.setLanguage(ProgrammingLanguage.CPP);
+        submission.addFile(buildFile(req.code(), codeBase64));
+
+        persist(submission);
+
+        return submission;
+    }
+
+    @Transactional
+    public Submission update(
+            Submission submission,
+            Assignment assignment,
+            String codeBase64,
+            String code
+    ) {
+        submission.setAssignment(assignment);
+        submission.setTask(assignment.getTask());
+        submission.setStatus(SubmissionStatus.SUBMITTED);
+        submission.setLanguage(ProgrammingLanguage.CPP);
+        submission.setFinalScore(null);
+
+        SubmissionFile file = submission.getFiles().stream()
+                .filter(existingFile -> DEFAULT_FILE_PATH.equals(existingFile.getFilePath()))
+                .findFirst()
+                .orElseGet(() -> {
+                    SubmissionFile newFile = new SubmissionFile();
+                    newFile.setFilePath(DEFAULT_FILE_PATH);
+                    submission.addFile(newFile);
+                    return newFile;
+                });
+
+        file.setContent(code);
+        file.setContentBase64(codeBase64);
+
+        return submission;
+    }
+
+    public PanacheQuery<Submission> findSubmissions(
+            PagedContext pagedContext, SubmissionFilterParams submissionFilterParams) {
+
+        StringBuilder query = new StringBuilder(
+                """
+                from Submission s
+                join fetch s.user u
+                join fetch s.assignment a
+                join fetch s.task t
+                join a.group g
+                where 1=1
+                """
+        );
+        Map<String, Object> params = new HashMap<>();
+        User currentUser = submissionFilterParams.user();
+
+        if (!StringUtils.isBlank(pagedContext.search())) {
+            query.append(
+                    """
+                    and (
+                            lower(a.name) like :search
+                            or lower(u.username) like :search
+                            or lower(u.firstname) like :search
+                            or lower(u.lastname) like :search
+                            or lower(concat(u.firstname, ' ', u.lastname)) like :search
+                        )
+                    """);
+
+            params.put("search", "%" + pagedContext.search().toLowerCase().trim() + "%");
+        }
+
+        if (currentUser.isAdmin()) {
+            appendUserFilter(query, params, submissionFilterParams.userId(), "requestedUserId");
+        } else if (currentUser.getRole() == Role.PROF) {
+            query.append(" and g.owner.id = :ownerId");
+            params.put("ownerId", currentUser.getId());
+
+            appendUserFilter(query, params, submissionFilterParams.userId(), "requestedUserId");
+        } else {
+            appendUserFilter(query, params, currentUser.getId(), "currentUserId");
+            appendUserFilter(query, params, submissionFilterParams.userId(), "requestedUserId");
+        }
+
+        if (submissionFilterParams.assignmentId() != null) {
+            query.append(" and a.id = :assignmentId");
+            params.put("assignmentId", submissionFilterParams.assignmentId());
+        }
+
+        if (submissionFilterParams.status() != null) {
+            query.append(" and s.status = :status");
+            params.put("status", submissionFilterParams.status());
+        }
+
+        if (submissionFilterParams.submittedAfter() != null) {
+            query.append(" and s.submittedAt >= :submittedAfter");
+            params.put("submittedAfter", submissionFilterParams.submittedAfter());
+        }
+
+        if (submissionFilterParams.submittedBefore() != null) {
+            query.append(" and s.submittedAt <= :submittedBefore");
+            params.put("submittedBefore", submissionFilterParams.submittedBefore());
+        }
+
+        Sort sort = pagedContext.sort();
+        int page = pagedContext.page();
+        int size = pagedContext.size();
+
+        return find(query.toString(), sort, params).page(Page.of(page, size));
+    }
+
+    private void appendUserFilter(
+            StringBuilder query,
+            Map<String, Object> params,
+            Long userId,
+            String parameterName
+    ) {
+        if (userId == null) {
+            return;
+        }
+
+        query.append(" and u.id = :").append(parameterName);
+        params.put(parameterName, userId);
+    }
+
+    private SubmissionFile buildFile(String code, String codeBase64) {
+        SubmissionFile file = new SubmissionFile();
+        file.setFilePath(DEFAULT_FILE_PATH);
+        file.setContent(code);
+        file.setContentBase64(codeBase64);
+        return file;
+    }
+}

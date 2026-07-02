@@ -1,6 +1,6 @@
 package com.codeevaluation.core.service;
 
-import com.codeevaluation.core.TaskListQueryParams;
+import com.codeevaluation.core.api.query.TaskListQueryParams;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.task.TaskCreateDto;
 import com.codeevaluation.core.api.dto.task.TaskFilterParams;
@@ -11,6 +11,7 @@ import com.codeevaluation.core.api.dto.task.TaskUpdateDto;
 import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.helper.PagedSearchTaskImpl;
+import com.codeevaluation.core.helper.TaskAccessPolicy;
 import com.codeevaluation.core.model.Task;
 import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.provider.CurrentUserProvider;
@@ -33,6 +34,7 @@ public class TaskService {
     private final CurrentUserProvider currentUserProvider;
     private final TaskValidator taskValidator;
     private final PagedSearchTaskImpl pagedSearchTask;
+    private final TaskAccessPolicy taskAccessPolicy;
 
     public TaskResponseDto createTask(TaskCreateDto taskCreateDto) {
         User currentUser = currentUserProvider.getCurrentUser();
@@ -47,7 +49,7 @@ public class TaskService {
         Task task = taskRepository.getTask(id)
                 .orElseThrow(() -> new NotFoundException("Task not found."));
 
-        if (!canModifyTask(task)) {
+        if (!taskAccessPolicy.canModifyTask(task, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot edit someone else task");
         }
 
@@ -65,7 +67,7 @@ public class TaskService {
         Task task = taskRepository.getTask(id)
                 .orElseThrow(() -> new NotFoundException("Task not found."));
 
-        if (!canModifyTask(task)) {
+        if (!taskAccessPolicy.canModifyTask(task, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot modify someone else task");
         }
 
@@ -89,7 +91,7 @@ public class TaskService {
 
         taskValidator.validateTask(taskUpdateDto);
 
-        if (!canModifyTask(task)) {
+        if (!taskAccessPolicy.canModifyTask(task, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot edit someone else task");
         }
 
@@ -100,10 +102,11 @@ public class TaskService {
         Task task = taskRepository.getTask(id)
                 .orElseThrow(() -> new NotFoundException("Task not found."));
 
-        boolean isShared = Boolean.TRUE.equals(task.getShared());
-        boolean isPublished = task.getStatus() == TaskStatus.PUBLISHED;
+        boolean isShared = task.isTaskShared();
+        boolean isPublished = task.isPublished();
 
-        if (canModifyTask(task) || isShared && isPublished) {
+        if (taskAccessPolicy.canModifyTask(task, currentUserProvider.getCurrentUser())
+                || isShared && isPublished) {
             return TaskResponseDto.from(task);
         }
 
@@ -124,18 +127,11 @@ public class TaskService {
                     "Task in status " + TaskStatus.PUBLISHED + " cannot be deleted");
         }
 
-        if (!canModifyTask(task)) {
+        if (!taskAccessPolicy.canModifyTask(task, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot delete someone else task");
         }
 
         taskRepository.delete(task);
-    }
-
-    private boolean canModifyTask(Task task) {
-        User currentUser = currentUserProvider.getCurrentUser();
-        boolean isUserOwner = currentUser.getUsername().equals(task.getUser().getUsername());
-
-        return currentUser.isAdmin() || isUserOwner;
     }
 
     public PagedResponse<TaskListItemDto> getTasks(TaskListQueryParams taskListQueryParams) {

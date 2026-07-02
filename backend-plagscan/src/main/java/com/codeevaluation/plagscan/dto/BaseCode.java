@@ -9,6 +9,5 @@ import java.util.List;
 public record BaseCode(
         @NotNull
         @NotEmpty
-        @Valid
-        List<FilePayload> files) {
+        List<@Valid FilePayload> files) {
 }

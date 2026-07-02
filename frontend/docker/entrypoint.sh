@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-: "${API_URL:=http://localhost:8080}"
+: "${API_URL:=}"
 
 envsubst < /usr/share/nginx/html/config.template.json > /usr/share/nginx/html/config.json
 

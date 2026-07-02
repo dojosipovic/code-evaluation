@@ -17,6 +17,7 @@ import { IGroupResponse } from '../../models/group/IGroupResponse';
 import { GroupCreateUpdateDialog } from '../../components/group-create-update-dialog/group-create-update-dialog';
 import { AuthService } from '../../services/auth/auth.service';
 import { GroupMembers } from '../../components/group-members/group-members';
+import { GroupAssignments } from '../../components/group-assignments/group-assignments';
 
 type GroupTab = 'users' | 'tasks';
 
@@ -33,7 +34,8 @@ type GroupTab = 'users' | 'tasks';
     SkeletonModule,
     TabsModule,
     GroupCreateUpdateDialog,
-    GroupMembers
+    GroupMembers,
+    GroupAssignments
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',
@@ -48,7 +50,7 @@ export class GroupView implements OnInit {
   private authService = inject(AuthService);
 
   readonly loading = signal(false);
-  readonly activeTab = signal<GroupTab>('users');
+  readonly activeTab = signal<GroupTab>('tasks');
 
   group: IGroupResponse | null = null;
   updateGroupDialogVisible = false;
@@ -61,7 +63,7 @@ export class GroupView implements OnInit {
         const groupId = Number(params.get('id'));
 
         if (tab !== 'users' && tab !== 'tasks') {
-          this.router.navigate(['/groups', groupId, 'users'], { replaceUrl: true });
+          this.router.navigate(['/groups', groupId, 'tasks'], { replaceUrl: true });
           return;
         }
 

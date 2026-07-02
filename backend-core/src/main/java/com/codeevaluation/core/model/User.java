@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,6 +54,9 @@ public class User extends PanacheEntityBase {
 
     @OneToMany(mappedBy = "user")
     private List<GroupMember> groupMemberships;
+
+    @OneToMany(mappedBy = "user")
+    private List<Submission> submissions = new ArrayList<>();
 
     public boolean isAdmin() {
         return role == Role.ADMIN;

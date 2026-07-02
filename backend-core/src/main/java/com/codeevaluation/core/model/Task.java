@@ -14,9 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -59,7 +61,16 @@ public class Task extends PanacheEntityBase {
     private User user;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
     private List<TaskTest> tests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "task")
+    @OrderBy("id ASC")
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "task")
+    @OrderBy("id ASC")
+    private List<SubmissionPlagiarismRun> plagiarismRuns = new ArrayList<>();
 
     public void addTest(TaskTest test) {
         tests.add(test);
@@ -74,5 +85,17 @@ public class Task extends PanacheEntityBase {
     public void removeAllTests() {
         tests.forEach(test -> test.setTask(null));
         tests.clear();
+    }
+
+    public boolean isOwner(String username) {
+        return Objects.equals(user.getUsername(), username);
+    }
+
+    public boolean isTaskShared() {
+        return Boolean.TRUE.equals(shared);
+    }
+
+    public boolean isPublished() {
+        return status == TaskStatus.PUBLISHED;
     }
 }

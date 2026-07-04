@@ -13,5 +13,6 @@
     <include file="db/changelog/005-group-and-member.xml"/>
     <include file="db/changelog/006-assignment.xml"/>
     <include file="db/changelog/007-submission.xml"/>
+    <include file="db/changelog/008-quartz.xml"/>
 
 </databaseChangeLog>

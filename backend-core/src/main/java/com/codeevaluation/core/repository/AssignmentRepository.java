@@ -92,4 +92,19 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
                 Map.of("assignmentId", assignmentId)
         ).firstResultOptional();
     }
+
+    public java.util.Optional<Assignment> findByIdWithReminderRelations(Long assignmentId) {
+        return find(
+                """
+                    select distinct a from Assignment a
+                    join fetch a.group grp
+                    left join fetch grp.members members
+                    left join fetch members.user memberUser
+                    join fetch a.task task
+                    join fetch a.createdBy createdBy
+                    where a.id = :assignmentId
+                """,
+                Map.of("assignmentId", assignmentId)
+        ).firstResultOptional();
+    }
 }

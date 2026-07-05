@@ -10,6 +10,7 @@ import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
+import com.codeevaluation.core.event.AssignmentCreatedEvent;
 import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
 import com.codeevaluation.core.helper.GroupAccessPolicy;
@@ -29,6 +30,7 @@ import com.codeevaluation.core.repository.SubmissionRepository;
 import com.codeevaluation.core.repository.TaskRepository;
 import com.codeevaluation.core.util.FileUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import jakarta.enterprise.event.Event;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
@@ -51,6 +53,7 @@ public class AssignmentService {
     private final SubmissionRepository submissionRepository;
     private final PagedSearchAssignmentImpl pagedSearchAssignment;
     private final CodeExecutionService codeExecutionService;
+    private final Event<AssignmentCreatedEvent> assignmentCreatedEvent;
 
     private final AssignmentValidator assignmentValidator;
     private final CurrentUserProvider currentUserProvider;
@@ -76,9 +79,14 @@ public class AssignmentService {
             throw new ForbiddenException("You don't have permission to use this task");
         }
 
-        return AssignmentResponseDto.from(
-                assignmentRepository.create(assignmentCreateDto, group, task, currentUser)
-        );
+        Assignment assignment =
+                assignmentRepository.create(assignmentCreateDto, group, task, currentUser);
+        assignmentCreatedEvent.fire(new AssignmentCreatedEvent(
+                assignment.getId(),
+                assignment.getStartsAt()
+        ));
+
+        return AssignmentResponseDto.from(assignment);
     }
 
     public AssignmentResponseDto get(Long assignmentId) {

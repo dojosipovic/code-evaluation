@@ -2,14 +2,12 @@ package com.codeevaluation.core.job;
 
 import com.codeevaluation.core.service.AssignmentReminderService;
 import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 @Slf4j
 @Dependent

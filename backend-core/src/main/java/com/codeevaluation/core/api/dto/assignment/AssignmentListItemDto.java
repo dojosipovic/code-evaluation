@@ -3,9 +3,9 @@ package com.codeevaluation.core.api.dto.assignment;
 import com.codeevaluation.core.api.dto.task.TaskResponseDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.model.Assignment;
-import com.codeevaluation.core.model.Submission;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 
 @Builder
@@ -23,19 +23,11 @@ public record AssignmentListItemDto(
     public static AssignmentListItemDto from(
             Assignment assignment,
             boolean showTask,
-            Long currentUserId
+            Long submissionId
     ) {
         return AssignmentListItemDto.builder()
                 .id(assignment.getId())
-                .submissionId(
-                        assignment.getSubmissions().stream()
-                                .filter(submission ->
-                                        submission.getUser().getId().equals(currentUserId)
-                                )
-                                .map(Submission::getId)
-                                .findFirst()
-                                .orElse(null)
-                )
+                .submissionId(submissionId)
                 .name(assignment.getName())
                 .startsAt(assignment.getStartsAt())
                 .endsAt(assignment.getEndsAt())
@@ -48,8 +40,10 @@ public record AssignmentListItemDto(
     public static List<AssignmentListItemDto> from(
             List<Assignment> assignments,
             boolean showTask,
-            Long currentUserId
+            Map<Long, Long> submissionIdsByAssignmentId
     ) {
-        return assignments.stream().map(a -> from(a, showTask, currentUserId)).toList();
+        return assignments.stream()
+                .map(a -> from(a, showTask, submissionIdsByAssignmentId.get(a.getId())))
+                .toList();
     }
 }

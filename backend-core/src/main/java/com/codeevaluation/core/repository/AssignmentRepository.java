@@ -48,7 +48,6 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
                     join fetch a.createdBy createdBy
                     join fetch a.task task
                     join fetch task.user taskUser
-                    left join fetch a.submissions submission
                     where a.group.id = :groupId
                 """);
 

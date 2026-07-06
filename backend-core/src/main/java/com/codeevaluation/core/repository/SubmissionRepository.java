@@ -17,8 +17,10 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
@@ -32,6 +34,34 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 userId,
                 assignmentId
         ).firstResultOptional();
+    }
+
+    public Map<Long, Long> findSubmissionIdsByUserIdAndAssignmentIds(
+            Long userId,
+            List<Long> assignmentIds
+    ) {
+        if (assignmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Object[]> rows = getEntityManager()
+                .createQuery(
+                        """
+                        select s.assignment.id, s.id
+                        from Submission s
+                        where s.user.id = :userId
+                        and s.assignment.id in :assignmentIds
+                        """,
+                        Object[].class
+                )
+                .setParameter("userId", userId)
+                .setParameter("assignmentIds", assignmentIds)
+                .getResultList();
+
+        return rows.stream().collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 
     public Optional<Submission> findByUserIdAndAssignmentIdWithRelations(

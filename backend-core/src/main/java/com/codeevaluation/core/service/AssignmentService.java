@@ -40,6 +40,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -125,9 +126,19 @@ public class AssignmentService {
         PagedContext pagedContext = pagedSearchAssignment.generateFrom(pagedParams);
         PanacheQuery<Assignment> query =
                 assignmentRepository.getGroupAssignments(groupId, pagedContext);
+        List<Assignment> assignments = query.list();
+        List<Long> assignmentIds = assignments.stream().map(Assignment::getId).toList();
+        Map<Long, Long> submissionIdsByAssignmentId =
+                submissionRepository.findSubmissionIdsByUserIdAndAssignmentIds(
+                        currentUser.getId(),
+                        assignmentIds
+                );
 
-        List<AssignmentListItemDto> items =
-                AssignmentListItemDto.from(query.list(), showTasks, currentUser.getId());
+        List<AssignmentListItemDto> items = AssignmentListItemDto.from(
+                        assignments,
+                        showTasks,
+                        submissionIdsByAssignmentId
+                );
 
         long totalItems = query.count();
         int page = pagedContext.page();

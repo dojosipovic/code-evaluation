@@ -10,7 +10,7 @@ import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
-import com.codeevaluation.core.event.AssignmentCreatedEvent;
+import com.codeevaluation.core.event.AssignmentCreateEvent;
 import com.codeevaluation.core.helper.AssignmentAccessPolicy;
 import com.codeevaluation.core.helper.AssignmentValidator;
 import com.codeevaluation.core.helper.GroupAccessPolicy;
@@ -53,7 +53,7 @@ public class AssignmentService {
     private final SubmissionRepository submissionRepository;
     private final PagedSearchAssignmentImpl pagedSearchAssignment;
     private final CodeExecutionService codeExecutionService;
-    private final Event<AssignmentCreatedEvent> assignmentCreatedEvent;
+    private final Event<AssignmentCreateEvent> assignmentCreatedEvent;
 
     private final AssignmentValidator assignmentValidator;
     private final CurrentUserProvider currentUserProvider;
@@ -81,9 +81,10 @@ public class AssignmentService {
 
         Assignment assignment =
                 assignmentRepository.create(assignmentCreateDto, group, task, currentUser);
-        assignmentCreatedEvent.fire(new AssignmentCreatedEvent(
+        assignmentCreatedEvent.fire(new AssignmentCreateEvent(
                 assignment.getId(),
-                assignment.getStartsAt()
+                assignment.getStartsAt(),
+                assignment.getEndsAt()
         ));
 
         return AssignmentResponseDto.from(assignment);

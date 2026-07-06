@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class MailService {
     }
 
     public void sendAssignmentStartReminder(List<String> recipients, Assignment assignment) {
-        if (recipients == null || recipients.isEmpty()) {
+        if (CollectionUtils.isEmpty(recipients)) {
             log.info("Skipping assignment reminder for assignmentId={}"
                             + "because there are no recipients", assignment.getId());
             return;

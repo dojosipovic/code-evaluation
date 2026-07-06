@@ -1,6 +1,6 @@
 package com.codeevaluation.core.event;
 
-import com.codeevaluation.core.service.AssignmentReminderService;
+import com.codeevaluation.core.service.AssignmentTimedActionService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
@@ -10,14 +10,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AssignmentReminderObserver {
 
-    private final AssignmentReminderService assignmentReminderService;
+    private final AssignmentTimedActionService assignmentTimedActionService;
 
     public void onAssignmentCreated(
-            @Observes(during = TransactionPhase.AFTER_SUCCESS) AssignmentCreatedEvent event
+            @Observes(during = TransactionPhase.AFTER_SUCCESS) AssignmentCreateEvent event
     ) {
-        assignmentReminderService.scheduleOrSendImmediately(
+        assignmentTimedActionService.scheduleOnCreated(
                 event.assignmentId(),
-                event.startsAt()
+                event.startsAt(),
+                event.endsAt()
         );
     }
 }

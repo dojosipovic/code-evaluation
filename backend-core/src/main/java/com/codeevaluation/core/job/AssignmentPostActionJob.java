@@ -13,7 +13,7 @@ import org.quartz.JobExecutionContext;
 @Dependent
 @RequiredArgsConstructor
 @DisallowConcurrentExecution
-public class AssignmentStartReminderJob implements Job {
+public class AssignmentPostActionJob implements Job {
 
     private final AssignmentTimedActionService assignmentTimedActionService;
 
@@ -24,7 +24,7 @@ public class AssignmentStartReminderJob implements Job {
                 jobDataMap.getString(AssignmentQuartzMetadata.ASSIGNMENT_ID_KEY)
         );
 
-        log.info("Executing assignment reminder job for assignmentId={}", assignmentId);
-        assignmentTimedActionService.sendStartReminder(assignmentId);
+        log.info("Executing assignment post-action job for assignmentId={}", assignmentId);
+        assignmentTimedActionService.executePostAction(assignmentId);
     }
 }

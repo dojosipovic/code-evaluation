@@ -121,7 +121,7 @@ public class TaskRepository implements PanacheRepository<Task> {
                     where t.id = ?1
                 """,
                 id
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 
     public Task publish(Task task) {

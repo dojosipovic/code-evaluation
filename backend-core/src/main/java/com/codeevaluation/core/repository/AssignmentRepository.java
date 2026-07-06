@@ -14,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
@@ -77,7 +78,7 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
         return find(query.toString(), sort, params).page(Page.of(page, size));
     }
 
-    public java.util.Optional<Assignment> findByIdWithTaskAndTests(Long assignmentId) {
+    public Optional<Assignment> findByIdWithTaskAndTests(Long assignmentId) {
         return find(
                 """
                     select distinct a from Assignment a
@@ -89,10 +90,10 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
                     where a.id = :assignmentId
                 """,
                 Map.of("assignmentId", assignmentId)
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 
-    public java.util.Optional<Assignment> findByIdWithReminderRelations(Long assignmentId) {
+    public Optional<Assignment> findByIdWithReminderRelations(Long assignmentId) {
         return find(
                 """
                     select distinct a from Assignment a
@@ -104,6 +105,6 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
                     where a.id = :assignmentId
                 """,
                 Map.of("assignmentId", assignmentId)
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 }

@@ -78,7 +78,7 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 """,
                 userId,
                 assignmentId
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 
     public Optional<Submission> findByIdWithRelations(Long submissionId) {
@@ -93,7 +93,7 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 where s.id = ?1
                 """,
                 submissionId
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 
     @Transactional

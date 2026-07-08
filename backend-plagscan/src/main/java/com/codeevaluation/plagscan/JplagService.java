@@ -44,7 +44,9 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class JplagService {
 
-    private static final Duration ASYNC_CLEANUP_DELAY = Duration.ofSeconds(2);
+    private static final Duration ASYNC_CLEANUP_DELAY = Duration.ofSeconds(10);
+    private static final int CLEANUP_ATTEMPTS = 2;
+    private static final int ASYNC_CLEANUP_ATTEMPTS = 30;
     private static final int MINIMUM_TOKEN_MATCH = 8;
     private final Decoder b64 = Base64.getDecoder();
     private final Path workRoot = resolveWorkRoot();
@@ -116,7 +118,6 @@ public class JplagService {
                 if (baseCodeTokenCount < MINIMUM_TOKEN_MATCH) {
                     log.warn("Ignoring basecode below minimum token count runId={}, tokens={}, minimum={}",
                             runId, baseCodeTokenCount, MINIMUM_TOKEN_MATCH);
-                    safeDeleteRecursive(baseCodeDir);
                     baseCodeDir = null;
                 }
             }
@@ -164,7 +165,7 @@ public class JplagService {
             log.error("Unexpected plagiarism analysis failure runId={}", runId, e);
             throw e;
         } finally {
-            if (!safeDeleteRecursive(rootDir)) {
+            if (!deleteRecursive(rootDir, CLEANUP_ATTEMPTS, false)) {
                 scheduleAsyncCleanup(rootDir);
             }
             safeDeleteIfEmpty(workRoot);
@@ -270,12 +271,12 @@ public class JplagService {
         }
     }
 
-    private boolean safeDeleteRecursive(Path dir) {
+    private boolean deleteRecursive(Path dir, int maxAttempts, boolean warnOnFailure) {
         if (dir == null) {
             return true;
         }
 
-        for (int attempt = 1; attempt <= 5; attempt++) {
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             if (!Files.exists(dir)) {
                 return true;
             }
@@ -307,7 +308,9 @@ public class JplagService {
         }
 
         if (Files.exists(dir)) {
-            log.warn("Failed to fully delete JPlag work directory {}", dir);
+            if (warnOnFailure) {
+                log.warn("Failed to fully delete JPlag work directory {}", dir);
+            }
             return false;
         }
         return true;
@@ -326,7 +329,7 @@ public class JplagService {
                 return;
             }
 
-            if (safeDeleteRecursive(dir)) {
+            if (deleteRecursive(dir, ASYNC_CLEANUP_ATTEMPTS, false)) {
                 safeDeleteIfEmpty(workRoot);
                 log.info("Asynchronous cleanup removed JPlag work directory {}", dir);
             } else {

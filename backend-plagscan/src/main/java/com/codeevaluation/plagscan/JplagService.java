@@ -8,10 +8,15 @@ import com.codeevaluation.plagscan.model.PlagResult;
 import de.jplag.JPlag;
 import de.jplag.JPlagComparison;
 import de.jplag.JPlagResult;
+import de.jplag.Language;
+import de.jplag.ParsingException;
+import de.jplag.SharedTokenType;
 import de.jplag.Submission;
+import de.jplag.Token;
 import de.jplag.clustering.Cluster;
 import de.jplag.clustering.ClusteringResult;
 import de.jplag.cpp.CPPLanguage;
+import de.jplag.exceptions.BasecodeException;
 import de.jplag.exceptions.ExitException;
 import de.jplag.options.JPlagOptions;
 import de.jplag.reporting.reportobject.ReportObjectFactory;
@@ -32,6 +37,7 @@ import java.util.UUID;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
@@ -39,6 +45,7 @@ import java.util.concurrent.CompletableFuture;
 public class JplagService {
 
     private static final Duration ASYNC_CLEANUP_DELAY = Duration.ofSeconds(2);
+    private static final int MINIMUM_TOKEN_MATCH = 8;
     private final Decoder b64 = Base64.getDecoder();
     private final Path workRoot = resolveWorkRoot();
 
@@ -54,26 +61,47 @@ public class JplagService {
             );
             Files.createDirectories(workRoot);
             rootDir = Files.createTempDirectory(workRoot, "jplag-root-" + runId + "-");
+            Path submissionsRoot = rootDir.resolve("submissions");
+            Path validationRoot = rootDir.resolve("validation");
+            Files.createDirectories(submissionsRoot);
+            Files.createDirectories(validationRoot);
+            var language = new CPPLanguage();
+            int acceptedSubmissions = 0;
+            int skippedSubmissions = 0;
 
             for (FilePayload s : request.getSubmissions()) {
                 String id = s.getId();
 
-                Path submissionDir = rootDir.resolve(id);
-                Files.createDirectories(submissionDir);
+                Path validationDir = validationRoot.resolve(id);
+                Files.createDirectories(validationDir);
 
-                Path target = submissionDir.resolve("main.cpp");
+                Path validationTarget = validationDir.resolve("main.cpp");
 
                 byte[] content = b64.decode(s.getContentBase64());
 
-                Files.write(target, content, StandardOpenOption.CREATE,
+                Files.write(validationTarget, content, StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING);
+
+                int tokenCount = countCodeTokens(language, Set.of(validationTarget));
+                if (tokenCount < MINIMUM_TOKEN_MATCH) {
+                    skippedSubmissions++;
+                    log.warn("Skipping submission below minimum token count runId={}, submissionId={}, tokens={}, minimum={}",
+                            runId, id, tokenCount, MINIMUM_TOKEN_MATCH);
+                } else {
+                    Path submissionDir = submissionsRoot.resolve(id);
+                    Files.createDirectories(submissionDir);
+                    Path target = submissionDir.resolve("main.cpp");
+                    Files.write(target, content, StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING);
+                    acceptedSubmissions++;
+                }
             }
 
             Path baseCodeDir = null;
             if (request.getBaseCode() != null
                     && request.getBaseCode().files() != null
                     && !request.getBaseCode().files().isEmpty()) {
-                baseCodeDir = rootDir.resolve("BaseCode");
+                baseCodeDir = rootDir.resolve("basecode");
                 Files.createDirectories(baseCodeDir);
 
                 int i = 0;
@@ -83,20 +111,35 @@ public class JplagService {
                     Files.write(target, content, StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING);
                 }
+
+                int baseCodeTokenCount = countCodeTokens(language, filesInDirectory(baseCodeDir));
+                if (baseCodeTokenCount < MINIMUM_TOKEN_MATCH) {
+                    log.warn("Ignoring basecode below minimum token count runId={}, tokens={}, minimum={}",
+                            runId, baseCodeTokenCount, MINIMUM_TOKEN_MATCH);
+                    safeDeleteRecursive(baseCodeDir);
+                    baseCodeDir = null;
+                }
             }
 
-            var language = new CPPLanguage();
-            var roots = Set.of(rootDir.toFile());
+            if (acceptedSubmissions < 2) {
+                log.warn("Not enough submissions for plagiarism analysis runId={}, accepted={}, skipped={}",
+                        runId, acceptedSubmissions, skippedSubmissions);
+                return new PlagResult(
+                        runId,
+                        request.getMinSimilarity(),
+                        List.of(),
+                        request.isIncludeClusters() ? List.of() : null,
+                        ""
+                );
+            }
+
+            var roots = Set.of(submissionsRoot.toFile());
 
             JPlagOptions options = new JPlagOptions(language, roots, Set.of())
                     .withSimilarityThreshold(request.getMinSimilarity())
-                    .withMinimumTokenMatch(8);
+                    .withMinimumTokenMatch(MINIMUM_TOKEN_MATCH);
 
-            if (baseCodeDir != null) {
-                options = options.withBaseCodeSubmissionDirectory(baseCodeDir.toFile());
-            }
-
-            JPlagResult result = JPlag.run(options);
+            JPlagResult result = runJPlag(options, baseCodeDir, runId);
 
             Path reportFile = rootDir.resolve("report.plag");
             ReportObjectFactory reportFactory = new ReportObjectFactory(reportFile.toFile());
@@ -126,6 +169,48 @@ public class JplagService {
             }
             safeDeleteIfEmpty(workRoot);
         }
+    }
+
+    private JPlagResult runJPlag(
+            JPlagOptions options,
+            Path baseCodeDir,
+            String runId
+    ) throws ExitException {
+        if (baseCodeDir == null) {
+            return JPlag.run(options);
+        }
+
+        try {
+            return JPlag.run(options.withBaseCodeSubmissionDirectory(baseCodeDir.toFile()));
+        } catch (BasecodeException e) {
+            log.warn("Ignoring invalid JPlag basecode and retrying without basecode runId={}",
+                    runId, e);
+            return JPlag.run(options);
+        }
+    }
+
+    private int countCodeTokens(Language language, Set<Path> paths) {
+        Set<java.io.File> files = new HashSet<>();
+        for (Path path : paths) {
+            files.add(path.toFile());
+        }
+
+        try {
+            List<Token> tokens = language.parse(files, false);
+            return (int) tokens.stream()
+                    .filter(token -> token.getType() != SharedTokenType.FILE_END)
+                    .count();
+        } catch (ParsingException e) {
+            return MINIMUM_TOKEN_MATCH;
+        }
+    }
+
+    private Set<Path> filesInDirectory(Path dir) throws IOException {
+        Set<Path> files = new HashSet<>();
+        try (var paths = Files.walk(dir)) {
+            paths.filter(Files::isRegularFile).forEach(files::add);
+        }
+        return files;
     }
 
     private List<PairResult> extractPairs(JPlagResult result, double minSimilarity) {

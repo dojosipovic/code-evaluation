@@ -165,7 +165,7 @@ public class JplagService {
             log.error("Unexpected plagiarism analysis failure runId={}", runId, e);
             throw e;
         } finally {
-            if (!deleteRecursive(rootDir, CLEANUP_ATTEMPTS, false)) {
+            if (!deleteRecursive(rootDir, CLEANUP_ATTEMPTS, true)) {
                 scheduleAsyncCleanup(rootDir);
             }
             safeDeleteIfEmpty(workRoot);
@@ -329,7 +329,7 @@ public class JplagService {
                 return;
             }
 
-            if (deleteRecursive(dir, ASYNC_CLEANUP_ATTEMPTS, false)) {
+            if (deleteRecursive(dir, ASYNC_CLEANUP_ATTEMPTS, true)) {
                 safeDeleteIfEmpty(workRoot);
                 log.info("Asynchronous cleanup removed JPlag work directory {}", dir);
             } else {

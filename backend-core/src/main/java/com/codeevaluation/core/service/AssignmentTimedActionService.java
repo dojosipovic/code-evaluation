@@ -369,7 +369,8 @@ public class AssignmentTimedActionService {
                 }
 
                 log.warn("Post-action backpressure while executing {}, attempt={}/{}. "
-                                + "Retrying in {}", action, attempt, maxAttempts, retryDelay);
+                                + "Retrying in {}", action, attempt, maxAttempts,
+                        DurationUtil.toHumanReadable(retryDelay));
                 sleep(retryDelay);
             }
         }

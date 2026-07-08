@@ -43,4 +43,38 @@ public final class DurationUtil {
             );
         }
     }
+
+    public static String toHumanReadable(Duration duration) {
+        if (duration == null) {
+            return "null";
+        }
+
+        long millis = duration.toMillis();
+        if (millis < 1000) {
+            return millis + " ms";
+        }
+
+        long days = duration.toDaysPart();
+        int hours = duration.toHoursPart();
+        int minutes = duration.toMinutesPart();
+        int seconds = duration.toSecondsPart();
+
+        StringBuilder result = new StringBuilder();
+        appendPart(result, days, "d");
+        appendPart(result, hours, "h");
+        appendPart(result, minutes, "m");
+        appendPart(result, seconds, "s");
+
+        return result.toString();
+    }
+
+    private static void appendPart(StringBuilder result, long value, String suffix) {
+        if (value <= 0) {
+            return;
+        }
+        if (!result.isEmpty()) {
+            result.append(' ');
+        }
+        result.append(value).append(suffix);
+    }
 }

@@ -5,16 +5,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.concurrent.Semaphore;
 
 @ApplicationScoped
-public class SandboxLimiter {
+public class PlagscanLimiter {
 
     private final Semaphore permits;
 
-    public SandboxLimiter(LimiterConfig limiterConfig) {
-        this.permits = new Semaphore(limiterConfig.sandbox().maxParallelRuns());
+    public PlagscanLimiter(LimiterConfig limiterConfig) {
+        this.permits = new Semaphore(limiterConfig.plagScan().maxParallelRuns());
     }
 
     public boolean tryAcquire() {
-        return  permits.tryAcquire();
+        return permits.tryAcquire();
     }
 
     public void release() {

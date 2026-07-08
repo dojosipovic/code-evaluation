@@ -15,5 +15,11 @@ public interface AssignmentConfig {
 
     interface PostAction {
         String delay();
+
+        String retryDelay();
+
+        int maxAttempts();
+
+        Double plagscanMinSimilarity();
     }
 }

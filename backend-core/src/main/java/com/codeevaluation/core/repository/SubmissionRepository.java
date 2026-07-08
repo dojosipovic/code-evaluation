@@ -96,6 +96,21 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
         ).stream().findFirst();
     }
 
+    public List<Submission> findByAssignmentIdWithFiles(Long assignmentId) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.assignment a
+                join fetch s.task t
+                join fetch s.user u
+                left join fetch s.files
+                where a.id = ?1
+                order by s.id asc
+                """,
+                assignmentId
+        ).list();
+    }
+
     @Transactional
     public Submission createOrUpdate(
             AssignmentSubmitRequestDto req,

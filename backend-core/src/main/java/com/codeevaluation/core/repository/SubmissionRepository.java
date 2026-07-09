@@ -9,6 +9,7 @@ import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Submission;
 import com.codeevaluation.core.model.SubmissionFile;
+import com.codeevaluation.core.model.SubmissionSimilarity;
 import com.codeevaluation.core.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -94,6 +95,25 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 """,
                 submissionId
         ).stream().findFirst();
+    }
+
+    public List<SubmissionSimilarity> findSimilaritiesForSubmission(Long submissionId) {
+        return getEntityManager()
+                .createQuery(
+                        """
+                        select distinct similarity from SubmissionSimilarity similarity
+                        join fetch similarity.plagiarismRun plagiarismRun
+                        join fetch similarity.sourceSubmission sourceSubmission
+                        join fetch sourceSubmission.user sourceUser
+                        join fetch similarity.targetSubmission targetSubmission
+                        join fetch targetSubmission.user targetUser
+                        where sourceSubmission.id = :submissionId
+                        order by plagiarismRun.createdAt desc, similarity.similarityScore desc
+                        """,
+                        SubmissionSimilarity.class
+                )
+                .setParameter("submissionId", submissionId)
+                .getResultList();
     }
 
     public List<Submission> findByAssignmentIdWithFiles(Long assignmentId) {

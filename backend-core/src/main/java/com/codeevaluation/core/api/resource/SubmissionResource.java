@@ -1,8 +1,8 @@
 package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
+import com.codeevaluation.core.api.dto.submission.SubmissionDetailResponseDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionListItemDto;
-import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.query.SubmissionListQueryParams;
 import com.codeevaluation.core.service.SubmissionService;
 import io.quarkus.security.Authenticated;
@@ -34,7 +34,7 @@ public class SubmissionResource {
     @GET
     @Path("/{submissionId}")
     @Authenticated
-    public SubmissionResponseDto getSubmission(@PathParam("submissionId") Long submissionId) {
+    public SubmissionDetailResponseDto getSubmission(@PathParam("submissionId") Long submissionId) {
         return submissionService.getSubmission(submissionId);
     }
 }

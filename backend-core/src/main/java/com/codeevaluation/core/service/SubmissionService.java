@@ -1,10 +1,10 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.api.dto.submission.SubmissionDetailResponseDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionFilterParams;
 import com.codeevaluation.core.api.query.SubmissionListQueryParams;
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.submission.SubmissionListItemDto;
-import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.helper.PagedSearchSubmissionImpl;
 import com.codeevaluation.core.helper.SubmissionAccessPolicy;
@@ -46,7 +46,7 @@ public class SubmissionService {
         return new PagedResponse<>(items, page, size, totalItems);
     }
 
-    public SubmissionResponseDto getSubmission(Long submissionId) {
+    public SubmissionDetailResponseDto getSubmission(Long submissionId) {
         Submission submission = submissionRepository.findByIdWithRelations(submissionId)
                 .orElseThrow(() -> new NotFoundException("Submission not found"));
 
@@ -55,6 +55,6 @@ public class SubmissionService {
             throw new ForbiddenException("You cannot see this submission");
         }
 
-        return SubmissionResponseDto.from(submission);
+        return SubmissionDetailResponseDto.from(submission);
     }
 }

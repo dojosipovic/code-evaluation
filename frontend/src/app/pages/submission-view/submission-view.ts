@@ -1,9 +1,10 @@
 import { CommonModule, Location } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
+import { diffChars } from 'diff';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -18,6 +19,11 @@ import { ISubmissionSimilarityResponse } from '../../models/submission/ISubmissi
 import { ISubmissionTestResultResponse } from '../../models/submission/ISubmissionTestResultResponse';
 import { ISubmissionTestRunResponse } from '../../models/submission/ISubmissionTestRunReponse';
 import { SubmissionService } from '../../services/submission.service';
+
+interface DiffSegment {
+  value: string;
+  kind: 'same' | 'expected' | 'actual';
+}
 
 @Component({
   selector: 'app-submission-view',
@@ -34,6 +40,9 @@ import { SubmissionService } from '../../services/submission.service';
   styleUrl: './submission-view.scss'
 })
 export class SubmissionView implements OnInit, OnDestroy {
+  private readonly splitterGutterPx = 8;
+  private readonly minCodeSectionPx = 360;
+  private readonly minSideSectionPx = 320;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -41,13 +50,20 @@ export class SubmissionView implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
+  private zone = inject(NgZone);
   private similarityAnimationFrameId: number | null = null;
+  private resizing = false;
+  private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
+  private readonly onPointerUp = () => this.stopResize();
+
+  @ViewChild('contentGrid') contentGridRef?: ElementRef<HTMLElement>;
 
   readonly loading = signal(true);
   readonly animatedSimilarities = signal<Record<number, number>>({});
 
   submission: ISubmissionDetailResponse | null = null;
   activeCaseIndex = 0;
+  sideSectionPx = 480;
 
   readonly editorOptions = {
     theme: 'vs-dark',
@@ -84,6 +100,7 @@ export class SubmissionView implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopSimilarityAnimation();
+    this.stopResize();
   }
 
   get latestTestRun(): ISubmissionTestRunResponse | null {
@@ -134,6 +151,14 @@ export class SubmissionView implements OnInit, OnDestroy {
 
   selectCase(index: number): void {
     this.activeCaseIndex = index;
+  }
+
+  startResize(event: MouseEvent): void {
+    event.preventDefault();
+    this.resizing = true;
+    document.body.classList.add('submission-resizing');
+    window.addEventListener('mousemove', this.onPointerMove);
+    window.addEventListener('mouseup', this.onPointerUp);
   }
 
   trackByCaseIndex(index: number): number {
@@ -250,6 +275,21 @@ export class SubmissionView implements OnInit, OnDestroy {
     return testCase.actualOutput || testCase.errorOutput || '';
   }
 
+  canShowOutputDiff(testCase: ISubmissionTestResultResponse | null): boolean {
+    return !!testCase
+      && this.canShowExpectedOutput(testCase)
+      && testCase.expectedOutput !== null
+      && !!this.getActualOutput(testCase);
+  }
+
+  getExpectedDiffSegments(testCase: ISubmissionTestResultResponse): DiffSegment[] {
+    return this.getDiffSegments(testCase, 'expected');
+  }
+
+  getActualDiffSegments(testCase: ISubmissionTestResultResponse): DiffSegment[] {
+    return this.getDiffSegments(testCase, 'actual');
+  }
+
   formatTestText(value: string | null | undefined): string {
     if (!value) {
       return '';
@@ -356,6 +396,59 @@ export class SubmissionView implements OnInit, OnDestroy {
       cancelAnimationFrame(this.similarityAnimationFrameId);
       this.similarityAnimationFrameId = null;
     }
+  }
+
+  private stopResize(): void {
+    if (!this.resizing) {
+      return;
+    }
+
+    this.resizing = false;
+    document.body.classList.remove('submission-resizing');
+    window.removeEventListener('mousemove', this.onPointerMove);
+    window.removeEventListener('mouseup', this.onPointerUp);
+  }
+
+  private handlePointerMove(event: MouseEvent): void {
+    if (!this.resizing) {
+      return;
+    }
+
+    this.zone.run(() => {
+      const contentGrid = this.contentGridRef?.nativeElement;
+
+      if (!contentGrid) {
+        return;
+      }
+
+      const rect = contentGrid.getBoundingClientRect();
+      const rawSidePx = rect.right - event.clientX;
+      const maxSidePx = Math.max(
+        this.minSideSectionPx,
+        rect.width - this.minCodeSectionPx - this.splitterGutterPx
+      );
+
+      this.sideSectionPx = this.clamp(rawSidePx, this.minSideSectionPx, maxSidePx);
+      this.cdr.detectChanges();
+    });
+  }
+
+  private getDiffSegments(testCase: ISubmissionTestResultResponse, side: 'expected' | 'actual'): DiffSegment[] {
+    const expected = testCase.expectedOutput ?? '';
+    const actual = this.getActualOutput(testCase);
+
+    return diffChars(expected, actual)
+      .filter(part => {
+        if (side === 'expected') {
+          return !part.added;
+        }
+
+        return !part.removed;
+      })
+      .map(part => ({
+        value: this.formatTestText(part.value),
+        kind: part.added ? 'actual' : part.removed ? 'expected' : 'same'
+      }));
   }
 
   private clamp(value: number, min: number, max: number): number {

@@ -123,15 +123,52 @@ small,
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(22rem, 30rem);
-}
-
-.code-section {
-  border-right: 1px solid var(--p-content-border-color);
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 
 .side-section {
   overflow: auto;
+}
+
+.splitter-gutter {
+  position: relative;
+  background: var(--p-content-border-color);
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.splitter-handle {
+  position: absolute;
+  inset: 50%;
+  width: 4px;
+  height: 48px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--p-text-muted-color) 55%, transparent);
+  transform: translate(-50%, -50%);
+}
+
+.similarity-list {
+  max-height: min(28rem, 46vh);
+  overflow: auto;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+
+.run-panel {
+  max-height: min(22rem, 42vh);
+  overflow: hidden;
+}
+
+.run-log {
+  flex: 1;
+  min-height: 0;
+  margin: .75rem;
+}
+
+.case-tabs-shell,
+.cases-empty {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--p-content-border-color);
 }
 
 .section-toolbar {
@@ -257,6 +294,19 @@ pre {
   background: color-mix(in srgb, var(--p-content-hover-background) 70%, transparent);
   color: var(--p-text-color);
   font: .86rem/1.45 Consolas, 'Courier New', monospace;
+}
+
+.diff-segment-expected,
+.diff-segment-actual {
+  font-weight: 800;
+}
+
+.diff-segment-expected {
+  background: color-mix(in srgb, var(--p-red-500) 42%, transparent);
+}
+
+.diff-segment-actual {
+  background: color-mix(in srgb, var(--p-green-500) 42%, transparent);
 }
 
 :host ::ng-deep {

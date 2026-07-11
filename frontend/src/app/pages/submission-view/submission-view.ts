@@ -77,7 +77,7 @@ export class SubmissionView implements OnInit, OnDestroy {
     fontSize: 14,
     lineHeight: 22,
     scrollBeyondLastLine: false,
-    wordWrap: 'on',
+    wordWrap: 'off',
     scrollbar: {
       alwaysConsumeMouseWheel: false,
       horizontal: 'auto',

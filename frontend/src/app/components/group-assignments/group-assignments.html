@@ -171,12 +171,26 @@
               </button>
             }
 
-            <p-tag
-              [icon]="hasSubmission(assignment) ? 'pi pi-check' : 'pi pi-times'"
-              [severity]="hasSubmission(assignment) ? 'success' : 'danger'"
-              styleClass="assignment-submission-tag"
-              [value]="hasSubmission(assignment) ? 'Predano' : 'Nije predano'">
-            </p-tag>
+            @if (hasSubmission(assignment)) {
+              <button
+                type="button"
+                class="tag-button"
+                [routerLink]="['/submissions', assignment.submissionId]">
+                <p-tag
+                  icon="pi pi-check"
+                  severity="success"
+                  styleClass="assignment-submission-tag"
+                  value="Predano">
+                </p-tag>
+              </button>
+            } @else {
+              <p-tag
+                icon="pi pi-times"
+                severity="danger"
+                styleClass="assignment-submission-tag"
+                value="Nije predano">
+              </p-tag>
+            }
           </div>
         </div>
       </p-panel>

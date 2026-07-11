@@ -1,0 +1,364 @@
+import { CommonModule, Location } from '@angular/common';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { KnobModule } from 'primeng/knob';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TagModule } from 'primeng/tag';
+import { SubmissionStatusEnum } from '../../models/enum/SubmissionStatusEnum';
+import { SubmissionTestRunStatusEnum } from '../../models/enum/SubmissionTestRunStatusEnum';
+import { TestResultEnum } from '../../models/enum/TestResultEnum';
+import { ISubmissionDetailResponse } from '../../models/submission/ISubmissionDetailResponse';
+import { ISubmissionSimilarityResponse } from '../../models/submission/ISubmissionSimilarityResponse';
+import { ISubmissionTestResultResponse } from '../../models/submission/ISubmissionTestResultResponse';
+import { ISubmissionTestRunResponse } from '../../models/submission/ISubmissionTestRunReponse';
+import { SubmissionService } from '../../services/submission.service';
+
+@Component({
+  selector: 'app-submission-view',
+  imports: [
+    CommonModule,
+    FormsModule,
+    MonacoEditorModule,
+    ButtonModule,
+    KnobModule,
+    ProgressSpinnerModule,
+    TagModule
+  ],
+  templateUrl: './submission-view.html',
+  styleUrl: './submission-view.scss'
+})
+export class SubmissionView implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private location = inject(Location);
+  private submissionService = inject(SubmissionService);
+  private messageService = inject(MessageService);
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
+  private similarityAnimationFrameId: number | null = null;
+
+  readonly loading = signal(true);
+  readonly animatedSimilarities = signal<Record<number, number>>({});
+
+  submission: ISubmissionDetailResponse | null = null;
+  activeCaseIndex = 0;
+
+  readonly editorOptions = {
+    theme: 'vs-dark',
+    language: 'cpp',
+    automaticLayout: true,
+    readOnly: true,
+    minimap: { enabled: false },
+    fontSize: 14,
+    lineHeight: 22,
+    scrollBeyondLastLine: false,
+    wordWrap: 'on',
+    scrollbar: {
+      alwaysConsumeMouseWheel: false,
+      horizontal: 'auto',
+      horizontalScrollbarSize: 10,
+      verticalScrollbarSize: 10
+    }
+  };
+
+  ngOnInit(): void {
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const submissionId = Number(params.get('id'));
+
+        if (!Number.isFinite(submissionId)) {
+          this.router.navigate(['/dashboard'], { replaceUrl: true });
+          return;
+        }
+
+        this.loadSubmission(submissionId);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.stopSimilarityAnimation();
+  }
+
+  get latestTestRun(): ISubmissionTestRunResponse | null {
+    const runs = this.submission?.testRuns ?? [];
+
+    if (runs.length === 0) {
+      return null;
+    }
+
+    return [...runs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+  }
+
+  get cases(): ISubmissionTestResultResponse[] {
+    return this.latestTestRun?.testResults ?? [];
+  }
+
+  get selectedCase(): ISubmissionTestResultResponse | null {
+    return this.cases[this.activeCaseIndex] ?? this.cases[0] ?? null;
+  }
+
+  get passedLabel(): string {
+    const testRun = this.latestTestRun;
+
+    if (!testRun) {
+      return '-';
+    }
+
+    return `${testRun.passedTests}/${testRun.totalTests}`;
+  }
+
+  get scoreLabel(): string {
+    const score = this.submission?.finalScore;
+
+    return score === null || score === undefined ? '-' : `${score}`;
+  }
+
+  get submittedAtLabel(): string {
+    return this.submission ? this.formatDateTime(this.submission.submittedAt) : '-';
+  }
+
+  get hasCode(): boolean {
+    return !!this.submission?.code?.trim();
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  selectCase(index: number): void {
+    this.activeCaseIndex = index;
+  }
+
+  trackByCaseIndex(index: number): number {
+    return index;
+  }
+
+  trackBySimilarityId(_: number, similarity: ISubmissionSimilarityResponse): number {
+    return similarity.id;
+  }
+
+  getStatusLabel(status: SubmissionStatusEnum): string {
+    return status.replace(/_/g, ' ');
+  }
+
+  getStatusSeverity(status: SubmissionStatusEnum): 'success' | 'danger' | 'info' | 'warn' | 'secondary' {
+    switch (status) {
+      case SubmissionStatusEnum.TESTED:
+      case SubmissionStatusEnum.PLAGIARISM_ANALYZED:
+        return 'success';
+      case SubmissionStatusEnum.FAILED:
+        return 'danger';
+      case SubmissionStatusEnum.QUEUED:
+        return 'warn';
+      case SubmissionStatusEnum.SUBMITTED:
+      default:
+        return 'info';
+    }
+  }
+
+  getRunStatusSeverity(status: SubmissionTestRunStatusEnum): 'success' | 'danger' | 'info' | 'warn' | 'secondary' {
+    switch (status) {
+      case SubmissionTestRunStatusEnum.COMPLETED:
+        return 'success';
+      case SubmissionTestRunStatusEnum.FAILED:
+        return 'danger';
+      case SubmissionTestRunStatusEnum.RUNNING:
+      case SubmissionTestRunStatusEnum.QUEUED:
+        return 'warn';
+      default:
+        return 'secondary';
+    }
+  }
+
+  getCaseStatusClass(testCase: ISubmissionTestResultResponse): string {
+    return testCase.result === TestResultEnum.PASSED ? 'status-passed' : 'status-failed';
+  }
+
+  getCaseStatusLabel(testCase: ISubmissionTestResultResponse): string {
+    switch (testCase.result) {
+      case TestResultEnum.PASSED:
+        return 'Accepted';
+      case TestResultEnum.WRONG_ANSWER:
+        return 'Wrong Answer';
+      case TestResultEnum.RUNTIME_ERROR:
+        return 'Runtime Error';
+      case TestResultEnum.TIME_LIMIT_EXCEEDED:
+        return 'Time Limit';
+      case TestResultEnum.INTERNAL_ERROR:
+      default:
+        return 'Internal Error';
+    }
+  }
+
+  getCaseStatusSeverity(testCase: ISubmissionTestResultResponse): 'success' | 'danger' | 'warn' {
+    if (testCase.result === TestResultEnum.PASSED) {
+      return 'success';
+    }
+
+    return testCase.result === TestResultEnum.TIME_LIMIT_EXCEEDED ? 'warn' : 'danger';
+  }
+
+  getAnimatedSimilarityPercent(similarity: ISubmissionSimilarityResponse): number {
+    return this.animatedSimilarities()[similarity.id] ?? 0;
+  }
+
+  getSimilarityPercent(similarity: ISubmissionSimilarityResponse): number {
+    const score = similarity.similarityScore;
+    const normalized = score <= 1 ? score * 100 : score;
+
+    return Math.round(this.clamp(normalized, 0, 100));
+  }
+
+  getSimilaritySeverity(similarity: ISubmissionSimilarityResponse): string {
+    const percent = this.getSimilarityPercent(similarity);
+
+    if (percent >= 80) {
+      return 'high';
+    }
+
+    if (percent >= 45) {
+      return 'medium';
+    }
+
+    return 'low';
+  }
+
+  canShowExpectedOutput(testCase: ISubmissionTestResultResponse): boolean {
+    return testCase.showExpectedOutput;
+  }
+
+  hasCaseInput(input: string | null | undefined): boolean {
+    return !!input?.trim();
+  }
+
+  getExpectedOutputText(testCase: ISubmissionTestResultResponse): string {
+    if (testCase.expectedOutput === null) {
+      return 'No output is expected.';
+    }
+
+    return testCase.expectedOutput;
+  }
+
+  getActualOutput(testCase: ISubmissionTestResultResponse): string {
+    return testCase.actualOutput || testCase.errorOutput || '';
+  }
+
+  formatTestText(value: string | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    return value
+      .replace(/\r\n/g, '\\r\\n\r\n')
+      .replace(/\n/g, '\\n\n')
+      .replace(/\r/g, '\\r\r');
+  }
+
+  formatDateTime(value: string): string {
+    return new Intl.DateTimeFormat('hr-HR', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(new Date(value));
+  }
+
+  formatBytes(value: number | null): string {
+    if (value === null) {
+      return '-';
+    }
+
+    if (value < 1024) {
+      return `${value} B`;
+    }
+
+    const units = ['KB', 'MB', 'GB'];
+    let size = value / 1024;
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+
+    return `${size.toFixed(size >= 10 ? 0 : 1)} ${units[unitIndex]}`;
+  }
+
+  private loadSubmission(submissionId: number): void {
+    this.loading.set(true);
+    this.submission = null;
+    this.activeCaseIndex = 0;
+    this.animatedSimilarities.set({});
+    this.stopSimilarityAnimation();
+
+    this.submissionService.getSubmission(submissionId)
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+          this.cdr.detectChanges();
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: submission => {
+          this.submission = submission;
+          this.animateSimilarities(submission.similarities);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Greska',
+            detail: 'Nije moguce dohvatiti submission'
+          });
+          this.router.navigate(['/dashboard']);
+        }
+      });
+  }
+
+  private animateSimilarities(similarities: ISubmissionSimilarityResponse[]): void {
+    this.stopSimilarityAnimation();
+
+    if (similarities.length === 0) {
+      return;
+    }
+
+    const durationMs = 800;
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const values = similarities.reduce<Record<number, number>>((acc, similarity) => {
+        acc[similarity.id] = Math.round(this.getSimilarityPercent(similarity) * eased);
+        return acc;
+      }, {});
+
+      this.animatedSimilarities.set(values);
+
+      if (progress < 1) {
+        this.similarityAnimationFrameId = requestAnimationFrame(step);
+      } else {
+        this.similarityAnimationFrameId = null;
+      }
+    };
+
+    this.similarityAnimationFrameId = requestAnimationFrame(step);
+  }
+
+  private stopSimilarityAnimation(): void {
+    if (this.similarityAnimationFrameId !== null) {
+      cancelAnimationFrame(this.similarityAnimationFrameId);
+      this.similarityAnimationFrameId = null;
+    }
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
+  }
+}

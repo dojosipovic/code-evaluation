@@ -229,8 +229,6 @@ public class AssignmentTimedActionService {
         testRun.setPassedTests(passedTests);
         submission.addTestRun(testRun);
         submission.setStatus(SubmissionStatus.TESTED);
-        submission.setFinalScore(calculateScore(passedTests, plan.tests().size(),
-                plan.assignmentPoints()));
     }
 
     @Transactional
@@ -415,16 +413,6 @@ public class AssignmentTimedActionService {
                 StringUtils.defaultString(compile.getStdout()),
                 StringUtils.defaultString(compile.getStderr())
         );
-    }
-
-    private BigDecimal calculateScore(int passedTests, int totalTests, int assignmentPoints) {
-        if (totalTests <= 0 || assignmentPoints <= 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-
-        return BigDecimal.valueOf(assignmentPoints)
-                .multiply(BigDecimal.valueOf(passedTests))
-                .divide(BigDecimal.valueOf(totalTests), 2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal toSimilarity(Double value) {

@@ -18,6 +18,7 @@ import { ISubmissionDetailResponse } from '../../models/submission/ISubmissionDe
 import { ISubmissionSimilarityResponse } from '../../models/submission/ISubmissionSimilarityResponse';
 import { ISubmissionTestResultResponse } from '../../models/submission/ISubmissionTestResultResponse';
 import { ISubmissionTestRunResponse } from '../../models/submission/ISubmissionTestRunReponse';
+import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { SubmissionService } from '../../services/submission.service';
 
 interface DiffSegment {
@@ -47,6 +48,7 @@ export class SubmissionView implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private submissionService = inject(SubmissionService);
+  private breadcrumbService = inject(BreadcrumbService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
@@ -64,6 +66,7 @@ export class SubmissionView implements OnInit, OnDestroy {
   submission: ISubmissionDetailResponse | null = null;
   activeCaseIndex = 0;
   sideSectionPx = 480;
+  private sourceGroupId: number | null = null;
 
   readonly editorOptions = {
     theme: 'vs-dark',
@@ -94,6 +97,8 @@ export class SubmissionView implements OnInit, OnDestroy {
           return;
         }
 
+        const groupId = Number(this.route.snapshot.queryParamMap.get('groupId'));
+        this.sourceGroupId = Number.isFinite(groupId) ? groupId : null;
         this.loadSubmission(submissionId);
       });
   }
@@ -347,6 +352,7 @@ export class SubmissionView implements OnInit, OnDestroy {
       .subscribe({
         next: submission => {
           this.submission = submission;
+          this.updateBreadcrumb();
           this.animateSimilarities(submission.similarities);
         },
         error: () => {
@@ -358,6 +364,23 @@ export class SubmissionView implements OnInit, OnDestroy {
           this.router.navigate(['/dashboard']);
         }
       });
+  }
+
+  private updateBreadcrumb(): void {
+    const submissionLabel = this.submission ? `Submission #${this.submission.id}` : 'Submission';
+
+    if (!this.sourceGroupId) {
+      this.breadcrumbService.set([
+        { label: submissionLabel }
+      ]);
+      return;
+    }
+
+    this.breadcrumbService.set([
+      { label: 'Grupe', routerLink: '/groups' },
+      { label: `Group #${this.sourceGroupId}`, routerLink: `/groups/${this.sourceGroupId}/tasks` },
+      { label: submissionLabel }
+    ]);
   }
 
   private animateSimilarities(similarities: ISubmissionSimilarityResponse[]): void {

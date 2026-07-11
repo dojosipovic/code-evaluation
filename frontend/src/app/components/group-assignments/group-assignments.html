@@ -175,7 +175,8 @@
               <button
                 type="button"
                 class="tag-button"
-                [routerLink]="['/submissions', assignment.submissionId]">
+                [routerLink]="['/submissions', assignment.submissionId]"
+                [queryParams]="{ groupId: groupId }">
                 <p-tag
                   icon="pi pi-check"
                   severity="success"

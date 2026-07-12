@@ -27,6 +27,10 @@ interface DiffSegment {
   kind: 'same' | 'expected' | 'actual';
 }
 
+interface MonacoLayoutEditor {
+  layout: () => void;
+}
+
 interface AnimatedSummaryMetrics {
   runtimeMs: number;
 }
@@ -67,11 +71,15 @@ export class SubmissionView implements OnInit, OnDestroy {
   private summaryAnimationFrameId: number | null = null;
   private testsProgressAnimationFrameId: number | null = null;
   private testsProgressAnimationTimeoutId: number | null = null;
+  private editorLayoutFrameId: number | null = null;
+  private editorResizeObserver: ResizeObserver | null = null;
+  private monacoEditor: MonacoLayoutEditor | null = null;
   private resizing = false;
   private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
   private readonly onPointerUp = () => this.stopResize();
 
   @ViewChild('contentGrid') contentGridRef?: ElementRef<HTMLElement>;
+  @ViewChild('editorShell') editorShellRef?: ElementRef<HTMLElement>;
 
   readonly loading = signal(true);
   readonly animatedSimilarities = signal<Record<number, number>>({});
@@ -125,6 +133,10 @@ export class SubmissionView implements OnInit, OnDestroy {
     this.stopSummaryAnimation();
     this.stopTestsProgressAnimation();
     this.stopResize();
+    this.stopEditorLayout();
+
+    this.editorResizeObserver?.disconnect();
+    this.editorResizeObserver = null;
   }
 
   get latestTestRun(): ISubmissionTestRunResponse | null {
@@ -195,6 +207,12 @@ export class SubmissionView implements OnInit, OnDestroy {
 
   selectCase(index: number): void {
     this.activeCaseIndex = index;
+  }
+
+  onEditorInit(editorInstance: MonacoLayoutEditor): void {
+    this.monacoEditor = editorInstance;
+    this.bindEditorResizeObserver();
+    this.scheduleEditorLayout();
   }
 
   startResize(event: MouseEvent): void {
@@ -401,6 +419,7 @@ export class SubmissionView implements OnInit, OnDestroy {
           this.animateSummaryMetrics();
           this.animateTestsProgress();
           this.animateSimilarities(submission.similarities);
+          this.scheduleEditorLayout();
         },
         error: () => {
           this.messageService.add({
@@ -544,6 +563,13 @@ export class SubmissionView implements OnInit, OnDestroy {
     }
   }
 
+  private stopEditorLayout(): void {
+    if (this.editorLayoutFrameId !== null) {
+      cancelAnimationFrame(this.editorLayoutFrameId);
+      this.editorLayoutFrameId = null;
+    }
+  }
+
   private stopResize(): void {
     if (!this.resizing) {
       return;
@@ -576,7 +602,38 @@ export class SubmissionView implements OnInit, OnDestroy {
 
       this.sideSectionPx = this.clamp(rawSidePx, this.minSideSectionPx, maxSidePx);
       this.cdr.detectChanges();
+      this.scheduleEditorLayout();
     });
+  }
+
+  private scheduleEditorLayout(): void {
+    const editorInstance = this.monacoEditor;
+
+    if (!editorInstance) {
+      return;
+    }
+
+    this.stopEditorLayout();
+    this.editorLayoutFrameId = requestAnimationFrame(() => {
+      this.editorLayoutFrameId = requestAnimationFrame(() => {
+        this.editorLayoutFrameId = null;
+        editorInstance.layout();
+      });
+    });
+  }
+
+  private bindEditorResizeObserver(): void {
+    const editorShell = this.editorShellRef?.nativeElement;
+
+    if (!editorShell || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.editorResizeObserver?.disconnect();
+    this.editorResizeObserver = new ResizeObserver(() => {
+      this.scheduleEditorLayout();
+    });
+    this.editorResizeObserver.observe(editorShell);
   }
 
   private getDiffSegments(testCase: ISubmissionTestResultResponse, side: 'expected' | 'actual'): DiffSegment[] {

@@ -67,11 +67,14 @@
         </div>
 
         @if (hasCode) {
-          <ngx-monaco-editor
-            class="editor-host"
-            [ngModel]="submission.code"
-            [options]="editorOptions">
-          </ngx-monaco-editor>
+          <div #editorShell class="editor-shell">
+            <ngx-monaco-editor
+              class="editor-host"
+              [ngModel]="submission.code"
+              (onInit)="onEditorInit($event)"
+              [options]="editorOptions">
+            </ngx-monaco-editor>
+          </div>
         } @else {
           <div class="empty-state">
             <i class="pi pi-code"></i>

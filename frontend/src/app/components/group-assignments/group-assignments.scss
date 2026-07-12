@@ -148,7 +148,8 @@
 }
 
 .task-tag-button,
-.tag-button {
+.tag-button,
+.submission-link-button {
   width: fit-content;
   max-width: 100%;
   border: 0;
@@ -160,6 +161,87 @@
     outline: 2px solid var(--p-primary-color);
     outline-offset: 3px;
     border-radius: 10px;
+  }
+}
+
+.submission-link-button {
+  min-height: 2.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.66rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  padding: 0.42rem 0.72rem;
+  color: var(--p-text-color);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+button.submission-link-button {
+  cursor: pointer;
+}
+
+button.submission-link-button:hover {
+  border-color: color-mix(in srgb, var(--p-green-500) 48%, var(--p-content-border-color));
+  background: color-mix(in srgb, var(--p-green-500) 8%, var(--p-content-background));
+}
+
+.submission-link-button.submitted {
+  background: color-mix(in srgb, var(--p-green-500) 10%, var(--p-content-background));
+  border-color: color-mix(in srgb, var(--p-green-500) 42%, var(--p-content-border-color));
+}
+
+.submission-link-button.not-submitted {
+  background: color-mix(in srgb, var(--p-red-500) 6%, var(--p-content-background));
+  color: var(--p-text-muted-color);
+}
+
+.submission-status-icon {
+  flex: 0 0 1.55rem;
+  width: 1.55rem;
+  height: 1.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--p-content-hover-background);
+  font-size: 0.82rem;
+}
+
+.submitted .submission-status-icon {
+  background: var(--p-green-500);
+  color: #ffffff;
+}
+
+.not-submitted .submission-status-icon {
+  background: color-mix(in srgb, var(--p-red-500) 12%, var(--p-content-hover-background));
+  color: var(--p-red-500);
+}
+
+.submission-status-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+
+  strong,
+  small {
+    max-width: min(18rem, calc(100vw - 128px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  small {
+    margin-top: 0.12rem;
+    color: var(--p-text-muted-color);
+    font-size: 0.74rem;
+    font-weight: 700;
   }
 }
 

@@ -168,6 +168,32 @@
           </div>
 
           <div class="assignment-badges">
+            @if (hasSubmission(assignment)) {
+              <button
+                type="button"
+                class="submission-link-button submitted"
+                [routerLink]="['/submissions', assignment.submissionId]"
+                [queryParams]="{ groupId: groupId }">
+                <span class="submission-status-icon">
+                  <i class="pi pi-check"></i>
+                </span>
+                <span class="submission-status-copy">
+                  <strong>Predano</strong>
+                  <small>Pregledaj submission</small>
+                </span>
+              </button>
+            } @else if (!isAssignmentActive(assignment)) {
+              <div class="submission-link-button not-submitted" aria-label="Nije predano">
+                <span class="submission-status-icon">
+                  <i class="pi pi-times"></i>
+                </span>
+                <span class="submission-status-copy">
+                  <strong>Nije predano</strong>
+                  <small>Submission nije dostupan</small>
+                </span>
+              </div>
+            }
+
             @if (assignment.task) {
               <button
                 type="button"
@@ -179,28 +205,6 @@
                   [value]="assignment.task.title">
                 </p-tag>
               </button>
-            }
-
-            @if (hasSubmission(assignment)) {
-              <button
-                type="button"
-                class="tag-button"
-                [routerLink]="['/submissions', assignment.submissionId]"
-                [queryParams]="{ groupId: groupId }">
-                <p-tag
-                  icon="pi pi-check"
-                  severity="success"
-                  styleClass="assignment-submission-tag"
-                  value="Predano">
-                </p-tag>
-              </button>
-            } @else {
-              <p-tag
-                icon="pi pi-times"
-                severity="danger"
-                styleClass="assignment-submission-tag"
-                value="Nije predano">
-              </p-tag>
             }
           </div>
         </div>

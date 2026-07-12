@@ -9,6 +9,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { KnobModule } from 'primeng/knob';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { SubmissionStatusEnum } from '../../models/enum/SubmissionStatusEnum';
@@ -26,6 +27,10 @@ interface DiffSegment {
   kind: 'same' | 'expected' | 'actual';
 }
 
+interface AnimatedSummaryMetrics {
+  runtimeMs: number;
+}
+
 @Component({
   selector: 'app-submission-view',
   imports: [
@@ -34,6 +39,7 @@ interface DiffSegment {
     MonacoEditorModule,
     ButtonModule,
     KnobModule,
+    ProgressBarModule,
     ProgressSpinnerModule,
     TagModule
   ],
@@ -44,6 +50,10 @@ export class SubmissionView implements OnInit, OnDestroy {
   private readonly splitterGutterPx = 8;
   private readonly minCodeSectionPx = 360;
   private readonly minSideSectionPx = 320;
+  private readonly similarityAnimationDelayMs = 450;
+  private readonly similarityAnimationDurationMs = 1500;
+  private readonly summaryAnimationDelayMs = 450;
+  private readonly summaryAnimationDurationMs = 1200;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -54,6 +64,9 @@ export class SubmissionView implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
   private similarityAnimationFrameId: number | null = null;
+  private summaryAnimationFrameId: number | null = null;
+  private testsProgressAnimationFrameId: number | null = null;
+  private testsProgressAnimationTimeoutId: number | null = null;
   private resizing = false;
   private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
   private readonly onPointerUp = () => this.stopResize();
@@ -62,6 +75,10 @@ export class SubmissionView implements OnInit, OnDestroy {
 
   readonly loading = signal(true);
   readonly animatedSimilarities = signal<Record<number, number>>({});
+  readonly animatedSummaryMetrics = signal<AnimatedSummaryMetrics>({
+    runtimeMs: 0
+  });
+  readonly testsProgressPercent = signal(0);
 
   submission: ISubmissionDetailResponse | null = null;
   activeCaseIndex = 0;
@@ -105,6 +122,8 @@ export class SubmissionView implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopSimilarityAnimation();
+    this.stopSummaryAnimation();
+    this.stopTestsProgressAnimation();
     this.stopResize();
   }
 
@@ -134,6 +153,26 @@ export class SubmissionView implements OnInit, OnDestroy {
     }
 
     return `${testRun.passedTests}/${testRun.totalTests}`;
+  }
+
+  get runtimeLabel(): string {
+    const testRun = this.latestTestRun;
+
+    if (!testRun || testRun.runtimeMs === null) {
+      return '-';
+    }
+
+    return `${this.animatedSummaryMetrics().runtimeMs} ms`;
+  }
+
+  get testsProgressValue(): number {
+    const testRun = this.latestTestRun;
+
+    if (!testRun || testRun.totalTests <= 0) {
+      return 0;
+    }
+
+    return this.testsProgressPercent();
   }
 
   get scoreLabel(): string {
@@ -339,7 +378,13 @@ export class SubmissionView implements OnInit, OnDestroy {
     this.submission = null;
     this.activeCaseIndex = 0;
     this.animatedSimilarities.set({});
+    this.animatedSummaryMetrics.set({
+      runtimeMs: 0
+    });
+    this.testsProgressPercent.set(0);
     this.stopSimilarityAnimation();
+    this.stopSummaryAnimation();
+    this.stopTestsProgressAnimation();
 
     this.submissionService.getSubmission(submissionId)
       .pipe(
@@ -353,6 +398,8 @@ export class SubmissionView implements OnInit, OnDestroy {
         next: submission => {
           this.submission = submission;
           this.updateBreadcrumb();
+          this.animateSummaryMetrics();
+          this.animateTestsProgress();
           this.animateSimilarities(submission.similarities);
         },
         error: () => {
@@ -390,12 +437,11 @@ export class SubmissionView implements OnInit, OnDestroy {
       return;
     }
 
-    const durationMs = 800;
-    const startTime = performance.now();
+    const startTime = performance.now() + this.similarityAnimationDelayMs;
 
     const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / durationMs, 1);
+      const elapsed = Math.max(now - startTime, 0);
+      const progress = Math.min(elapsed / this.similarityAnimationDurationMs, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       const values = similarities.reduce<Record<number, number>>((acc, similarity) => {
         acc[similarity.id] = Math.round(this.getSimilarityPercent(similarity) * eased);
@@ -414,10 +460,87 @@ export class SubmissionView implements OnInit, OnDestroy {
     this.similarityAnimationFrameId = requestAnimationFrame(step);
   }
 
+  private animateSummaryMetrics(): void {
+    this.stopSummaryAnimation();
+
+    const testRun = this.latestTestRun;
+
+    if (!testRun) {
+      return;
+    }
+
+    const targetMetrics: AnimatedSummaryMetrics = {
+      runtimeMs: testRun.runtimeMs ?? 0
+    };
+    const startTime = performance.now() + this.summaryAnimationDelayMs;
+
+    const step = (now: number) => {
+      const elapsed = Math.max(now - startTime, 0);
+      const progress = Math.min(elapsed / this.summaryAnimationDurationMs, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      this.animatedSummaryMetrics.set({
+        runtimeMs: Math.round(targetMetrics.runtimeMs * eased)
+      });
+
+      if (progress < 1) {
+        this.summaryAnimationFrameId = requestAnimationFrame(step);
+      } else {
+        this.animatedSummaryMetrics.set(targetMetrics);
+        this.summaryAnimationFrameId = null;
+      }
+    };
+
+    this.summaryAnimationFrameId = requestAnimationFrame(step);
+  }
+
+  private animateTestsProgress(): void {
+    this.stopTestsProgressAnimation();
+
+    const testRun = this.latestTestRun;
+
+    if (!testRun || testRun.totalTests <= 0) {
+      this.testsProgressPercent.set(0);
+      return;
+    }
+
+    const targetPercent = (testRun.passedTests / testRun.totalTests) * 100;
+
+    this.testsProgressPercent.set(0);
+    this.testsProgressAnimationTimeoutId = window.setTimeout(() => {
+      this.testsProgressAnimationTimeoutId = null;
+      this.testsProgressAnimationFrameId = requestAnimationFrame(() => {
+        this.testsProgressAnimationFrameId = requestAnimationFrame(() => {
+          this.testsProgressPercent.set(targetPercent);
+          this.testsProgressAnimationFrameId = null;
+        });
+      });
+    }, this.summaryAnimationDelayMs);
+  }
+
   private stopSimilarityAnimation(): void {
     if (this.similarityAnimationFrameId !== null) {
       cancelAnimationFrame(this.similarityAnimationFrameId);
       this.similarityAnimationFrameId = null;
+    }
+  }
+
+  private stopSummaryAnimation(): void {
+    if (this.summaryAnimationFrameId !== null) {
+      cancelAnimationFrame(this.summaryAnimationFrameId);
+      this.summaryAnimationFrameId = null;
+    }
+  }
+
+  private stopTestsProgressAnimation(): void {
+    if (this.testsProgressAnimationTimeoutId !== null) {
+      clearTimeout(this.testsProgressAnimationTimeoutId);
+      this.testsProgressAnimationTimeoutId = null;
+    }
+
+    if (this.testsProgressAnimationFrameId !== null) {
+      cancelAnimationFrame(this.testsProgressAnimationFrameId);
+      this.testsProgressAnimationFrameId = null;
     }
   }
 

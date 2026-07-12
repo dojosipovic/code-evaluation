@@ -35,14 +35,19 @@
         <strong>{{ scoreLabel }}</strong>
       </div>
 
-      <div class="metric">
+      <div class="metric tests-metric">
         <span>Tests</span>
+        <p-progressbar
+          styleClass="tests-progress"
+          [value]="testsProgressValue"
+          [showValue]="false">
+        </p-progressbar>
         <strong>{{ passedLabel }}</strong>
       </div>
 
       <div class="metric">
         <span>Runtime</span>
-        <strong>{{ latestTestRun?.runtimeMs === null || !latestTestRun ? '-' : latestTestRun.runtimeMs + ' ms' }}</strong>
+        <strong>{{ runtimeLabel }}</strong>
       </div>
 
       <div class="metric">

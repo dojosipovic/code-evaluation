@@ -30,4 +30,9 @@ public class GroupAccessPolicy {
         return currentUser.isAdmin()
                 || group.isOwner(currentUser.getUsername());
     }
+
+    public boolean canSeeAssignmentRequiresValuation(Group group, User currentUser) {
+        return currentUser.isAdmin()
+                || group.isOwner(currentUser.getUsername());
+    }
 }

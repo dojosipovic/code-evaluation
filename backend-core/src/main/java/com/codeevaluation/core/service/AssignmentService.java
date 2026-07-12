@@ -39,6 +39,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -133,8 +134,22 @@ public class AssignmentService {
                         currentUser.getId(),
                         assignmentIds
                 );
-        Map<Long, Boolean> requiresEvaluationByAssignmentId =
-                submissionRepository.findRequiresEvaluationByAssignmentIds(assignmentIds);
+        Map<Long, Boolean> requiresEvaluationByAssignmentId = new HashMap<>();
+        boolean showRequiresValuation =
+                groupAccessPolicy.canSeeAssignmentRequiresValuation(group, currentUser);
+        if (showRequiresValuation) {
+            Instant now = Instant.now();
+            List<Long> endedAssignmentIds = assignments.stream()
+                    .filter(assignment -> !assignment.getEndsAt().isAfter(now))
+                    .map(Assignment::getId)
+                    .toList();
+            Map<Long, Boolean> pendingEvaluationByAssignmentId =
+                    submissionRepository.findRequiresEvaluationByAssignmentIds(endedAssignmentIds);
+            endedAssignmentIds.forEach(assignmentId -> requiresEvaluationByAssignmentId.put(
+                    assignmentId,
+                    pendingEvaluationByAssignmentId.getOrDefault(assignmentId, false)
+            ));
+        }
 
         List<AssignmentListItemDto> items = AssignmentListItemDto.from(
                         assignments,

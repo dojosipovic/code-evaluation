@@ -51,7 +51,7 @@ public record AssignmentListItemDto(
                         a,
                         showTask,
                         submissionIdsByAssignmentId.get(a.getId()),
-                        requiresEvaluationByAssignmentId.getOrDefault(a.getId(), false)
+                        requiresEvaluationByAssignmentId.getOrDefault(a.getId(), null)
                 ))
                 .toList();
     }

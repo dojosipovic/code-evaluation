@@ -8,6 +8,7 @@ export interface IAssignmentListItem {
     startsAt: string;
     endsAt: string;
     points: number;
+    requiresEvaluation: boolean | null;
     task?: ITaskBaseResponse;
     createdBy: IUserResponse;
 }

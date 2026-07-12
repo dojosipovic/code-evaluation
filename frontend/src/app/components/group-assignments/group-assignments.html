@@ -123,6 +123,16 @@
                 </button>
               }
 
+              @if (assignment.requiresEvaluation === true) {
+                <button
+                  pButton
+                  type="button"
+                  severity="warn"
+                  icon="pi pi-star"
+                  label="Ocjeni">
+                </button>
+              }
+
               <span
                 class="assignment-time-chip"
                 [ngClass]="getStartTimeClass(assignment)"

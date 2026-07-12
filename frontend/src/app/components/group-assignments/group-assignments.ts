@@ -28,10 +28,10 @@ import { SortDirection } from '../../config/app-types';
 import { GroupService } from '../../services/group.service';
 import { IAssignmentListItem } from '../../models/assignment/IAssignmentListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
-import { ITaskResponse } from '../../models/task/ITaskResponse';
 import { AssignmentCreateDialog } from '../assignment-create-dialog/assignment-create-dialog';
 import { TaskCreateDialog } from '../task-create-dialog/task-create-dialog';
 import { TaskViewDialog } from '../task-view-dialog/task-view-dialog';
+import { ITaskBaseResponse } from '../../models/task/ITaskBaseResponse';
 
 @Component({
   selector: 'app-group-assignments',
@@ -191,7 +191,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     this.loadAssignments();
   }
 
-  openTask(task: ITaskResponse, event?: Event): void {
+  openTask(task: ITaskBaseResponse, event?: Event): void {
     event?.stopPropagation();
     this.viewerTaskId = task.id;
   }

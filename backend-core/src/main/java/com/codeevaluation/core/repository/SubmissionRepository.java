@@ -65,6 +65,31 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 ));
     }
 
+    public Map<Long, Boolean> findRequiresEvaluationByAssignmentIds(List<Long> assignmentIds) {
+        if (assignmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> assignmentIdsRequiringEvaluation = getEntityManager()
+                .createQuery(
+                        """
+                        select distinct s.assignment.id
+                        from Submission s
+                        where s.assignment.id in :assignmentIds
+                        and s.finalScore is null
+                        """,
+                        Long.class
+                )
+                .setParameter("assignmentIds", assignmentIds)
+                .getResultList();
+
+        return assignmentIdsRequiringEvaluation.stream()
+                .collect(Collectors.toMap(
+                        assignmentId -> assignmentId,
+                        assignmentId -> true
+                ));
+    }
+
     public Optional<Submission> findByUserIdAndAssignmentIdWithRelations(
             Long userId, Long assignmentId
     ) {

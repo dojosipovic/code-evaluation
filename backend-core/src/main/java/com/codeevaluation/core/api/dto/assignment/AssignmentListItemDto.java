@@ -1,6 +1,6 @@
 package com.codeevaluation.core.api.dto.assignment;
 
-import com.codeevaluation.core.api.dto.task.TaskResponseDto;
+import com.codeevaluation.core.api.dto.task.TaskBaseResponseDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.model.Assignment;
 import java.time.Instant;
@@ -16,14 +16,16 @@ public record AssignmentListItemDto(
         Instant startsAt,
         Instant endsAt,
         Integer points,
-        TaskResponseDto task,
+        Boolean requiresEvaluation,
+        TaskBaseResponseDto task,
         UserDto createdBy
 ) {
 
     public static AssignmentListItemDto from(
             Assignment assignment,
             boolean showTask,
-            Long submissionId
+            Long submissionId,
+            Boolean requiresEvaluation
     ) {
         return AssignmentListItemDto.builder()
                 .id(assignment.getId())
@@ -32,7 +34,8 @@ public record AssignmentListItemDto(
                 .startsAt(assignment.getStartsAt())
                 .endsAt(assignment.getEndsAt())
                 .points(assignment.getPoints())
-                .task(showTask ? TaskResponseDto.from(assignment.getTask()) : null)
+                .requiresEvaluation(requiresEvaluation)
+                .task(showTask ? TaskBaseResponseDto.from(assignment.getTask()) : null)
                 .createdBy(UserDto.from(assignment.getCreatedBy()))
                 .build();
     }
@@ -40,10 +43,16 @@ public record AssignmentListItemDto(
     public static List<AssignmentListItemDto> from(
             List<Assignment> assignments,
             boolean showTask,
-            Map<Long, Long> submissionIdsByAssignmentId
+            Map<Long, Long> submissionIdsByAssignmentId,
+            Map<Long, Boolean> requiresEvaluationByAssignmentId
     ) {
         return assignments.stream()
-                .map(a -> from(a, showTask, submissionIdsByAssignmentId.get(a.getId())))
+                .map(a -> from(
+                        a,
+                        showTask,
+                        submissionIdsByAssignmentId.get(a.getId()),
+                        requiresEvaluationByAssignmentId.getOrDefault(a.getId(), false)
+                ))
                 .toList();
     }
 }

@@ -133,11 +133,14 @@ public class AssignmentService {
                         currentUser.getId(),
                         assignmentIds
                 );
+        Map<Long, Boolean> requiresEvaluationByAssignmentId =
+                submissionRepository.findRequiresEvaluationByAssignmentIds(assignmentIds);
 
         List<AssignmentListItemDto> items = AssignmentListItemDto.from(
                         assignments,
                         showTasks,
-                        submissionIdsByAssignmentId
+                        submissionIdsByAssignmentId,
+                        requiresEvaluationByAssignmentId
                 );
 
         long totalItems = query.count();

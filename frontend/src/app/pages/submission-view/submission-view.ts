@@ -1,5 +1,19 @@
 import { CommonModule, Location } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ElementRef,
+  Input,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+  inject,
+  signal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -50,7 +64,7 @@ interface AnimatedSummaryMetrics {
   templateUrl: './submission-view.html',
   styleUrl: './submission-view.scss'
 })
-export class SubmissionView implements OnInit, OnDestroy {
+export class SubmissionView implements OnInit, OnChanges, OnDestroy {
   private readonly splitterGutterPx = 8;
   private readonly minCodeSectionPx = 360;
   private readonly minSideSectionPx = 320;
@@ -75,11 +89,14 @@ export class SubmissionView implements OnInit, OnDestroy {
   private editorResizeObserver: ResizeObserver | null = null;
   private monacoEditor: MonacoLayoutEditor | null = null;
   private resizing = false;
+  private initialized = false;
   private readonly onPointerMove = (event: MouseEvent) => this.handlePointerMove(event);
   private readonly onPointerUp = () => this.stopResize();
 
   @ViewChild('contentGrid') contentGridRef?: ElementRef<HTMLElement>;
   @ViewChild('editorShell') editorShellRef?: ElementRef<HTMLElement>;
+  @Input() submissionId: number | null = null;
+  @Input() embedded = false;
 
   readonly loading = signal(true);
   readonly animatedSimilarities = signal<Record<number, number>>({});
@@ -111,7 +128,29 @@ export class SubmissionView implements OnInit, OnDestroy {
     }
   };
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized || !changes['submissionId']) {
+      return;
+    }
+
+    if (this.submissionId !== null && Number.isFinite(this.submissionId)) {
+      this.loadSubmission(this.submissionId);
+    }
+  }
+
   ngOnInit(): void {
+    this.initialized = true;
+
+    if (this.submissionId !== null && Number.isFinite(this.submissionId)) {
+      this.loadSubmission(this.submissionId);
+      return;
+    }
+
+    if (this.embedded) {
+      this.loading.set(false);
+      return;
+    }
+
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -427,12 +466,19 @@ export class SubmissionView implements OnInit, OnDestroy {
             summary: 'Greska',
             detail: 'Nije moguce dohvatiti submission'
           });
-          this.router.navigate(['/dashboard']);
+
+          if (!this.embedded) {
+            this.router.navigate(['/dashboard']);
+          }
         }
       });
   }
 
   private updateBreadcrumb(): void {
+    if (this.embedded) {
+      return;
+    }
+
     const submissionLabel = this.submission ? `Submission #${this.submission.id}` : 'Submission';
 
     if (!this.sourceGroupId) {

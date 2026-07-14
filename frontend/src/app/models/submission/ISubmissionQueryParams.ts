@@ -8,9 +8,9 @@ export interface ISubmissionQueryParams {
     sortBy?: string;
     sortDir?: SortDirection;
     
-    assignmentId: number;
-    userId: number;
-    status: SubmissionStatusEnum;
-    submittedAfter: string;
-    submittedBefore: string;
+    assignmentId?: number | null;
+    userId?: number | null;
+    status?: SubmissionStatusEnum | null;
+    submittedAfter?: string | null;
+    submittedBefore?: string | null;
 }

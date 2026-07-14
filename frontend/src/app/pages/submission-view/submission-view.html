@@ -7,15 +7,17 @@
   <main class="submission-page">
     <header class="submission-header">
       <div class="title-block">
-        <button
-          pButton
-          type="button"
-          severity="secondary"
-          icon="pi pi-arrow-left"
-          class="icon-button"
-          aria-label="Nazad"
-          (click)="goBack()">
-        </button>
+        @if (!embedded) {
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            icon="pi pi-arrow-left"
+            class="icon-button"
+            aria-label="Nazad"
+            (click)="goBack()">
+          </button>
+        }
 
         <div class="title-copy">
           <div class="eyebrow">Submission #{{ submission.id }}</div>

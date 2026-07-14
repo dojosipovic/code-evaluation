@@ -145,27 +145,40 @@
                   </div>
 
                   <div class="submission-flags">
-                    @if (getSubmissionClusterCount(row.submission) > 0) {
-                      <p-tag
-                        severity="warn"
-                        icon="pi pi-sitemap"
-                        [value]="getSubmissionClusterCount(row.submission).toString()">
-                      </p-tag>
-                    }
-                    @if (getSubmissionSimilarityCount(row.submission) > 0) {
-                      <p-tag
-                        severity="info"
-                        icon="pi pi-link"
-                        [value]="getSubmissionSimilarityCount(row.submission).toString()">
-                      </p-tag>
+                    @if (hasPlagiarismWarning(row.submission)) {
+                      <span
+                        class="plagiarism-warning"
+                        tabindex="0"
+                        (mouseenter)="plagiarismInfo.show($event)"
+                        (mouseleave)="plagiarismInfo.hide()"
+                        (focus)="plagiarismInfo.show($event)"
+                        (blur)="plagiarismInfo.hide()">
+                        <i class="pi pi-exclamation-circle"></i>
+                      </span>
+
+                      <p-popover #plagiarismInfo>
+                        <div class="plagiarism-popover">
+                          <strong>Upozorenje na plagijat</strong>
+                          <span>
+                            Predaja se pojavljuje u broju klastera: {{ getSubmissionClusterCount(row.submission) }}
+                          </span>
+                          <span>
+                            Zabiljezenih slicnosti: {{ getSubmissionSimilarityCount(row.submission) }}
+                          </span>
+                        </div>
+                      </p-popover>
                     }
                   </div>
                 </div>
               </div>
 
               <div class="grade-tests">
-                <span>{{ getSubmissionTestsLabel(row.submission) }}</span>
+                <span class="tests-label">
+                  <i class="pi pi-list-check"></i>
+                  {{ getSubmissionTestsLabel(row.submission) }}
+                </span>
                 <p-progressbar
+                  styleClass="grade-tests-progress"
                   [value]="getSubmissionTestPercent(row.submission)"
                   [showValue]="false">
                 </p-progressbar>
@@ -186,6 +199,11 @@
                     [disabled]="row.confirmed"
                     (ngModelChange)="onGradeChanged(row)">
                   </p-inputNumber>
+                  @if (row.confirmed) {
+                    <span class="confirmed-input-addon">
+                      <i class="pi pi-check"></i>
+                    </span>
+                  }
                   <span class="max-points-label">/ {{ assignment.points }}</span>
                 </div>
               </div>
@@ -193,7 +211,6 @@
               <div class="grade-actions">
                 @if (row.confirmed) {
                   <div class="confirmed-actions">
-                    <i class="pi pi-check confirmed-grade-icon"></i>
                     <button
                       pButton
                       type="button"
@@ -210,7 +227,8 @@
                     type="button"
                     severity="success"
                     icon="pi pi-check"
-                    label="Potvrdi"
+                    class="compact-action-button"
+                    aria-label="Potvrdi ocjenu"
                     (click)="confirmGrade(row)">
                   </button>
                 }

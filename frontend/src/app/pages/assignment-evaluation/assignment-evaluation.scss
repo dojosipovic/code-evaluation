@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-width: 0;
 }
 
 .evaluation-loading {
@@ -39,6 +40,10 @@
 
   h1 {
     margin: 0;
+    max-width: min(56vw, 48rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 1.55rem;
   }
 
@@ -92,7 +97,7 @@
   min-height: 3.3rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
+  align-items: end;
   gap: 3px 7px;
   padding: 6px 8px;
   cursor: pointer;
@@ -154,7 +159,7 @@
 
 .grade-row {
   display: grid;
-  grid-template-columns: auto minmax(220px, 1.25fr) minmax(150px, 0.9fr) minmax(126px, 150px) minmax(122px, max-content);
+  grid-template-columns: auto minmax(220px, 1.25fr) minmax(150px, 0.9fr) minmax(126px, 150px) minmax(44px, max-content);
   align-items: center;
   gap: 14px;
   padding: 12px;
@@ -176,14 +181,31 @@
 
 .grade-input-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 6px;
+  gap: 0;
 }
 
 .confirmed-grade-icon {
   color: var(--p-green-500);
   font-size: 1rem;
+}
+
+.confirmed-input-addon {
+  height: 2.55rem;
+  min-width: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--p-inputtext-border-color);
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  background: var(--p-inputtext-disabled-background);
+  color: var(--p-green-500);
+
+  .pi {
+    color: var(--p-green-500);
+  }
 }
 
 .grade-input {
@@ -204,6 +226,7 @@
   color: var(--p-text-muted-color);
   font-size: 0.85rem;
   font-weight: 700;
+  margin-left: 6px;
 }
 
 .grade-student strong,
@@ -218,6 +241,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 
   strong {
@@ -237,6 +261,20 @@
   gap: 6px;
 }
 
+.plagiarism-warning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--p-red-500);
+  cursor: help;
+  font-size: 1.25rem;
+
+  .pi {
+    color: var(--p-red-500);
+    font-size: 1.25rem;
+  }
+}
+
 .grade-tests {
   display: grid;
   grid-template-columns: auto minmax(90px, 1fr);
@@ -246,17 +284,23 @@
   font-weight: 800;
 }
 
+.tests-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .grade-actions {
   justify-content: flex-end;
+  align-self: end;
   min-width: 0;
 }
 
 .confirmed-actions {
-  width: 6.8rem;
+  width: 2.55rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-end;
 }
 
 .empty-state {
@@ -290,19 +334,33 @@
     height: 0.55rem;
   }
 
+  .grade-tests-progress .p-progressbar-value {
+    animation: growProgress 520ms ease-out both;
+    animation-delay: 650ms;
+    transform-origin: left center;
+  }
+
   .grade-input .p-inputnumber,
   .grade-input .p-inputnumber-input {
     width: 100%;
     min-width: 0;
   }
 
-  .grade-actions .p-button {
-    min-width: 6.8rem;
+  .grade-input-control:has(.confirmed-input-addon) .p-inputnumber-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .grade-input .p-inputnumber-input {
+    height: 2.55rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
   }
 
   .grade-actions .compact-action-button {
-    width: 2.75rem;
-    min-width: 2.75rem;
+    width: 2.55rem;
+    min-width: 2.55rem;
+    height: 2.55rem;
   }
 
   .submission-eye-button {
@@ -317,6 +375,11 @@
     display: block;
     height: min(78vh, 780px);
     padding: 1rem;
+  }
+
+  .embedded-submission-view .submission-page,
+  .embedded-submission-view .submission-loading {
+    min-height: 100%;
   }
 
   .p-popover-content {
@@ -363,19 +426,76 @@
   }
 }
 
-  @media (max-width: 768px) {
+.plagiarism-popover {
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+
+  strong {
+    color: var(--p-red-500);
+  }
+
+  span {
+    color: var(--p-text-muted-color);
+    line-height: 1.35;
+  }
+}
+
+@keyframes growProgress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .evaluation-page {
+    gap: 14px;
+  }
+
   .evaluation-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
+  .title-block {
+    width: 100%;
+
+    h1 {
+      max-width: calc(100vw - 6rem);
+      font-size: 1.25rem;
+    }
+  }
+
   .header-actions {
+    width: 100%;
     justify-content: flex-start;
+
+    .p-button {
+      flex: 1 1 8rem;
+    }
+  }
+
+  .section-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .grade-row {
     grid-template-columns: auto 1fr;
-    align-items: stretch;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .grade-student {
+    min-width: 0;
   }
 
   .grade-tests,
@@ -384,8 +504,59 @@
     grid-column: 1 / -1;
   }
 
+  .grade-tests {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .grade-input {
+    max-width: 17rem;
+  }
+
+  .grade-actions {
+    justify-content: flex-start;
+  }
+
   .cluster-item {
     width: min(8.4rem, calc(50vw - 22px));
   }
 
+  :host ::ng-deep {
+    .embedded-submission-view {
+      height: calc(100dvh - 8rem);
+      padding: .5rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .cluster-list {
+    gap: 6px;
+  }
+
+  .cluster-item {
+    width: 100%;
+  }
+
+  .student-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .submission-flags {
+    min-height: 1.35rem;
+  }
+
+  .grade-input {
+    max-width: none;
+  }
+
+  .grade-input-control {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .cluster-popover,
+  .plagiarism-popover {
+    max-width: calc(100vw - 28px);
+  }
 }

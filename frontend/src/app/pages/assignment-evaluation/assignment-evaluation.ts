@@ -170,6 +170,11 @@ export class AssignmentEvaluation implements OnInit {
     return submission.similarityCount ?? 0;
   }
 
+  hasPlagiarismWarning(submission: ISubmissionListItem): boolean {
+    return this.getSubmissionClusterCount(submission) > 0
+      || this.getSubmissionSimilarityCount(submission) > 0;
+  }
+
   isSubmissionInSelectedCluster(submission: ISubmissionListItem): boolean {
     const selectedCluster = this.getSelectedCluster();
 

@@ -1,5 +1,6 @@
 package com.codeevaluation.core.service;
 
+import com.codeevaluation.core.api.dto.assignment.AssignmentEvaluateRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentRunResponseDto;
 import com.codeevaluation.core.api.dto.PagedResponse;
@@ -8,6 +9,7 @@ import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitRequestDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentSubmitResponseDto;
+import com.codeevaluation.core.api.dto.submission.SubmissionGradeRequestDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.dto.run.TestCase;
 import com.codeevaluation.core.event.AssignmentCreateEvent;
@@ -20,6 +22,7 @@ import com.codeevaluation.core.helper.PagedSearchAssignmentImpl;
 import com.codeevaluation.core.helper.TaskAccessPolicy;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Group;
+import com.codeevaluation.core.model.Submission;
 import com.codeevaluation.core.model.Task;
 import com.codeevaluation.core.model.TaskTest;
 import com.codeevaluation.core.model.User;
@@ -38,10 +41,12 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -217,5 +222,39 @@ public class AssignmentService {
         return AssignmentSubmitResponseDto.from(
                 submissionRepository.createOrUpdate(req, assignment, currentUser, codeBase64)
         );
+    }
+
+    @Transactional
+    public List<SubmissionResponseDto> evaluateAssignment(
+            Long assignmentId,
+            AssignmentEvaluateRequestDto req
+    ) {
+        if (req == null || req.submissions() == null) {
+            throw new BadRequestException("Missing submissions");
+        }
+
+        Assignment assignment = assignmentRepository.findByIdWithTaskAndTests(assignmentId)
+                .orElseThrow(() -> new NotFoundException("Assignment not found"));
+        User currentUser = currentUserProvider.getCurrentUser();
+
+        if (!AssignmentAccessPolicy.canEvaluateAssignment(assignment, currentUser)) {
+            throw new ForbiddenException("You cannot evaluate this assignment");
+        }
+
+        List<Submission> submissions =
+                submissionRepository.findByAssignmentIdWithRelations(assignmentId);
+        assignmentValidator.validateEvaluationRequest(req, submissions, assignment.getPoints());
+
+        Map<Long, BigDecimal> finalGradesBySubmissionId = req.submissions().stream()
+                .collect(Collectors.toMap(
+                        SubmissionGradeRequestDto::submissionId,
+                        SubmissionGradeRequestDto::finalGrade
+                ));
+
+        submissions.forEach(submission -> submission.setFinalScore(
+                finalGradesBySubmissionId.get(submission.getId())
+        ));
+
+        return SubmissionResponseDto.from(submissions);
     }
 }

@@ -5,6 +5,7 @@ import com.codeevaluation.core.enumeration.SubmissionStatus;
 import com.codeevaluation.core.model.Submission;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import lombok.Builder;
 
 @Builder
@@ -30,5 +31,9 @@ public record SubmissionResponseDto(
                 .finalScore(submission.getFinalScore())
                 .submittedAt(submission.getSubmittedAt())
                 .build();
+    }
+
+    public static List<SubmissionResponseDto> from(List<Submission> submissions) {
+        return submissions.stream().map(SubmissionResponseDto::from).toList();
     }
 }

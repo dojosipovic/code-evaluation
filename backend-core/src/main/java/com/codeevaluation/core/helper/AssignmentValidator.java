@@ -1,12 +1,25 @@
 package com.codeevaluation.core.helper;
 
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentEvaluateRequestDto;
+import com.codeevaluation.core.api.dto.submission.SubmissionGradeRequestDto;
 import com.codeevaluation.core.model.Assignment;
+import com.codeevaluation.core.model.Submission;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 public class AssignmentValidator {
@@ -83,5 +96,63 @@ public class AssignmentValidator {
         if (points <= 0) {
             throw new BadRequestException("Points must be positive");
         }
+    }
+
+    public void validateEvaluationRequest(
+            AssignmentEvaluateRequestDto req,
+            List<Submission> submissions,
+            Integer assignmentPoints
+    ) {
+        List<SubmissionGradeRequestDto> requestedSubmissions =
+                req.submissions();
+        if (requestedSubmissions.size() != submissions.size()) {
+            throw new BadRequestException("All assignment submissions must be evaluated");
+        }
+
+        Set<Long> requestedSubmissionIds =
+                validateSubmissions(assignmentPoints, requestedSubmissions);
+
+        Map<Long, Submission> submissionsById = submissions.stream()
+                .collect(Collectors.toMap(Submission::getId, Function.identity()));
+        if (!submissionsById.keySet().equals(requestedSubmissionIds)) {
+            throw new BadRequestException("All and only assignment submissions must be evaluated");
+        }
+
+        boolean alreadyEvaluated = submissions.stream()
+                .anyMatch(submission -> submission.getFinalScore() != null);
+        if (alreadyEvaluated) {
+            throw new WebApplicationException(
+                    "Assignment contains already evaluated submissions",
+                    Response.Status.CONFLICT
+            );
+        }
+    }
+
+    private static Set<Long> validateSubmissions(
+            Integer assignmentPoints,
+            List<SubmissionGradeRequestDto> requestedSubmissions
+    ) {
+        Set<Long> requestedSubmissionIds = new HashSet<>();
+        for (SubmissionGradeRequestDto requestedSubmission
+                : requestedSubmissions) {
+            if (requestedSubmission == null || requestedSubmission.submissionId() == null) {
+                throw new BadRequestException("Missing submission id");
+            }
+            if (requestedSubmission.finalGrade() == null) {
+                throw new BadRequestException("Missing final grade");
+            }
+            if (requestedSubmission.finalGrade().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BadRequestException("Final grade cannot be negative");
+            }
+            if (requestedSubmission.finalGrade()
+                    .compareTo(BigDecimal.valueOf(assignmentPoints)) > 0) {
+                throw new BadRequestException(
+                        "Final grade cannot be greater than assignment points");
+            }
+            if (!requestedSubmissionIds.add(requestedSubmission.submissionId())) {
+                throw new BadRequestException("Duplicate submission id");
+            }
+        }
+        return requestedSubmissionIds;
     }
 }

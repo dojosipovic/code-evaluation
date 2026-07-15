@@ -1,0 +1,103 @@
+<p-dialog
+  header="Pregled submissiona"
+  [modal]="true"
+  [visible]="submissionDialogOpen"
+  [style]="{ width: 'min(1240px, calc(100vw - 32px))' }"
+  [contentStyle]="{ overflow: 'auto', padding: '0' }"
+  (visibleChange)="onSubmissionDialogVisibleChange($event)">
+  @if (viewedSubmissionId !== null) {
+    <app-submission-view
+      class="embedded-submission-view"
+      [submissionId]="viewedSubmissionId"
+      [embedded]="true">
+    </app-submission-view>
+  }
+</p-dialog>
+
+@if (loading()) {
+  <div class="submissions-loading">
+    <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+    <span>Ucitavanje predaja...</span>
+  </div>
+} @else if (assignment) {
+  <main class="submissions-page">
+    <header class="submissions-header">
+      <div class="title-block">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-arrow-left"
+          aria-label="Nazad"
+          (click)="goBack()">
+        </button>
+
+        <div>
+          <span>Assignment #{{ assignment.id }}</span>
+          <h1>{{ assignment.name }}</h1>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <p-tag icon="pi pi-inbox" [value]="'Predaje: ' + submissions.length"></p-tag>
+        <p-tag icon="pi pi-star" [value]="'Maks. bodova: ' + assignment.points"></p-tag>
+      </div>
+    </header>
+
+    <section class="submissions-section">
+      <div class="section-title">
+        <span>Submissions</span>
+        <small>{{ submissions.length }}</small>
+      </div>
+
+      @if (submissions.length) {
+        <div class="submission-list">
+          @for (submission of submissions; track trackBySubmission($index, submission)) {
+            <article class="submission-row">
+              <button
+                pButton
+                type="button"
+                severity="secondary"
+                icon="pi pi-eye"
+                class="submission-eye-button"
+                [attr.aria-label]="'Pregledaj submission ' + submission.id"
+                (click)="openSubmissionDialog(submission.id, $event)">
+              </button>
+
+              <div class="submission-student">
+                <strong>{{ getUserDisplayName(submission.user) }}</strong>
+                <span>Submission #{{ submission.id }}</span>
+              </div>
+
+              <div class="submission-tests">
+                <span class="tests-label">
+                  <i class="pi pi-list-check"></i>
+                  {{ getSubmissionTestsLabel(submission) }}
+                </span>
+                <p-progressbar
+                  styleClass="submission-tests-progress"
+                  [value]="getSubmissionTestPercent(submission)"
+                  [showValue]="false">
+                </p-progressbar>
+              </div>
+
+              <div class="submission-score">
+                <span>Bodovi</span>
+                <strong>{{ getSubmissionScore(submission) }} / {{ assignment.points }}</strong>
+              </div>
+
+              <div class="submission-date">
+                <span>Predano</span>
+                <strong>{{ submission.submittedAt | date:'dd.MM.yyyy HH:mm' }}</strong>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          Nema predaja za ovaj assignment.
+        </div>
+      }
+    </section>
+  </main>
+}

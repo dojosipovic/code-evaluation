@@ -21,6 +21,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { IAssignmentEvaluateRequest } from '../../models/assignment/IAssignmentEvaluateRequest';
 import { IAssignmentResponse } from '../../models/assignment/IAssignmentResponse';
 import { IPlagScanCluster } from '../../models/plagscan/IPlagScanCluster';
 import { ISubmissionListItem } from '../../models/submission/ISubmissionListItem';
@@ -70,6 +71,7 @@ export class AssignmentEvaluation implements OnInit {
   private readonly pageSize = 100;
 
   readonly loading = signal(true);
+  readonly evaluating = signal(false);
   readonly skeletonRows = Array.from({ length: 4 });
 
   assignment: IAssignmentResponse | null = null;
@@ -111,7 +113,42 @@ export class AssignmentEvaluation implements OnInit {
   }
 
   onEvaluate(): void {
-    return;
+    if (!this.assignment || !this.canEvaluateGrades || this.evaluating()) {
+      return;
+    }
+
+    const payload: IAssignmentEvaluateRequest = {
+      submissions: this.gradingRows.map(row => ({
+        submissionId: row.submission.id,
+        finalGrade: row.grade
+      }))
+    };
+    const assignmentId = this.assignment.id;
+
+    this.evaluating.set(true);
+
+    this.assignmentService.evaluateAssignment(assignmentId, payload)
+      .pipe(
+        finalize(() => this.evaluating.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Uspjeh',
+            detail: 'Assignment je uspjesno vrednovan'
+          });
+          this.router.navigate(['/assignments', assignmentId, 'submissions']);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Greska',
+            detail: 'Nije moguce vrednovati assignment'
+          });
+        }
+      });
   }
 
   openSubmissionDialog(submissionId: number, event?: Event): void {

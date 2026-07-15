@@ -132,6 +132,15 @@
                   label="Ocjeni"
                   [routerLink]="['/assignments', assignment.id, 'evaluate']">
                 </button>
+              } @else if (assignment.requiresEvaluation === false) {
+                <button
+                  pButton
+                  type="button"
+                  severity="secondary"
+                  icon="pi pi-eye"
+                  label="Predaje"
+                  [routerLink]="['/assignments', assignment.id, 'submissions']">
+                </button>
               }
 
               <span

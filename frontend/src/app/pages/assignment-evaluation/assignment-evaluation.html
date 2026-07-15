@@ -46,7 +46,8 @@
           severity="success"
           icon="pi pi-check-circle"
           label="Vrednuj"
-          [disabled]="!canEvaluateGrades"
+          [disabled]="evaluating() || !canEvaluateGrades"
+          [loading]="evaluating()"
           (click)="onEvaluate()">
         </button>
       </div>

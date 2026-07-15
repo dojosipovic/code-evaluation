@@ -2,6 +2,7 @@ package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.auth.LoginRequestDto;
 import com.codeevaluation.core.api.dto.auth.LoginResponseDto;
+import com.codeevaluation.core.api.dto.auth.PlagScanTokenResponseDto;
 import com.codeevaluation.core.api.dto.auth.RefreshResponseDto;
 import com.codeevaluation.core.api.dto.auth.RegisterRequestDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
@@ -17,6 +18,7 @@ import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -88,6 +90,15 @@ public class AuthResource {
         return Response.noContent()
                 .cookie(CookieUtil.deleteRefreshCookie())
                 .build();
+    }
+
+    @POST
+    @Path("/plagscan-token/{assignmentId}")
+    @RolesAllowed({"ADMIN", "PROF"})
+    public PlagScanTokenResponseDto issuePlagScanToken(
+            @PathParam("assignmentId") Long assignmentId
+    ) {
+        return new PlagScanTokenResponseDto(authService.issuePlagScanToken(assignmentId));
     }
 
     @GET

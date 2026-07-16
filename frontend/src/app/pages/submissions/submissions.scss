@@ -1,0 +1,263 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.page-wrapper {
+  height: 100%;
+}
+
+.filters-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.toolbar-actions,
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.section-title {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  span {
+    font-weight: 800;
+  }
+
+  small {
+    color: var(--p-text-muted-color);
+    font-size: 0.78rem;
+  }
+}
+
+.submission-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.submission-row {
+  display: grid;
+  grid-template-columns: auto minmax(190px, 1.1fr) minmax(150px, 0.9fr) minmax(80px, auto) minmax(132px, auto) minmax(92px, auto) minmax(116px, auto);
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+}
+
+.submission-student,
+.submission-score,
+.submission-date,
+.submission-assignment {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.submission-student strong,
+.submission-student span,
+.submission-score strong,
+.submission-date strong,
+.submission-assignment a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submission-student span,
+.submission-score span,
+.submission-date span,
+.submission-assignment span {
+  color: var(--p-text-muted-color);
+  font-size: 0.78rem;
+}
+
+.submission-assignment a {
+  color: var(--p-primary-color);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.submission-tests {
+  display: grid;
+  grid-template-columns: auto minmax(90px, 1fr);
+  align-items: center;
+  gap: 6px;
+  color: var(--p-text-muted-color);
+  font-weight: 800;
+}
+
+.tests-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.empty-state {
+  padding: 28px 8px;
+  color: var(--p-text-muted-color);
+  text-align: center;
+}
+
+:host ::ng-deep {
+  .main-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-card > .p-card-body,
+  .main-card > .p-card-body > .p-card-content {
+    min-height: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-button,
+  .p-tag,
+  .p-inputtext,
+  .p-inputnumber,
+  .p-datepicker,
+  .p-select,
+  .p-paginator-rpp-dropdown {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .p-inputnumber,
+  .p-inputnumber-input,
+  .p-datepicker {
+    width: 100%;
+  }
+
+  .filter-field .p-select {
+    width: 100%;
+  }
+
+  .submission-eye-button {
+    width: 2.2rem;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    align-self: center;
+  }
+
+  .submission-tests .p-progressbar {
+    height: 0.55rem;
+  }
+
+  .submission-status .p-tag-label {
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .submissions-filter-drawer {
+    width: min(100vw, 380px);
+  }
+
+  .submissions-filter-drawer .p-drawer-content {
+    padding-top: 0;
+  }
+
+  .embedded-submission-view {
+    display: block;
+    height: min(78vh, 780px);
+    padding: 1rem;
+  }
+
+  .embedded-submission-view .submission-page,
+  .embedded-submission-view .submission-loading {
+    min-height: 100%;
+  }
+
+  .p-paginator {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .submission-row {
+    grid-template-columns: auto 1fr minmax(116px, auto);
+  }
+
+  .submission-tests,
+  .submission-score,
+  .submission-date,
+  .submission-assignment {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-actions,
+  .filter-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submission-row {
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .submission-status {
+    grid-column: 1 / -1;
+    width: fit-content;
+  }
+
+  .submission-tests {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

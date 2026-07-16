@@ -15,6 +15,7 @@ import { SubmissionView } from './pages/submission-view/submission-view';
 import { AssignmentEvaluation } from './pages/assignment-evaluation/assignment-evaluation';
 import { AssignmentSubmissions } from './pages/assignment-submissions/assignment-submissions';
 import { Assignments } from './pages/assignments/assignments';
+import { Submissions } from './pages/submissions/submissions';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
@@ -33,6 +34,7 @@ export const routes: Routes = [
             { path: 'assignments', canActivate: [authGuard], component: Assignments, data: { roles: getRolesForPath('/assignments'), breadcrumb: 'Assignmenti' } },
             { path: 'assignments/:id/evaluate', canActivate: [authGuard], component: AssignmentEvaluation, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Ocjenjivanje' } },
             { path: 'assignments/:id/submissions', canActivate: [authGuard], component: AssignmentSubmissions, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Predaje' } },
+            { path: 'submissions', canActivate: [authGuard], component: Submissions, data: { roles: getRolesForPath('/submissions'), breadcrumb: 'Predaje' } },
             { path: 'submissions/:id', canActivate: [authGuard], component: SubmissionView, data: { breadcrumb: 'Submission' } },
             { path: 'groups/:id/:tab', canActivate: [authGuard], component: GroupView, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe', backTo: '/groups' } },
             { path: 'groups', canActivate: [authGuard], component: Groups, data: { roles: getRolesForPath('/groups'), breadcrumb: 'Grupe' } },

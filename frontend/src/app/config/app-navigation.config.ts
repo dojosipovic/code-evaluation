@@ -15,7 +15,6 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Dashboard',
     path: '/dashboard',
     icon: 'pi pi-home',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true,
     exact: true
   },
@@ -23,7 +22,7 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Korisnici',
     path: '/users',
     icon: 'pi pi-users',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    roles: ['ADMIN'],
     showInNavbar: true
   },
   {
@@ -41,6 +40,14 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     showInNavbar: true
   },
   {
+    label: 'Predaje',
+    path: '/submissions',
+    icon: 'pi pi-folder',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true,
+    exact: true
+  },
+  {
     label: 'Grupe',
     path: '/groups',
     icon: 'pi pi-sitemap',
@@ -51,14 +58,12 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Profil',
     path: '/profile',
     icon: 'pi pi-user',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true
   },
   {
     label: 'Postavke',
     path: '/settings',
     icon: 'pi pi-cog',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true
   },
 ];

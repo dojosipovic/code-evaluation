@@ -263,6 +263,12 @@
           </div>
         </ng-template>
 
+        @if (isAssignmentActive(assignment)) {
+          <svg class="assignment-active-orbit" aria-hidden="true">
+            <rect class="assignment-orbit-stroke" pathLength="1000"></rect>
+          </svg>
+        }
+
         <div class="assignment-body">
           <div class="assignment-meta">
             <span>

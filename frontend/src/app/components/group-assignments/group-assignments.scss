@@ -294,10 +294,33 @@ button.submission-link-button:hover {
   }
 
   .assignment-panel-active {
-    border: 1px solid transparent;
-    background: linear-gradient(var(--p-content-background), var(--p-content-background)) padding-box,
-      conic-gradient(from var(--a), transparent 0 72%, var(--p-primary-color), transparent) border-box;
-    animation: spin 7s linear infinite;
+    position: relative;
+    border-color: var(--p-content-border-color);
+  }
+
+  .assignment-active-orbit {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .assignment-orbit-stroke {
+    x: 1px;
+    y: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    rx: 8px;
+    ry: 8px;
+    fill: none;
+    stroke: var(--p-primary-color);
+    stroke-width: 0.5px;
+    stroke-linecap: round;
+    stroke-dasharray: 180 820;
+    vector-effect: non-scaling-stroke;
+    animation: assignmentOrbit 10s linear infinite;
   }
 
   .assignment-panel .p-panel-header {
@@ -367,8 +390,11 @@ button.submission-link-button:hover {
   }
 }
 
-@property --a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-@keyframes spin { to { --a: 360deg; } }
+@keyframes assignmentOrbit {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
 
 @media (max-width: 768px) {
   .assignments-toolbar {

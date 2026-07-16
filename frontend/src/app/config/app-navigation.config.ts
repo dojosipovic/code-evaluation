@@ -34,6 +34,13 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     showInNavbar: true
   },
   {
+    label: 'Assignmenti',
+    path: '/assignments',
+    icon: 'pi pi-list-check',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true
+  },
+  {
     label: 'Grupe',
     path: '/groups',
     icon: 'pi pi-sitemap',

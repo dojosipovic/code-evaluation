@@ -11,12 +11,13 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, Subject, throttleTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
@@ -41,6 +42,7 @@ import { ITaskBaseResponse } from '../../models/task/ITaskBaseResponse';
     RouterModule,
     ButtonModule,
     ConfirmDialogModule,
+    DrawerModule,
     InputTextModule,
     PaginatorModule,
     PanelModule,
@@ -60,12 +62,19 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   private assignmentService = inject(AssignmentService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private searchInput$ = new Subject<string>();
   private applyFilters$ = new Subject<void>();
   private lastAppliedSearch = '';
+  private initialized = false;
+  private applyingQueryParams = false;
 
-  @Input({ required: true }) groupId!: number;
+  @Input() groupId: number | null = null;
   @Input() canManage = false;
+  @Input() showStatusFilters = false;
+  @Input() searchPlaceholder = 'Pretrazi zadatke grupe';
+  @Input() emptyStateMessage = 'Nema zadataka grupe.';
 
   readonly loading = signal(false);
   readonly currentTime = signal(Date.now());
@@ -82,10 +91,14 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   editorOpen = false;
   editorCloneMode = false;
   assignmentCreatorOpen = false;
+  filtersDrawerVisible = false;
   private countdownTimerId: ReturnType<typeof setTimeout> | null = null;
 
   assignmentFilters = {
-    search: ''
+    search: '',
+    active: null as boolean | null,
+    submitted: null as boolean | null,
+    ungraded: null as boolean | null
   };
 
   sortOptions = [
@@ -103,6 +116,12 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     { label: 'Silazno', value: 'desc' }
   ];
 
+  booleanFilterOptions = [
+    { label: 'Svi', value: null },
+    { label: 'Da', value: true },
+    { label: 'Ne', value: false }
+  ];
+
   ngOnInit(): void {
     this.searchInput$
       .pipe(
@@ -117,8 +136,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
 
         this.assignmentFilters.search = value;
         this.lastAppliedSearch = value;
-        this.first = 0;
-        this.loadAssignments();
+        this.reloadAssignmentsFromFirstPage();
       });
 
     this.applyFilters$
@@ -128,13 +146,26 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
       )
       .subscribe(() => {
         this.lastAppliedSearch = this.assignmentFilters.search;
-        this.first = 0;
-        this.loadAssignments();
+        this.reloadAssignmentsFromFirstPage();
       });
+
+    this.initialized = true;
+
+    if (this.showStatusFilters) {
+      this.route.queryParamMap
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(params => {
+          this.applyQueryParams(params);
+          this.loadAssignments();
+        });
+      return;
+    }
+
+    this.loadAssignments();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['groupId']) {
+    if (this.initialized && changes['groupId']) {
       this.first = 0;
       this.loadAssignments();
     }
@@ -147,7 +178,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   onPageChange(event: PaginatorState): void {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? 10;
-    this.loadAssignments();
+    this.reloadAssignments();
   }
 
   onSearchInput(value: string): void {
@@ -158,23 +189,35 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
     this.applyFilters$.next();
   }
 
+  onApplyFiltersAndCloseDrawer(): void {
+    this.filtersDrawerVisible = false;
+    this.onApplyFilters();
+  }
+
   onSortChange(): void {
-    this.first = 0;
-    this.loadAssignments();
+    this.reloadAssignmentsFromFirstPage();
+  }
+
+  onFiltersChange(): void {
+    this.reloadAssignmentsFromFirstPage();
   }
 
   resetFilters(): void {
     this.assignmentFilters = {
-      search: ''
+      search: '',
+      active: null,
+      submitted: null,
+      ungraded: null
     };
     this.sortField = 'endsAt';
     this.sortDirection = 'desc';
     this.first = 0;
-    this.applyFilters$.next();
+    this.lastAppliedSearch = '';
+    this.reloadAssignments();
   }
 
   openAssignmentCreator(): void {
-    if (!this.canManage) {
+    if (!this.canManage || !Number.isFinite(this.groupId)) {
       return;
     }
 
@@ -188,7 +231,7 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   onAssignmentCreated(): void {
     this.assignmentCreatorOpen = false;
     this.first = 0;
-    this.loadAssignments();
+    this.reloadAssignments();
   }
 
   openTask(task: ITaskBaseResponse, event?: Event): void {
@@ -371,17 +414,16 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadAssignments(): void {
-    if (!Number.isFinite(this.groupId)) {
-      return;
-    }
-
     this.loading.set(true);
 
     this.assignmentService.getAssignments({
-      groupId: this.groupId,
+      groupId: Number.isFinite(this.groupId) ? this.groupId : null,
       page: Math.floor(this.first / this.rows),
       size: this.rows,
       search: this.assignmentFilters.search?.trim() || null,
+      active: this.showStatusFilters ? this.assignmentFilters.active : null,
+      submitted: this.showStatusFilters ? this.assignmentFilters.submitted : null,
+      ungraded: this.showStatusFilters ? this.assignmentFilters.ungraded : null,
       sortBy: this.sortField,
       sortDir: this.sortDirection
     })
@@ -407,6 +449,113 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
           });
         }
       });
+  }
+
+  private reloadAssignmentsFromFirstPage(): void {
+    this.first = 0;
+    this.reloadAssignments();
+  }
+
+  private reloadAssignments(): void {
+    if (this.showStatusFilters) {
+      this.updateQueryParams();
+      return;
+    }
+
+    this.loadAssignments();
+  }
+
+  private applyQueryParams(params: ParamMap): void {
+    this.applyingQueryParams = true;
+
+    const page = this.parseNonNegativeInteger(params.get('page'), 0);
+    this.rows = this.parsePositiveInteger(params.get('size'), 10);
+    this.first = page * this.rows;
+
+    this.assignmentFilters = {
+      search: params.get('search') ?? '',
+      active: this.parseBooleanParam(params.get('active')),
+      submitted: this.parseBooleanParam(params.get('submitted')),
+      ungraded: this.parseBooleanParam(params.get('ungraded'))
+    };
+    this.lastAppliedSearch = this.assignmentFilters.search;
+    this.sortField = this.parseSortField(params.get('sortBy'));
+    this.sortDirection = this.parseSortDirection(params.get('sortDir'));
+
+    this.applyingQueryParams = false;
+  }
+
+  private updateQueryParams(): void {
+    if (this.applyingQueryParams) {
+      return;
+    }
+
+    const queryParams = {
+      page: this.first > 0 ? Math.floor(this.first / this.rows) : null,
+      size: this.rows !== 10 ? this.rows : null,
+      search: this.assignmentFilters.search?.trim() || null,
+      active: this.assignmentFilters.active,
+      submitted: this.assignmentFilters.submitted,
+      ungraded: this.assignmentFilters.ungraded,
+      sortBy: this.sortField !== 'endsAt' ? this.sortField : null,
+      sortDir: this.sortDirection !== 'desc' ? this.sortDirection : null
+    };
+
+    if (this.queryParamsMatchSnapshot(queryParams)) {
+      this.loadAssignments();
+      return;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: false
+    });
+  }
+
+  private queryParamsMatchSnapshot(queryParams: Record<string, string | number | boolean | null>): boolean {
+    return Object.entries(queryParams).every(([key, value]) => {
+      const currentValue = this.route.snapshot.queryParamMap.get(key);
+
+      if (value === null || value === undefined || value === '') {
+        return currentValue === null;
+      }
+
+      return currentValue === String(value);
+    });
+  }
+
+  private parseBooleanParam(value: string | null): boolean | null {
+    if (value === 'true') {
+      return true;
+    }
+
+    if (value === 'false') {
+      return false;
+    }
+
+    return null;
+  }
+
+  private parseSortField(value: string | null): string {
+    return this.sortOptions.some(option => option.value === value) ? value as string : 'endsAt';
+  }
+
+  private parseSortDirection(value: string | null): SortDirection {
+    return value === 'asc' || value === 'desc' ? value : 'desc';
+  }
+
+  private parsePositiveInteger(value: string | null, fallback: number): number {
+    const parsed = Number(value);
+
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  private parseNonNegativeInteger(value: string | null, fallback: number): number {
+    const parsed = Number(value);
+
+    return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
   }
 
   private scheduleCountdownRefresh(): void {

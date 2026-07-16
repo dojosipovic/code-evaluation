@@ -25,7 +25,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { SortDirection } from '../../config/app-types';
-import { GroupService } from '../../services/group.service';
+import { AssignmentService } from '../../services/assignment.service';
 import { IAssignmentListItem } from '../../models/assignment/IAssignmentListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { AssignmentCreateDialog } from '../assignment-create-dialog/assignment-create-dialog';
@@ -57,7 +57,7 @@ import { ITaskBaseResponse } from '../../models/task/ITaskBaseResponse';
   styleUrl: './group-assignments.scss',
 })
 export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
-  private groupService = inject(GroupService);
+  private assignmentService = inject(AssignmentService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
   private searchInput$ = new Subject<string>();
@@ -377,12 +377,13 @@ export class GroupAssignments implements OnInit, OnChanges, OnDestroy {
 
     this.loading.set(true);
 
-    this.groupService.getAssignments(this.groupId, {
+    this.assignmentService.getAssignments({
+      groupId: this.groupId,
       page: Math.floor(this.first / this.rows),
       size: this.rows,
       search: this.assignmentFilters.search?.trim() || null,
       sortBy: this.sortField,
-      sortDirection: this.sortDirection
+      sortDir: this.sortDirection
     })
       .pipe(
         finalize(() => this.loading.set(false)),

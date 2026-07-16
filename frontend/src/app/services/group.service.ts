@@ -12,9 +12,6 @@ import { IPagedQueryParams } from "../models/IPagedQueryParams";
 import { IUserResponse } from "../models/user/IUserResponse";
 import { IGroupMember } from "../models/group/IGroupMember";
 import { ConfigService } from "./config.service";
-import { IAssignmentCreate } from "../models/assignment/IAssignmentCreate";
-import { IAssignmentResponse } from "../models/assignment/IAssignmentResponse";
-import { IAssignmentListItem } from "../models/assignment/IAssignmentListItem";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -84,20 +81,4 @@ export class GroupService {
         return this.http.post<void>(`${this.baseUrl}/${groupId}/members/${userId}`, {});
     }
 
-    createAssignment(groupId: number, payload: IAssignmentCreate): Observable<IAssignmentResponse> {
-        return this.http.post<IAssignmentResponse>(`${this.baseUrl}/${groupId}/assignments`, payload);
-    }
-
-    getAssignments(groupId: number, params: IPagedQueryParams): Observable<IPagedResponse<IAssignmentListItem>> {
-        const defaultSortDirection: SortDirection = 'desc';
-        let httpParams = new HttpParams()
-            .set(PagedQueryParamEnum.PAGE, params.page)
-            .set(PagedQueryParamEnum.SIZE, params.size)
-            .set(PagedQueryParamEnum.SORT_DIRECTION, params.sortDirection ?? defaultSortDirection);
-
-        if (params.search) httpParams = httpParams.set(PagedQueryParamEnum.SEARCH, params.search);
-        if (params.sortBy) httpParams = httpParams.set(PagedQueryParamEnum.SORT_BY, params.sortBy);
-
-        return this.http.get<IPagedResponse<IAssignmentListItem>>(`${this.baseUrl}/${groupId}/assignments`, { params: httpParams });
-    }
 }

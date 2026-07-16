@@ -30,7 +30,7 @@ import { MessageService } from 'primeng/api';
 import { RippleModule } from 'primeng/ripple';
 import { TagModule } from 'primeng/tag';
 
-import { GroupService } from '../../services/group.service';
+import { AssignmentService } from '../../services/assignment.service';
 import { ITaskListItem } from '../../models/task/ITaskListItem';
 import { AssignmentTaskSelectDialog } from '../assignment-task-select-dialog/assignment-task-select-dialog';
 
@@ -54,7 +54,7 @@ import { AssignmentTaskSelectDialog } from '../assignment-task-select-dialog/ass
 })
 export class AssignmentCreateDialog implements OnDestroy {
   private fb = inject(FormBuilder);
-  private groupService = inject(GroupService);
+  private assignmentService = inject(AssignmentService);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
@@ -178,7 +178,8 @@ export class AssignmentCreateDialog implements OnDestroy {
 
     this.submitting = true;
 
-    this.groupService.createAssignment(this.groupId, {
+    this.assignmentService.createAssignment({
+      groupId: this.groupId,
       name: trimmedName,
       taskId: this.selectedTask.id,
       startsAt: startsAt.toISOString(),

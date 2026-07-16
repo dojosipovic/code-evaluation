@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 public class GroupResource {
 
     private final GroupService groupService;
-    private final AssignmentService assignmentService;
 
     @POST
     @RolesAllowed({ "ADMIN", "PROF" })
@@ -110,25 +109,5 @@ public class GroupResource {
             @BeanParam PagedParams pagedParams
     ) {
         return groupService.getNonMembers(groupId, pagedParams);
-    }
-
-    @POST
-    @Path("/{groupId}/assignments")
-    @RolesAllowed({ "ADMIN", "PROF" })
-    public AssignmentResponseDto createAssignment(
-            @PathParam("groupId") Long groupId,
-            AssignmentCreateDto assignmentCreateDto
-    ) {
-        return assignmentService.create(groupId, assignmentCreateDto);
-    }
-
-    @GET
-    @Path("/{groupId}/assignments")
-    @Authenticated
-    public PagedResponse<AssignmentListItemDto> getAssignments(
-            @PathParam("groupId") Long groupId,
-            @BeanParam PagedParams pagedParams
-    ) {
-        return assignmentService.getGroupAssignments(groupId, pagedParams);
     }
 }

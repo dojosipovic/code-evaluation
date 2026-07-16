@@ -1,6 +1,7 @@
 package com.codeevaluation.core.repository;
 
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
+import com.codeevaluation.core.api.dto.assignment.AssignmentFilterParams;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Group;
@@ -12,6 +13,7 @@ import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,17 +45,31 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
     }
 
     public PanacheQuery<Assignment> getGroupAssignments(Long groupId, PagedContext pagedContext) {
+        return findAssignments(
+                pagedContext,
+                AssignmentFilterParams.builder().groupId(groupId).build()
+        );
+    }
+
+    public PanacheQuery<Assignment> findAssignments(
+            PagedContext pagedContext,
+            AssignmentFilterParams filterParams
+    ) {
         StringBuilder query = new StringBuilder(
                 """
                     select distinct a from Assignment a
                     join fetch a.createdBy createdBy
                     join fetch a.task task
                     join fetch task.user taskUser
-                    where a.group.id = :groupId
+                    join fetch a.group g
+                    left join Submission filteredSubmission
+                        on filteredSubmission.assignment = a
+                        and filteredSubmission.user.id = :filterUserId
+                    where 1=1
                 """);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("groupId", groupId);
+        params.put("filterUserId", filterParams.currentUserId());
 
         if (!StringUtils.isBlank(pagedContext.search())) {
             query.append(
@@ -71,11 +87,92 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
             params.put("search", "%" + pagedContext.search().toLowerCase().trim() + "%");
         }
 
+        appendAccessFilter(query, params, filterParams);
+        appendAssignmentFilters(query, params, filterParams);
+        appendSubmissionFilters(query, params, filterParams);
+
         Sort sort = pagedContext.sort();
         int page = pagedContext.page();
         int size = pagedContext.size();
 
         return find(query.toString(), sort, params).page(Page.of(page, size));
+    }
+
+    private void appendAccessFilter(
+            StringBuilder query,
+            Map<String, Object> params,
+            AssignmentFilterParams filterParams
+    ) {
+        User currentUser = filterParams.user();
+        if (currentUser == null) {
+            return;
+        }
+
+        if (currentUser.isAdmin()) {
+            return;
+        }
+
+        query.append(
+                """
+                and (
+                    g.owner.id = :currentUserId
+                    or exists (
+                        select 1 from GroupMember gm
+                        where gm.group = g
+                        and gm.user.id = :currentUserId
+                    )
+                )
+                """);
+
+        params.put("currentUserId", currentUser.getId());
+    }
+
+    private void appendAssignmentFilters(
+            StringBuilder query,
+            Map<String, Object> params,
+            AssignmentFilterParams filterParams
+    ) {
+        if (filterParams.groupId() != null) {
+            query.append(" and g.id = :groupId");
+            params.put("groupId", filterParams.groupId());
+        }
+
+        if (filterParams.active() != null) {
+            Instant now = Instant.now();
+            if (filterParams.active()) {
+                query.append(" and a.startsAt < :now and a.endsAt > :now");
+            } else {
+                query.append(" and (a.startsAt >= :now or a.endsAt <= :now)");
+            }
+            params.put("now", now);
+        }
+    }
+
+    private void appendSubmissionFilters(
+            StringBuilder query,
+            Map<String, Object> params,
+            AssignmentFilterParams filterParams
+    ) {
+        if (filterParams.submitted() != null) {
+            if (filterParams.submitted()) {
+                query.append(" and filteredSubmission.id is not null");
+            } else {
+                query.append(" and filteredSubmission.id is null");
+            }
+        }
+
+        if (filterParams.ungraded() != null) {
+            if (filterParams.ungraded()) {
+                query.append(
+                        " and filteredSubmission.id is not null"
+                                + " and filteredSubmission.finalScore is null"
+                                + " and a.endsAt <= :ungradedNow"
+                );
+                params.put("ungradedNow", Instant.now());
+            } else {
+                query.append(" and filteredSubmission.finalScore is not null");
+            }
+        }
     }
 
     public Optional<Assignment> findByIdWithTaskAndTests(Long assignmentId) {

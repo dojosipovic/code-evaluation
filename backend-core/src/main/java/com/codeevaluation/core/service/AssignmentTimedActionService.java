@@ -192,7 +192,7 @@ public class AssignmentTimedActionService {
             testRun.setPassedTests(0);
             submission.addTestRun(testRun);
             submission.setStatus(SubmissionStatus.FAILED);
-            submission.setFinalScore(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+            submission.setFinalScore(null);
             return;
         }
 

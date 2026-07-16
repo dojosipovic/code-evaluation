@@ -1,9 +1,6 @@
 package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
-import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
-import com.codeevaluation.core.api.dto.assignment.AssignmentListItemDto;
-import com.codeevaluation.core.api.dto.assignment.AssignmentResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupMemberDto;
@@ -11,7 +8,6 @@ import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.api.query.PagedParams;
-import com.codeevaluation.core.service.AssignmentService;
 import com.codeevaluation.core.service.GroupService;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;

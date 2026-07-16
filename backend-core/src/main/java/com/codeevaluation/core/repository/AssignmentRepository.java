@@ -44,13 +44,6 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
         return assignment;
     }
 
-    public PanacheQuery<Assignment> getGroupAssignments(Long groupId, PagedContext pagedContext) {
-        return findAssignments(
-                pagedContext,
-                AssignmentFilterParams.builder().groupId(groupId).build()
-        );
-    }
-
     public PanacheQuery<Assignment> findAssignments(
             PagedContext pagedContext,
             AssignmentFilterParams filterParams

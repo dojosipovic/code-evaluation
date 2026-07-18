@@ -59,13 +59,7 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     path: '/profile',
     icon: 'pi pi-user',
     showInNavbar: true
-  },
-  {
-    label: 'Postavke',
-    path: '/settings',
-    icon: 'pi pi-cog',
-    showInNavbar: true
-  },
+  }
 ];
 
 export function getRolesForPath(path: string): AppRole[] {

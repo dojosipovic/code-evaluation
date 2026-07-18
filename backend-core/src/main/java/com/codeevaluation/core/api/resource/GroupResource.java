@@ -2,6 +2,7 @@ package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupLeaderboardDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupMemberDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
@@ -23,6 +24,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Path("/api/groups")
@@ -105,5 +107,14 @@ public class GroupResource {
             @BeanParam PagedParams pagedParams
     ) {
         return groupService.getNonMembers(groupId, pagedParams);
+    }
+
+    @GET
+    @Path("/{groupId}/leaderboard")
+    @Authenticated
+    public List<GroupLeaderboardDto> getLeaderboard(
+            @PathParam("groupId") Long groupId
+    ) {
+        return groupService.getLeaderboard(groupId);
     }
 }

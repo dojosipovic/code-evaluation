@@ -16,6 +16,7 @@ import { AssignmentEvaluation } from './pages/assignment-evaluation/assignment-e
 import { AssignmentSubmissions } from './pages/assignment-submissions/assignment-submissions';
 import { Assignments } from './pages/assignments/assignments';
 import { Submissions } from './pages/submissions/submissions';
+import { Profile } from './pages/profile/profile';
 
 export const routes: Routes = [
     { path: 'login', canActivate: [guestGuard], component: Login },
@@ -28,7 +29,7 @@ export const routes: Routes = [
         children: [
             { path: 'dashboard', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/dashboard'), breadcrumb: 'Dashboard' } },
             { path: 'users/:tab', canActivate: [authGuard], component: Users, data: { roles: getRolesForPath('/users'), breadcrumb: 'Access management' } },
-            { path: 'profile', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/profile'), breadcrumb: 'Profil' } },
+            { path: 'profile', canActivate: [authGuard], component: Profile, data: { roles: getRolesForPath('/profile'), breadcrumb: 'Profil' } },
             { path: 'settings', canActivate: [authGuard], component: Dashboard, data: { roles: getRolesForPath('/settings'), breadcrumb: 'Postavke' } },
             { path: 'tasks', canActivate: [authGuard], component: Tasks, data: { roles: getRolesForPath('/tasks'), breadcrumb: 'Zadaci' } },
             { path: 'assignments', canActivate: [authGuard], component: Assignments, data: { roles: getRolesForPath('/assignments'), breadcrumb: 'Assignmenti' } },

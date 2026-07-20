@@ -1,6 +1,6 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { catchError, map, Observable, of } from "rxjs";
 import { SortDirection } from "../config/app-types";
 import { PlagScanClusterQueryParamEnum } from "../models/enum/PlagScanClusterQueryParamEnum";
 import { IPagedResponse } from "../models/IPagedResponse";
@@ -30,6 +30,22 @@ export class PlagScanService {
         }
 
         return this.addQueryParams(this.config.plagScanReportViewerUrl, { file: reportUrl });
+    }
+
+    reportExists(assignmentId: number): Observable<boolean> {
+        return this.http.head(`${this.baseUrl}/report/exists/${assignmentId}`, { observe: 'response' }).pipe(
+            map(() => true),
+            catchError((error: unknown) => {
+                if (
+                    error instanceof HttpErrorResponse &&
+                    [401, 403, 404].includes(error.status)
+                ) {
+                    return of(false);
+                }
+
+                throw error;
+            })
+        );
     }
 
     getClusters(params: IPlagScanClusterQueryParams): Observable<IPagedResponse<IPlagScanCluster>> {

@@ -80,6 +80,7 @@ export class AssignmentEvaluation implements OnInit {
   assignment: IAssignmentResponse | null = null;
   gradingRows: SubmissionGradeFormRow[] = [];
   plagScanClusters: IPlagScanCluster[] = [];
+  plagScanReportExists = false;
   selectedClusterId: number | null = null;
   submissionDialogOpen = false;
   viewedSubmissionId: number | null = null;
@@ -286,19 +287,21 @@ export class AssignmentEvaluation implements OnInit {
     this.assignment = null;
     this.gradingRows = [];
     this.plagScanClusters = [];
+    this.plagScanReportExists = false;
     this.selectedClusterId = null;
 
     forkJoin({
       assignment: this.assignmentService.getAssignment(assignmentId),
       submissions: this.loadAllSubmissions(assignmentId),
-      clusters: this.loadAllClusters(assignmentId)
+      clusters: this.loadAllClusters(assignmentId),
+      plagScanReportExists: this.plagScanService.reportExists(assignmentId)
     })
       .pipe(
         finalize(() => this.loading.set(false)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: ({ assignment, submissions, clusters }) => {
+        next: ({ assignment, submissions, clusters, plagScanReportExists }) => {
           this.assignment = assignment;
           this.gradingRows = submissions.map(submission => {
             const calculatedPoints = this.calculateSubmissionPoints(submission, assignment.points);
@@ -311,6 +314,7 @@ export class AssignmentEvaluation implements OnInit {
             };
           });
           this.plagScanClusters = clusters;
+          this.plagScanReportExists = plagScanReportExists;
           this.updateBreadcrumb();
         },
         error: () => {

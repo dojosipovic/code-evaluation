@@ -52,6 +52,7 @@ export class AssignmentSubmissions implements OnInit {
 
   assignment: IAssignmentResponse | null = null;
   submissions: ISubmissionListItem[] = [];
+  plagScanReportExists = false;
   submissionDialogOpen = false;
   viewedSubmissionId: number | null = null;
 
@@ -170,19 +171,22 @@ export class AssignmentSubmissions implements OnInit {
     this.loading.set(true);
     this.assignment = null;
     this.submissions = [];
+    this.plagScanReportExists = false;
 
     forkJoin({
       assignment: this.assignmentService.getAssignment(assignmentId),
-      submissions: this.loadAllSubmissions(assignmentId)
+      submissions: this.loadAllSubmissions(assignmentId),
+      plagScanReportExists: this.plagScanService.reportExists(assignmentId)
     })
       .pipe(
         finalize(() => this.loading.set(false)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: ({ assignment, submissions }) => {
+        next: ({ assignment, submissions, plagScanReportExists }) => {
           this.assignment = assignment;
           this.submissions = submissions;
+          this.plagScanReportExists = plagScanReportExists;
           this.updateBreadcrumb();
         },
         error: () => {

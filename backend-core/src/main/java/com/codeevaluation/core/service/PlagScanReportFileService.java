@@ -36,7 +36,8 @@ public class PlagScanReportFileService {
         User currentUser = currentUserProvider.getCurrentUser();
 
         if (!AssignmentAccessPolicy.canIssuePlagScanToken(assignment, currentUser)) {
-            throw new ForbiddenException("You cannot check the PlagScan report for this assignment");
+            throw new ForbiddenException(
+                    "You cannot check the PlagScan report for this assignment");
         }
 
         return submissionPlagiarismRunRepository.findLatestByAssignmentId(assignmentId)

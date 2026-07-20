@@ -8,6 +8,7 @@ import { filter } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
 import { APP_NAV_ITEMS } from '../config/app-navigation.config';
 import { BreadcrumbService } from '../services/breadcrumb.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-layout',
@@ -22,6 +23,7 @@ export class AppLayout implements OnInit {
 
   private authService = inject(AuthService);
   private breadcrumbService = inject(BreadcrumbService);
+  protected themeService = inject(ThemeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);

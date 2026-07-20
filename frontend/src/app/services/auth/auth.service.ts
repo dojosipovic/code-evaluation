@@ -8,6 +8,7 @@ import { AppRole } from '../../config/app-types';
 import { IRegisterRequest } from '../../models/auth/IRegisterRequest';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { ConfigService } from '../config.service';
+import { IPlagScanTokenResponse } from '../../models/auth/IPlagScanTokenResponse';
 
 export interface JwtPayload {
   sub?: string;
@@ -78,6 +79,10 @@ export class AuthService {
         map(() => true),
         catchError(() => of(false))
       );
+  }
+
+  getPlagScanToken(assignmentId: number): Observable<IPlagScanTokenResponse> {
+    return this.http.post<IPlagScanTokenResponse>(`${this.apiBase}/api/auth/plagscan-token/${assignmentId}`, {});
   }
 
   logout() {

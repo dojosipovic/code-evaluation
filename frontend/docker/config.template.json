@@ -1,3 +1,5 @@
 {
-  "apiUrl": "${API_URL}"
+  "apiUrl": "${API_URL}",
+  "plagScanReportUrl": "${PLAGSCAN_REPORT_URL}",
+  "plagScanReportViewerUrl": "${PLAGSCAN_REPORT_VIEWER_URL}"
 }

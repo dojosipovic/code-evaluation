@@ -3,5 +3,5 @@ export enum SubmissionStatusEnum {
     QUEUED = 'QUEUED',
     TESTED = 'TESTED',
     FAILED = 'FAILED',
-    PLAGIARISM_ANALYZED = 'PLAG ANALYZED'
+    PLAGIARISM_ANALYZED = 'PLAGIARISM_ANALYZED'
 }

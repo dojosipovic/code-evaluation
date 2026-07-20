@@ -10,4 +10,7 @@ export interface ISubmissionListItem {
     code: string;
     finalScore: number;
     submittedAt: string;
+    totalTests: number;
+    passedTests: number;
+    similarityCount: number;
 }

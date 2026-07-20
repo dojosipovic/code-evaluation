@@ -1,8 +1,8 @@
 package com.codeevaluation.core.api.resource;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
+import com.codeevaluation.core.api.dto.submission.SubmissionDetailResponseDto;
 import com.codeevaluation.core.api.dto.submission.SubmissionListItemDto;
-import com.codeevaluation.core.api.dto.submission.SubmissionResponseDto;
 import com.codeevaluation.core.api.query.SubmissionListQueryParams;
 import com.codeevaluation.core.service.SubmissionService;
 import io.quarkus.security.Authenticated;
@@ -34,7 +34,14 @@ public class SubmissionResource {
     @GET
     @Path("/{submissionId}")
     @Authenticated
-    public SubmissionResponseDto getSubmission(@PathParam("submissionId") Long submissionId) {
+    public SubmissionDetailResponseDto getSubmission(@PathParam("submissionId") Long submissionId) {
         return submissionService.getSubmission(submissionId);
     }
+
+    // TODO: send valuate reminder mail with link to prof when plag analysis is done
+    // TODO: send submission details mail to students when evaluation is done
+
+    // TODO: napravi leaderboard na groupama po bodovima
+    // TODO: dodaj u navigaciji assignments
+    // TODO: dodaj u navigaciji predaje
 }

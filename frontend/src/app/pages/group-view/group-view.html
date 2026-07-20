@@ -68,6 +68,13 @@
               <p-badge [value]="group.memberCount"></p-badge>
             </div>
           </p-tab>
+
+          <p-tab value="leaderboard">
+            <div class="tab-label">
+              <i class="pi pi-trophy"></i>
+              <span>Leaderboard</span>
+            </div>
+          </p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -88,6 +95,12 @@
                 (memberAdded)="onMemberAdded()"
                 (memberRemoved)="onMemberRemoved()">
               </app-group-members>
+            </ng-template>
+          </p-tabpanel>
+
+          <p-tabpanel value="leaderboard">
+            <ng-template #content>
+              <app-group-leaderboard [groupId]="group.id"></app-group-leaderboard>
             </ng-template>
           </p-tabpanel>
         </p-tabpanels>

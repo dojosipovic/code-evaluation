@@ -1,0 +1,76 @@
+<div class="leaderboard-toolbar">
+  <div class="leaderboard-title">
+    <i class="pi pi-trophy"></i>
+    <span>Leaderboard</span>
+  </div>
+
+  <button
+    pButton
+    type="button"
+    icon="pi pi-refresh"
+    label="Osvjezi"
+    class="p-button-secondary"
+    [disabled]="loading()"
+    (click)="refresh()">
+  </button>
+</div>
+
+<div class="leaderboard-table-wrapper">
+  <p-table
+    [value]="loading() ? skeletonRows : leaderboard"
+    class="p-datatable-sm leaderboard-table">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="rank-column">Rank</th>
+        <th>Korisnik</th>
+        <th>Korisnicko ime</th>
+        <th>Email</th>
+        <th class="score-column">Bodovi</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-entry let-rowIndex="rowIndex">
+      @if (loading()) {
+        <tr>
+          <td class="rank-column">
+            <p-skeleton width="3rem" height="1.5rem" borderRadius="12px"></p-skeleton>
+          </td>
+          <td><p-skeleton width="10rem" height="1.1rem"></p-skeleton></td>
+          <td><p-skeleton width="8rem" height="1.1rem"></p-skeleton></td>
+          <td><p-skeleton width="14rem" height="1.1rem"></p-skeleton></td>
+          <td class="score-column">
+            <p-skeleton width="5rem" height="1.1rem"></p-skeleton>
+          </td>
+        </tr>
+      } @else {
+        <tr>
+          <td class="rank-column">
+            <p-tag
+              [value]="'#' + (rowIndex + 1)"
+              [severity]="getRankSeverity(rowIndex + 1)">
+            </p-tag>
+          </td>
+
+          <td>
+            <div class="primary-cell">{{ getUserName(entry.user) }}</div>
+          </td>
+
+          <td>{{ entry.user?.username || '-' }}</td>
+
+          <td>{{ entry.user?.email || '-' }}</td>
+
+          <td class="score-column">
+            <span class="score-value">{{ entry.totalScore }}</span>
+          </td>
+        </tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">Leaderboard je prazan.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

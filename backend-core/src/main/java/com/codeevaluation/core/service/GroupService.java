@@ -2,6 +2,7 @@ package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupLeaderboardDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupMemberDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
@@ -156,6 +157,17 @@ public class GroupService {
         int size = pagedContext.size();
 
         return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    public List<GroupLeaderboardDto> getLeaderboard(Long groupId) {
+        Group group = groupRepository.findByIdOptional(groupId)
+                .orElseThrow(() -> new NotFoundException("Group not found"));
+
+        if (!groupAccessPolicy.canFetchGroup(group, currentUserProvider.getCurrentUser())) {
+            throw new ForbiddenException("You cannot see this group leaderboard");
+        }
+
+        return groupMemberRepository.getLeaderboard(groupId);
     }
 
     public PagedResponse<GroupListItemDto> getGroups(PagedParams pagedParams) {

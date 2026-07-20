@@ -27,4 +27,24 @@ export class ConfigService {
   get apiUrl(): string {
     return this.value.apiUrl.replace(/\/+$/, '');
   }
+
+  get plagScanReportUrl(): string {
+    const configuredUrl = this.value.plagScanReportUrl?.trim();
+
+    if (configuredUrl) {
+      return configuredUrl.replace(/\/+$/, '');
+    }
+
+    return `${this.apiUrl}/api/plagscan/report`;
+  }
+
+  get plagScanReportViewerUrl(): string {
+    const configuredUrl = this.value.plagScanReportViewerUrl?.trim();
+
+    if (configuredUrl) {
+      return configuredUrl.replace(/\/+$/, '');
+    }
+
+    return '';
+  }
 }

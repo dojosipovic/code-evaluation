@@ -1,4 +1,4 @@
-import { ITaskResponse } from "../task/ITaskResponse";
+import { ITaskBaseResponse } from "../task/ITaskBaseResponse";
 import { IUserResponse } from "../user/IUserResponse";
 
 export interface IAssignmentListItem {
@@ -8,6 +8,7 @@ export interface IAssignmentListItem {
     startsAt: string;
     endsAt: string;
     points: number;
-    task?: ITaskResponse;
+    requiresEvaluation: boolean | null;
+    task?: ITaskBaseResponse;
     createdBy: IUserResponse;
 }

@@ -12,4 +12,9 @@ public class SubmissionAccessPolicy {
                 || submission.getAssignment().getGroup().isOwner(currentUser.getUsername())
                 || submission.getUser().getId().equals(currentUser.getId());
     }
+
+    public static boolean canSeeHiddenExpectedOutputs(Submission submission, User currentUser) {
+        return currentUser.isAdmin()
+                || submission.getAssignment().getGroup().isOwner(currentUser.getUsername());
+    }
 }

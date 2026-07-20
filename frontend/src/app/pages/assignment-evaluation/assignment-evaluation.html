@@ -1,0 +1,264 @@
+<p-dialog
+  header="Pregled submissiona"
+  [modal]="true"
+  [visible]="submissionDialogOpen"
+  [style]="{ width: 'min(1240px, calc(100vw - 32px))' }"
+  [contentStyle]="{ overflow: 'auto', padding: '0' }"
+  (visibleChange)="onSubmissionDialogVisibleChange($event)">
+  @if (viewedSubmissionId !== null) {
+    <app-submission-view
+      class="embedded-submission-view"
+      [submissionId]="viewedSubmissionId"
+      [embedded]="true">
+    </app-submission-view>
+  }
+</p-dialog>
+
+@if (loading()) {
+  <div class="evaluation-loading">
+    <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+    <span>Ucitavanje ocjenjivanja...</span>
+  </div>
+} @else if (assignment) {
+  <main class="evaluation-page">
+    <header class="evaluation-header">
+      <div class="title-block">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-arrow-left"
+          aria-label="Nazad"
+          (click)="goBack()">
+        </button>
+
+        <div>
+          <span>Assignment #{{ assignment.id }}</span>
+          <h1>{{ assignment.name }}</h1>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        @if (plagScanReportExists) {
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            icon="pi pi-search"
+            label="PlagScan"
+            [loading]="openingPlagScan()"
+            [disabled]="openingPlagScan()"
+            (click)="openPlagScanViewer()">
+          </button>
+        }
+        <p-tag icon="pi pi-star" [value]="'Maks. bodova: ' + assignment.points"></p-tag>
+        <button
+          pButton
+          type="button"
+          severity="success"
+          icon="pi pi-check-circle"
+          label="Vrednuj"
+          [disabled]="evaluating() || !canEvaluateGrades"
+          [loading]="evaluating()"
+          (click)="onEvaluate()">
+        </button>
+      </div>
+    </header>
+
+    @if (plagScanClusters.length) {
+      <section class="evaluation-section">
+        <div class="section-title">
+          <span>Plagiarism clusters</span>
+          <small>{{ plagScanClusters.length }}</small>
+        </div>
+
+        <div class="cluster-list">
+          @for (cluster of plagScanClusters; track trackByCluster($index, cluster)) {
+            <article
+              class="cluster-item"
+              role="button"
+              tabindex="0"
+              [class.selected]="selectedClusterId === cluster.id"
+              [attr.aria-pressed]="selectedClusterId === cluster.id"
+              (mouseenter)="clusterSubmissions.show($event)"
+              (mouseleave)="clusterSubmissions.hide()"
+              (keydown.enter)="toggleSelectedCluster(cluster.id)"
+              (keydown.space)="$event.preventDefault(); toggleSelectedCluster(cluster.id)"
+              (click)="toggleSelectedCluster(cluster.id)">
+              <p-popover #clusterSubmissions>
+                <div class="cluster-popover">
+                  <div class="cluster-popover-title">
+                    <strong>Cluster #{{ cluster.id }}</strong>
+                    <span>{{ cluster.members.length }} submissiona</span>
+                  </div>
+
+                  <div class="cluster-popover-list">
+                    @for (member of cluster.members; track trackByClusterMember($index, member)) {
+                      <div class="cluster-popover-member">
+                        <strong>{{ getUserDisplayName(member.user) }}</strong>
+                        <span>Submission #{{ member.submissionId }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </p-popover>
+
+              <button
+                pButton
+                type="button"
+                severity="secondary"
+                [icon]="selectedClusterId === cluster.id ? 'pi pi-check' : 'pi pi-circle'"
+                class="cluster-select-button"
+                [attr.aria-pressed]="selectedClusterId === cluster.id"
+                [attr.aria-label]="'Oznaci cluster ' + cluster.id"
+                (click)="$event.stopPropagation(); toggleSelectedCluster(cluster.id)">
+              </button>
+
+              <div class="cluster-title">Cluster #{{ cluster.id }}</div>
+
+              <div class="cluster-metrics">
+                <div class="cluster-score">
+                  <strong>{{ getClusterSimilarityLabel(cluster) }}</strong>
+                </div>
+
+                <div class="cluster-summary">
+                  <i class="pi pi-users"></i>
+                  <span>{{ cluster.members.length }}</span>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="evaluation-section">
+      <div class="section-title">
+        <span>Submissions</span>
+        <small>{{ gradingRows.length }}</small>
+      </div>
+
+      @if (gradingRows.length) {
+        <div class="grade-list">
+          @for (row of gradingRows; track trackByGradeRow($index, row)) {
+            <article
+              class="grade-row"
+              [class.confirmed]="row.confirmed"
+              [class.cluster-highlight]="isSubmissionInSelectedCluster(row.submission)">
+              <button
+                pButton
+                type="button"
+                severity="secondary"
+                icon="pi pi-eye"
+                class="submission-eye-button"
+                [attr.aria-label]="'Pregledaj submission ' + row.submission.id"
+                (click)="openSubmissionDialog(row.submission.id, $event)">
+              </button>
+
+              <div class="grade-student">
+                <div class="student-title">
+                  <div class="student-copy">
+                    <strong>{{ getUserDisplayName(row.submission.user) }}</strong>
+                    <span>Submission #{{ row.submission.id }}</span>
+                  </div>
+
+                  <div class="submission-flags">
+                    @if (hasPlagiarismWarning(row.submission)) {
+                      <span
+                        class="plagiarism-warning"
+                        tabindex="0"
+                        (mouseenter)="plagiarismInfo.show($event)"
+                        (mouseleave)="plagiarismInfo.hide()"
+                        (focus)="plagiarismInfo.show($event)"
+                        (blur)="plagiarismInfo.hide()">
+                        <i class="pi pi-exclamation-circle"></i>
+                      </span>
+
+                      <p-popover #plagiarismInfo>
+                        <div class="plagiarism-popover">
+                          <strong>Upozorenje na plagijat</strong>
+                          <span>
+                            Predaja se pojavljuje u broju klastera: {{ getSubmissionClusterCount(row.submission) }}
+                          </span>
+                          <span>
+                            Zabiljezenih slicnosti: {{ getSubmissionSimilarityCount(row.submission) }}
+                          </span>
+                        </div>
+                      </p-popover>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="grade-tests">
+                <span class="tests-label">
+                  <i class="pi pi-list-check"></i>
+                  {{ getSubmissionTestsLabel(row.submission) }}
+                </span>
+                <p-progressbar
+                  styleClass="grade-tests-progress"
+                  [value]="getSubmissionTestPercent(row.submission)"
+                  [showValue]="false">
+                </p-progressbar>
+              </div>
+
+              <div class="grade-input">
+                <label [for]="'grade-' + row.submission.id">
+                  <span>Bodovi</span>
+                </label>
+                <div class="grade-input-control">
+                  <p-inputNumber
+                    [inputId]="'grade-' + row.submission.id"
+                    [(ngModel)]="row.grade"
+                    [min]="0"
+                    [max]="assignment.points"
+                    [minFractionDigits]="0"
+                    [maxFractionDigits]="2"
+                    [disabled]="row.confirmed"
+                    (ngModelChange)="onGradeChanged(row)">
+                  </p-inputNumber>
+                  @if (row.confirmed) {
+                    <span class="confirmed-input-addon">
+                      <i class="pi pi-check"></i>
+                    </span>
+                  }
+                  <span class="max-points-label">/ {{ assignment.points }}</span>
+                </div>
+              </div>
+
+              <div class="grade-actions">
+                @if (row.confirmed) {
+                  <div class="confirmed-actions">
+                    <button
+                      pButton
+                      type="button"
+                      severity="secondary"
+                      icon="pi pi-pencil"
+                      class="compact-action-button"
+                      aria-label="Uredi ocjenu"
+                      (click)="editGrade(row)">
+                    </button>
+                  </div>
+                } @else {
+                  <button
+                    pButton
+                    type="button"
+                    severity="success"
+                    icon="pi pi-check"
+                    class="compact-action-button"
+                    aria-label="Potvrdi ocjenu"
+                    (click)="confirmGrade(row)">
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          Nema submissiona za ovaj assignment.
+        </div>
+      }
+    </section>
+  </main>
+}

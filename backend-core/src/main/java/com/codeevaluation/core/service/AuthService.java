@@ -3,9 +3,14 @@ package com.codeevaluation.core.service;
 import com.codeevaluation.core.api.dto.auth.RegisterRequestDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.InviteStatus;
+import com.codeevaluation.core.enumeration.Role;
+import com.codeevaluation.core.helper.AssignmentAccessPolicy;
+import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Invite;
 import com.codeevaluation.core.model.RefreshToken;
 import com.codeevaluation.core.model.User;
+import com.codeevaluation.core.provider.CurrentUserProvider;
+import com.codeevaluation.core.repository.AssignmentRepository;
 import com.codeevaluation.core.repository.InviteRepository;
 import com.codeevaluation.core.repository.RefreshTokenRepository;
 import com.codeevaluation.core.repository.UserRepository;
@@ -17,6 +22,7 @@ import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import java.time.Duration;
@@ -34,6 +40,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final InviteRepository inviteRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     public User authenticate(String username, String password) {
         User user = userRepository.findEnabledByUsername(username)
@@ -155,6 +163,23 @@ public class AuthService {
         return Jwt.issuer("code-evaluation")
                 .subject(user.getUsername())
                 .groups(Set.of(user.getRole().toString()))
+                .expiresIn(Duration.ofMinutes(10))
+                .sign();
+    }
+
+    public String issuePlagScanToken(Long assignmentId) {
+        Assignment assignment = assignmentRepository.findByIdWithTaskAndTests(assignmentId)
+                .orElseThrow(() -> new NotFoundException("Assignment not found"));
+        User currentUser = currentUserProvider.getCurrentUser();
+
+        if (!AssignmentAccessPolicy.canIssuePlagScanToken(assignment, currentUser)) {
+            throw new ForbiddenException("You cannot issue a PlagScan token for this assignment");
+        }
+
+        return Jwt.issuer("code-evaluation")
+                .subject(currentUser.getUsername())
+                .groups(Set.of(Role.PLAGSCAN.toString()))
+                .claim("assignmentId", assignment.getId())
                 .expiresIn(Duration.ofMinutes(10))
                 .sign();
     }

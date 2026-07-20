@@ -17,14 +17,110 @@
   </app-task-create-dialog>
 }
 
-<app-assignment-create-dialog
-  [groupId]="groupId"
-  [visible]="assignmentCreatorOpen"
-  (visibleChange)="onAssignmentCreatorVisibleChange($event)"
-  (saved)="onAssignmentCreated()">
-</app-assignment-create-dialog>
+@if (groupId !== null) {
+  <app-assignment-create-dialog
+    [groupId]="groupId"
+    [visible]="assignmentCreatorOpen"
+    (visibleChange)="onAssignmentCreatorVisibleChange($event)"
+    (saved)="onAssignmentCreated()">
+  </app-assignment-create-dialog>
+}
 
-<div class="assignments-toolbar">
+@if (showStatusFilters) {
+  <p-drawer
+    [(visible)]="filtersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="assignments-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="assignmentActive">Aktivan</label>
+          <p-select
+            inputId="assignmentActive"
+            [options]="booleanFilterOptions"
+            [(ngModel)]="assignmentFilters.active"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="assignmentSubmitted">Predano</label>
+          <p-select
+            inputId="assignmentSubmitted"
+            [options]="booleanFilterOptions"
+            [(ngModel)]="assignmentFilters.submitted"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="assignmentUngraded">Neocijenjeno</label>
+          <p-select
+            inputId="assignmentUngraded"
+            [options]="booleanFilterOptions"
+            [(ngModel)]="assignmentFilters.ungraded"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="assignmentSortDrawer">Sort</label>
+          <p-select
+            inputId="assignmentSortDrawer"
+            [options]="sortOptions"
+            [(ngModel)]="sortField"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="assignmentSortDirectionDrawer">Smjer</label>
+          <p-select
+            inputId="assignmentSortDirectionDrawer"
+            [options]="sortDirectionOptions"
+            [(ngModel)]="sortDirection"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Primjeni"
+          [disabled]="loading()"
+          (click)="onApplyFiltersAndCloseDrawer()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          [disabled]="loading()"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+  </p-drawer>
+}
+
+<div class="assignments-toolbar" [class.general-toolbar]="showStatusFilters">
   <div class="filter-field search-field">
     <label for="assignmentSearch">Search</label>
     <input
@@ -33,36 +129,49 @@
       [(ngModel)]="assignmentFilters.search"
       (ngModelChange)="onSearchInput($event)"
       (keyup.enter)="onApplyFilters()"
-      placeholder="Pretrazi zadatke grupe" />
+      [placeholder]="searchPlaceholder" />
   </div>
 
-  <div class="filter-field">
-    <label for="assignmentSort">Sort</label>
-    <p-select
-      inputId="assignmentSort"
-      [options]="sortOptions"
-      [(ngModel)]="sortField"
-      optionLabel="label"
-      optionValue="value"
-      [showClear]="false"
-      (ngModelChange)="onSortChange()">
-    </p-select>
-  </div>
+  @if (!showStatusFilters) {
+    <div class="filter-field">
+      <label for="assignmentSort">Sort</label>
+      <p-select
+        inputId="assignmentSort"
+        [options]="sortOptions"
+        [(ngModel)]="sortField"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="false"
+        (ngModelChange)="onSortChange()">
+      </p-select>
+    </div>
 
-  <div class="filter-field">
-    <label for="assignmentSortDirection">Smjer</label>
-    <p-select
-      inputId="assignmentSortDirection"
-      [options]="sortDirectionOptions"
-      [(ngModel)]="sortDirection"
-      optionLabel="label"
-      optionValue="value"
-      [showClear]="false"
-      (ngModelChange)="onSortChange()">
-    </p-select>
-  </div>
+    <div class="filter-field">
+      <label for="assignmentSortDirection">Smjer</label>
+      <p-select
+        inputId="assignmentSortDirection"
+        [options]="sortDirectionOptions"
+        [(ngModel)]="sortDirection"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="false"
+        (ngModelChange)="onSortChange()">
+      </p-select>
+    </div>
+  }
 
   <div class="toolbar-actions">
+    @if (showStatusFilters) {
+      <button
+        pButton
+        type="button"
+        icon="pi pi-filter"
+        label="Filteri"
+        [disabled]="loading()"
+        (click)="filtersDrawerVisible = true">
+      </button>
+    }
+
     <button
       pButton
       type="button"
@@ -73,7 +182,7 @@
       (click)="resetFilters()">
     </button>
 
-    @if (canManage) {
+    @if (canManage && groupId !== null) {
       <button
         pButton
         type="button"
@@ -123,6 +232,26 @@
                 </button>
               }
 
+              @if (assignment.requiresEvaluation === true) {
+                <button
+                  pButton
+                  type="button"
+                  severity="warn"
+                  icon="pi pi-star"
+                  label="Ocjeni"
+                  [routerLink]="['/assignments', assignment.id, 'evaluate']">
+                </button>
+              } @else if (assignment.requiresEvaluation === false) {
+                <button
+                  pButton
+                  type="button"
+                  severity="secondary"
+                  icon="pi pi-eye"
+                  label="Predaje"
+                  [routerLink]="['/assignments', assignment.id, 'submissions']">
+                </button>
+              }
+
               <span
                 class="assignment-time-chip"
                 [ngClass]="getStartTimeClass(assignment)"
@@ -133,6 +262,12 @@
             </div>
           </div>
         </ng-template>
+
+        @if (isAssignmentActive(assignment)) {
+          <svg class="assignment-active-orbit" aria-hidden="true">
+            <rect class="assignment-orbit-stroke" pathLength="1000"></rect>
+          </svg>
+        }
 
         <div class="assignment-body">
           <div class="assignment-meta">
@@ -158,6 +293,32 @@
           </div>
 
           <div class="assignment-badges">
+            @if (hasSubmission(assignment)) {
+              <button
+                type="button"
+                class="submission-link-button submitted"
+                [routerLink]="['/submissions', assignment.submissionId]"
+                [queryParams]="groupId !== null ? { groupId: groupId } : null">
+                <span class="submission-status-icon">
+                  <i class="pi pi-check"></i>
+                </span>
+                <span class="submission-status-copy">
+                  <strong>Predano</strong>
+                  <small>Pregledaj submission</small>
+                </span>
+              </button>
+            } @else if (!isAssignmentActive(assignment)) {
+              <div class="submission-link-button not-submitted" aria-label="Nije predano">
+                <span class="submission-status-icon">
+                  <i class="pi pi-times"></i>
+                </span>
+                <span class="submission-status-copy">
+                  <strong>Nije predano</strong>
+                  <small>Submission nije dostupan</small>
+                </span>
+              </div>
+            }
+
             @if (assignment.task) {
               <button
                 type="button"
@@ -170,20 +331,13 @@
                 </p-tag>
               </button>
             }
-
-            <p-tag
-              [icon]="hasSubmission(assignment) ? 'pi pi-check' : 'pi pi-times'"
-              [severity]="hasSubmission(assignment) ? 'success' : 'danger'"
-              styleClass="assignment-submission-tag"
-              [value]="hasSubmission(assignment) ? 'Predano' : 'Nije predano'">
-            </p-tag>
           </div>
         </div>
       </p-panel>
     }
   } @else {
     <div class="tab-empty-state">
-      Nema zadataka grupe.
+      {{ emptyStateMessage }}
     </div>
   }
 </div>

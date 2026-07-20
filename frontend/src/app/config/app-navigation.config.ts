@@ -15,7 +15,6 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Dashboard',
     path: '/dashboard',
     icon: 'pi pi-home',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true,
     exact: true
   },
@@ -23,7 +22,7 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Korisnici',
     path: '/users',
     icon: 'pi pi-users',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    roles: ['ADMIN'],
     showInNavbar: true
   },
   {
@@ -32,6 +31,21 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     icon: 'pi pi-receipt',
     roles: ['PROF', 'ADMIN'],
     showInNavbar: true
+  },
+  {
+    label: 'Assignmenti',
+    path: '/assignments',
+    icon: 'pi pi-list-check',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true
+  },
+  {
+    label: 'Predaje',
+    path: '/submissions',
+    icon: 'pi pi-folder',
+    roles: ['PROF', 'ADMIN', 'STUDENT'],
+    showInNavbar: true,
+    exact: true
   },
   {
     label: 'Grupe',
@@ -44,16 +58,8 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     label: 'Profil',
     path: '/profile',
     icon: 'pi pi-user',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
     showInNavbar: true
-  },
-  {
-    label: 'Postavke',
-    path: '/settings',
-    icon: 'pi pi-cog',
-    roles: ['PROF', 'ADMIN', 'STUDENT'],
-    showInNavbar: true
-  },
+  }
 ];
 
 export function getRolesForPath(path: string): AppRole[] {

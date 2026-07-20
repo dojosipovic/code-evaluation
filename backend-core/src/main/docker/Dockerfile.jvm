@@ -7,6 +7,7 @@ WORKDIR /workspace
 COPY pom.xml ./pom.xml
 COPY checkstyle.xml checkstyle-suppressions.xml ./
 COPY backend-core/pom.xml backend-core/pom.xml
+COPY backend-core/lombok.config backend-core/lombok.config
 COPY backend-plagscan/pom.xml backend-plagscan/pom.xml
 
 RUN mvn -pl backend-core -am dependency:go-offline -DskipTests

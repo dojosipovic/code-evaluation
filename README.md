@@ -199,6 +199,14 @@ For frontend deploys through the Web Application, define:
 DOKPLOY_APP_ID_FRONTEND
 ```
 
+For frontend runtime config, define these Web Application environment variables:
+
+```env
+API_URL=https://your-backend-domain.com
+PLAGSCAN_REPORT_URL=https://your-backend-domain.com/api/plagscan/report
+PLAGSCAN_REPORT_VIEWER_URL=https://your-plagscan-viewer-domain.com
+```
+
 The shared Dokploy secrets are still required:
 
 ```txt

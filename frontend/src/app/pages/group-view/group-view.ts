@@ -18,8 +18,9 @@ import { GroupCreateUpdateDialog } from '../../components/group-create-update-di
 import { AuthService } from '../../services/auth/auth.service';
 import { GroupMembers } from '../../components/group-members/group-members';
 import { GroupAssignments } from '../../components/group-assignments/group-assignments';
+import { GroupLeaderboard } from '../../components/group-leaderboard/group-leaderboard';
 
-type GroupTab = 'users' | 'tasks';
+type GroupTab = 'users' | 'tasks' | 'leaderboard';
 
 @Component({
   selector: 'app-group-view',
@@ -35,7 +36,8 @@ type GroupTab = 'users' | 'tasks';
     TabsModule,
     GroupCreateUpdateDialog,
     GroupMembers,
-    GroupAssignments
+    GroupAssignments,
+    GroupLeaderboard
   ],
   templateUrl: './group-view.html',
   styleUrl: './group-view.scss',
@@ -62,7 +64,7 @@ export class GroupView implements OnInit {
         const tab = params.get('tab');
         const groupId = Number(params.get('id'));
 
-        if (tab !== 'users' && tab !== 'tasks') {
+        if (!this.isGroupTab(tab)) {
           this.router.navigate(['/groups', groupId, 'tasks'], { replaceUrl: true });
           return;
         }
@@ -90,7 +92,7 @@ export class GroupView implements OnInit {
   }
 
   onTabChange(value: string | number | undefined): void {
-    if ((value !== 'users' && value !== 'tasks') || !this.group) {
+    if (!this.isGroupTab(value) || !this.group) {
       return;
     }
 
@@ -177,5 +179,9 @@ export class GroupView implements OnInit {
 
   private isOwner(group: IGroupResponse): boolean {
     return group.owner?.username === this.authService.username();
+  }
+
+  private isGroupTab(value: unknown): value is GroupTab {
+    return value === 'users' || value === 'tasks' || value === 'leaderboard';
   }
 }

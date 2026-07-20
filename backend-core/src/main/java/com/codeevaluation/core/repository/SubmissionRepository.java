@@ -9,6 +9,7 @@ import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Submission;
 import com.codeevaluation.core.model.SubmissionFile;
+import com.codeevaluation.core.model.SubmissionSimilarity;
 import com.codeevaluation.core.model.User;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -17,8 +18,10 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
@@ -32,6 +35,59 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 userId,
                 assignmentId
         ).firstResultOptional();
+    }
+
+    public Map<Long, Long> findSubmissionIdsByUserIdAndAssignmentIds(
+            Long userId,
+            List<Long> assignmentIds
+    ) {
+        if (assignmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Object[]> rows = getEntityManager()
+                .createQuery(
+                        """
+                        select s.assignment.id, s.id
+                        from Submission s
+                        where s.user.id = :userId
+                        and s.assignment.id in :assignmentIds
+                        """,
+                        Object[].class
+                )
+                .setParameter("userId", userId)
+                .setParameter("assignmentIds", assignmentIds)
+                .getResultList();
+
+        return rows.stream().collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
+
+    public Map<Long, Boolean> findRequiresEvaluationByAssignmentIds(List<Long> assignmentIds) {
+        if (assignmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> assignmentIdsRequiringEvaluation = getEntityManager()
+                .createQuery(
+                        """
+                        select distinct s.assignment.id
+                        from Submission s
+                        where s.assignment.id in :assignmentIds
+                        and s.finalScore is null
+                        """,
+                        Long.class
+                )
+                .setParameter("assignmentIds", assignmentIds)
+                .getResultList();
+
+        return assignmentIdsRequiringEvaluation.stream()
+                .collect(Collectors.toMap(
+                        assignmentId -> assignmentId,
+                        assignmentId -> true
+                ));
     }
 
     public Optional<Submission> findByUserIdAndAssignmentIdWithRelations(
@@ -48,7 +104,7 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 """,
                 userId,
                 assignmentId
-        ).firstResultOptional();
+        ).stream().findFirst();
     }
 
     public Optional<Submission> findByIdWithRelations(Long submissionId) {
@@ -63,7 +119,56 @@ public class SubmissionRepository implements PanacheRepository<Submission> {
                 where s.id = ?1
                 """,
                 submissionId
-        ).firstResultOptional();
+        ).stream().findFirst();
+    }
+
+    public List<SubmissionSimilarity> findSimilaritiesForSubmission(Long submissionId) {
+        return getEntityManager()
+                .createQuery(
+                        """
+                        select distinct similarity from SubmissionSimilarity similarity
+                        join fetch similarity.plagiarismRun plagiarismRun
+                        join fetch similarity.sourceSubmission sourceSubmission
+                        join fetch sourceSubmission.user sourceUser
+                        join fetch similarity.targetSubmission targetSubmission
+                        join fetch targetSubmission.user targetUser
+                        where sourceSubmission.id = :submissionId
+                        order by plagiarismRun.createdAt desc, similarity.similarityScore desc
+                        """,
+                        SubmissionSimilarity.class
+                )
+                .setParameter("submissionId", submissionId)
+                .getResultList();
+    }
+
+    public List<Submission> findByAssignmentIdWithFiles(Long assignmentId) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.assignment a
+                join fetch s.task t
+                join fetch s.user u
+                left join fetch s.files
+                where a.id = ?1
+                order by s.id asc
+                """,
+                assignmentId
+        ).list();
+    }
+
+    public List<Submission> findByAssignmentIdWithRelations(Long assignmentId) {
+        return find(
+                """
+                select distinct s from Submission s
+                join fetch s.assignment a
+                join fetch s.task t
+                join fetch s.user u
+                left join fetch s.files
+                where a.id = ?1
+                order by s.id asc
+                """,
+                assignmentId
+        ).list();
     }
 
     @Transactional

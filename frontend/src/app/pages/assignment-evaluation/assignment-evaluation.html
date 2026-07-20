@@ -76,9 +76,14 @@
           @for (cluster of plagScanClusters; track trackByCluster($index, cluster)) {
             <article
               class="cluster-item"
+              role="button"
+              tabindex="0"
               [class.selected]="selectedClusterId === cluster.id"
+              [attr.aria-pressed]="selectedClusterId === cluster.id"
               (mouseenter)="clusterSubmissions.show($event)"
               (mouseleave)="clusterSubmissions.hide()"
+              (keydown.enter)="toggleSelectedCluster(cluster.id)"
+              (keydown.space)="$event.preventDefault(); toggleSelectedCluster(cluster.id)"
               (click)="toggleSelectedCluster(cluster.id)">
               <p-popover #clusterSubmissions>
                 <div class="cluster-popover">

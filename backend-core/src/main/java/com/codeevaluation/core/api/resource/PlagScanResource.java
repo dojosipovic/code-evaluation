@@ -10,7 +10,9 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -34,6 +36,19 @@ public class PlagScanResource {
             @BeanParam PlagScanClusterQueryParams queryParams
     ) {
         return plagScanClusterService.getClusters(queryParams);
+    }
+
+    @HEAD
+    @Path("/report/exists/{assignmentId}")
+    @RolesAllowed({"ADMIN", "PROF"})
+    public Response reportExists(
+            @PathParam("assignmentId") Long assignmentId
+    ) {
+        if (plagScanReportFileService.reportExists(assignmentId)) {
+            return Response.ok().build();
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET

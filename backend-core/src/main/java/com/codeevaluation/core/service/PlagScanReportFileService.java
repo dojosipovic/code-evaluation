@@ -1,7 +1,12 @@
 package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.plagscan.PlagScanReportFileDownload;
+import com.codeevaluation.core.helper.AssignmentAccessPolicy;
+import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.SubmissionPlagiarismRun;
+import com.codeevaluation.core.model.User;
+import com.codeevaluation.core.provider.CurrentUserProvider;
+import com.codeevaluation.core.repository.AssignmentRepository;
 import com.codeevaluation.core.repository.SubmissionPlagiarismRunRepository;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
@@ -13,6 +18,7 @@ import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @ApplicationScoped
@@ -20,7 +26,24 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 public class PlagScanReportFileService {
 
     private final SubmissionPlagiarismRunRepository submissionPlagiarismRunRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final CurrentUserProvider currentUserProvider;
     private final JWTParser jwtParser;
+
+    public boolean reportExists(Long assignmentId) {
+        Assignment assignment = assignmentRepository.findByIdWithTaskAndTests(assignmentId)
+                .orElseThrow(() -> new NotFoundException("Assignment not found"));
+        User currentUser = currentUserProvider.getCurrentUser();
+
+        if (!AssignmentAccessPolicy.canIssuePlagScanToken(assignment, currentUser)) {
+            throw new ForbiddenException("You cannot check the PlagScan report for this assignment");
+        }
+
+        return submissionPlagiarismRunRepository.findLatestByAssignmentId(assignmentId)
+                .map(SubmissionPlagiarismRun::getReportFileBase64)
+                .filter(StringUtils::isNotBlank)
+                .isPresent();
+    }
 
     public PlagScanReportFileDownload getReportFile(String token) {
         JsonWebToken jsonWebToken = parseToken(token);

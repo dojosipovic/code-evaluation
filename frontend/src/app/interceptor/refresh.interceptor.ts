@@ -11,12 +11,12 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const messages = inject(MessageService);
+  const pathname = getPathname(req.url);
 
-  // Nemoj pokušavati refreshati refresh/login/logout pozive
   const isAuthEndpoint =
-    req.url.includes('/auth/login') ||
-    req.url.includes('/auth/refresh') ||
-    req.url.includes('/auth/logout');
+    pathname.endsWith('/auth/login') ||
+    pathname.endsWith('/auth/refresh') ||
+    pathname.endsWith('/auth/logout');
 
   return next(req).pipe(
     catchError((err: unknown) => {
@@ -68,3 +68,11 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+
+function getPathname(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url.split('?')[0];
+  }
+}

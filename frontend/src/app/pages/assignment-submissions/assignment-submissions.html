@@ -56,6 +56,27 @@
       </div>
     </header>
 
+    @if (scoreDistributionData) {
+      <section class="score-distribution-section" aria-labelledby="score-distribution-title">
+        <div class="section-title">
+          <span id="score-distribution-title">Distribucija bodova</span>
+          <small>Prosjek je oznacen crvenom linijom</small>
+        </div>
+
+        <div class="score-chart">
+          <p-chart
+            type="bar"
+            [data]="scoreDistributionData"
+            [options]="scoreDistributionOptions"
+            [plugins]="averageLinePlugins"
+            [width]="scoreDistributionWidth"
+            height="260px"
+            ariaLabel="Distribucija bodova po predajama">
+          </p-chart>
+        </div>
+      </section>
+    }
+
     <section class="submissions-section">
       <div class="section-title">
         <span>Submissions</span>

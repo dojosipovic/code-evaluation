@@ -79,7 +79,6 @@ public class AuthResource {
                 .build();
     }
 
-    // Optional: logout from everywhere (requires valid access JWT)
     @POST
     @Path("/logout-everywhere")
     @Authenticated

@@ -5,11 +5,12 @@ import { AuthService } from '../services/auth/auth.service';
 export const bearerInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.getToken();
+  const pathname = getPathname(req.url);
 
   const skipsBearer =
-    req.url.includes('/auth/login') ||
-    req.url.includes('/auth/refresh') ||
-    req.url.includes('/auth/logout');
+    pathname.endsWith('/auth/login') ||
+    pathname.endsWith('/auth/refresh') ||
+    pathname.endsWith('/auth/logout');
 
   if (skipsBearer) {
     return next(req);
@@ -22,4 +23,12 @@ export const bearerInterceptor: HttpInterceptorFn = (req, next) => {
       setHeaders: { Authorization: `Bearer ${token}` }
     })
   );
+}
+
+function getPathname(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url.split('?')[0];
+  }
 }

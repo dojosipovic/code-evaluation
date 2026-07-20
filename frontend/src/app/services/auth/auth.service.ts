@@ -96,6 +96,17 @@ export class AuthService {
     );
   }
 
+  logoutEverywhere() {
+    return this.http.post(`${this.apiBase}/api/auth/logout-everywhere`, {}, { withCredentials: true }).pipe(
+      tap(() => this.setToken(null)),
+      map(() => true),
+      catchError(() => {
+        this.setToken(null);
+        return of(false);
+      })
+    );
+  }
+
   getToken(): string | null {
     return this._token();
   }

@@ -30,7 +30,10 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       ripple: true,
       theme: {
-        preset: Lara
+        preset: Lara,
+        options: {
+          darkModeSelector: '.app-dark'
+        }
       }
     }),
     MessageService,

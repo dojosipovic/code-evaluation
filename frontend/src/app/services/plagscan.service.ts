@@ -18,6 +18,20 @@ export class PlagScanService {
         return `${this.config.apiUrl}/api/plagscan`;
     }
 
+    getReportUrl(token: string): string {
+        return this.addQueryParams(this.config.plagScanReportUrl, { token });
+    }
+
+    getReportViewerUrl(token: string): string {
+        const reportUrl = this.getReportUrl(token);
+
+        if (!this.config.plagScanReportViewerUrl) {
+            return reportUrl;
+        }
+
+        return this.addQueryParams(this.config.plagScanReportViewerUrl, { file: reportUrl });
+    }
+
     getClusters(params: IPlagScanClusterQueryParams): Observable<IPagedResponse<IPlagScanCluster>> {
         const defaultSortDirection: SortDirection = 'desc';
         let httpParams = new HttpParams()
@@ -47,5 +61,10 @@ export class PlagScanService {
             `${this.baseUrl}/clusters`,
             { params: httpParams }
         );
+    }
+
+    private addQueryParams(url: string, params: Record<string, string>): string {
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}${new URLSearchParams(params).toString()}`;
     }
 }

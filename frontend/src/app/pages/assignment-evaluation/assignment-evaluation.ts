@@ -30,6 +30,7 @@ import { AssignmentService } from '../../services/assignment.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { PlagScanService } from '../../services/plagscan.service';
 import { SubmissionService } from '../../services/submission.service';
+import { AuthService } from '../../services/auth/auth.service';
 import { SubmissionView } from '../submission-view/submission-view';
 
 interface SubmissionGradeFormRow {
@@ -66,12 +67,14 @@ export class AssignmentEvaluation implements OnInit {
   private assignmentService = inject(AssignmentService);
   private submissionService = inject(SubmissionService);
   private plagScanService = inject(PlagScanService);
+  private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private breadcrumbService = inject(BreadcrumbService);
   private readonly pageSize = 100;
 
   readonly loading = signal(true);
   readonly evaluating = signal(false);
+  readonly openingPlagScan = signal(false);
   readonly skeletonRows = Array.from({ length: 4 });
 
   assignment: IAssignmentResponse | null = null;
@@ -146,6 +149,46 @@ export class AssignmentEvaluation implements OnInit {
             severity: 'error',
             summary: 'Greska',
             detail: 'Nije moguce vrednovati assignment'
+          });
+        }
+      });
+  }
+
+  openPlagScanViewer(): void {
+    if (!this.assignment || this.openingPlagScan()) {
+      return;
+    }
+
+    const viewerWindow = window.open('about:blank', '_blank');
+
+    if (viewerWindow) {
+      viewerWindow.opener = null;
+    }
+
+    this.openingPlagScan.set(true);
+
+    this.authService.getPlagScanToken(this.assignment.id)
+      .pipe(
+        finalize(() => this.openingPlagScan.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ accessToken }) => {
+          const viewerUrl = this.plagScanService.getReportViewerUrl(accessToken);
+
+          if (viewerWindow) {
+            viewerWindow.location.href = viewerUrl;
+            return;
+          }
+
+          window.open(viewerUrl, '_blank');
+        },
+        error: () => {
+          viewerWindow?.close();
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Greska',
+            detail: 'Nije moguce otvoriti PlagScan izvjestaj'
           });
         }
       });

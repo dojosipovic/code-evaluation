@@ -39,6 +39,16 @@
       </div>
 
       <div class="header-actions">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-search"
+          label="PlagScan"
+          [loading]="openingPlagScan()"
+          [disabled]="openingPlagScan()"
+          (click)="openPlagScanViewer()">
+        </button>
         <p-tag icon="pi pi-inbox" [value]="'Predaje: ' + submissions.length"></p-tag>
         <p-tag icon="pi pi-star" [value]="'Maks. bodova: ' + assignment.points"></p-tag>
       </div>

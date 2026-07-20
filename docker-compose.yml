@@ -53,6 +53,8 @@ services:
       - "4200:80"
     environment:
       API_URL: ""
+      PLAGSCAN_REPORT_URL: ""
+      PLAGSCAN_REPORT_VIEWER_URL: ""
     depends_on:
       - backend
 

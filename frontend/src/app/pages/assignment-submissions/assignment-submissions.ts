@@ -13,7 +13,9 @@ import { IAssignmentResponse } from '../../models/assignment/IAssignmentResponse
 import { ISubmissionListItem } from '../../models/submission/ISubmissionListItem';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { AssignmentService } from '../../services/assignment.service';
+import { AuthService } from '../../services/auth/auth.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
+import { PlagScanService } from '../../services/plagscan.service';
 import { SubmissionService } from '../../services/submission.service';
 import { SubmissionView } from '../submission-view/submission-view';
 
@@ -37,13 +39,16 @@ export class AssignmentSubmissions implements OnInit {
   private router = inject(Router);
   private location = inject(Location);
   private destroyRef = inject(DestroyRef);
+  private authService = inject(AuthService);
   private assignmentService = inject(AssignmentService);
+  private plagScanService = inject(PlagScanService);
   private submissionService = inject(SubmissionService);
   private messageService = inject(MessageService);
   private breadcrumbService = inject(BreadcrumbService);
   private readonly pageSize = 100;
 
   readonly loading = signal(true);
+  readonly openingPlagScan = signal(false);
 
   assignment: IAssignmentResponse | null = null;
   submissions: ISubmissionListItem[] = [];
@@ -67,6 +72,46 @@ export class AssignmentSubmissions implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  openPlagScanViewer(): void {
+    if (!this.assignment || this.openingPlagScan()) {
+      return;
+    }
+
+    const viewerWindow = window.open('about:blank', '_blank');
+
+    if (viewerWindow) {
+      viewerWindow.opener = null;
+    }
+
+    this.openingPlagScan.set(true);
+
+    this.authService.getPlagScanToken(this.assignment.id)
+      .pipe(
+        finalize(() => this.openingPlagScan.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: ({ accessToken }) => {
+          const viewerUrl = this.plagScanService.getReportViewerUrl(accessToken);
+
+          if (viewerWindow) {
+            viewerWindow.location.href = viewerUrl;
+            return;
+          }
+
+          window.open(viewerUrl, '_blank');
+        },
+        error: () => {
+          viewerWindow?.close();
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Greska',
+            detail: 'Nije moguce otvoriti PlagScan izvjestaj'
+          });
+        }
+      });
   }
 
   openSubmissionDialog(submissionId: number, event?: Event): void {

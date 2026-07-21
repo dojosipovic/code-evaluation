@@ -1,44 +1,150 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
-import { MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { TaskCreateDialog } from '../../components/task-create-dialog/task-create-dialog';
-import { ConfigService } from '../../services/config.service';
+import { ChartModule } from 'primeng/chart';
+import { KnobModule } from 'primeng/knob';
+import { SkeletonModule } from 'primeng/skeleton';
+import { finalize } from 'rxjs';
+import { IDashboard, IDashboardChart, IDashboardStat } from '../../models/dashboard/IDashboard';
+import { DashboardService } from '../../services/dashboard.service';
+
+interface DashboardChartView {
+  key: string;
+  title: string;
+  type: 'doughnut' | 'bar';
+  data: unknown;
+  options: unknown;
+  hasData: boolean;
+}
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ButtonModule, CardModule, TaskCreateDialog],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    CardModule,
+    ChartModule,
+    KnobModule,
+    SkeletonModule
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+  dashboard = signal<IDashboard | null>(null);
+  chartViews = signal<DashboardChartView[]>([]);
+  loading = signal(true);
+  error = signal(false);
+  skeletonStats = Array.from({ length: 6 });
+  skeletonCharts = Array.from({ length: 4 });
 
-  me: string | null = null;
-  editorOpen = false;
+  private dashboardService = inject(DashboardService);
 
-  private http = inject(HttpClient);
-  private messageService = inject(MessageService);
-  private config = inject(ConfigService);
+  private readonly palette = [
+    '#2563eb',
+    '#16a34a',
+    '#f59e0b',
+    '#dc2626',
+    '#7c3aed',
+    '#0891b2',
+    '#475569',
+    '#db2777',
+  ];
 
-  loadMe() {
-    this.http.get(`${this.config.apiUrl}/api/auth/me`, { responseType: 'text' }).subscribe({
-      next: (data: string) => {
-        this.me = data;
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Uspjeh',
-          detail: 'Podaci dohvaćeni'
-        });
+  ngOnInit(): void {
+    this.loading.set(true);
+    this.dashboardService.getDashboard().pipe(
+      finalize(() => {
+        this.loading.set(false);
+      })
+    ).subscribe({
+      next: dashboard => {
+        const nextDashboard = {
+          ...dashboard,
+          stats: dashboard.stats ?? [],
+          charts: dashboard.charts ?? [],
+        };
+        this.dashboard.set(nextDashboard);
+        this.chartViews.set(nextDashboard.charts.map(chart => this.toChartView(chart)));
+        this.error.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Greška',
-          detail: 'Nije moguće dohvatiti podatke'
-        });
-      }
+        this.error.set(true);
+      },
     });
+  }
+
+  isActiveAssignmentStat(dashboard: IDashboard, stat: IDashboardStat): boolean {
+    return dashboard.role === 'STUDENT' && stat.key === 'activeAssignments' && stat.value > 0;
+  }
+
+  isAnimatedStat(stat: IDashboardStat): boolean {
+    return ['ungradedAssignments', 'profUngradedAssignments'].includes(stat.key) && stat.value > 0;
+  }
+
+  isKnobStat(stat: IDashboardStat): boolean {
+    return ['averageScore', 'completionRate', 'testPassRate', 'profAverageScore']
+      .includes(stat.key);
+  }
+
+  knobValue(value: number): number {
+    return Math.max(0, Math.min(100, Math.round(value)));
+  }
+
+  private toChartView(chart: IDashboardChart): DashboardChartView {
+    return {
+      key: chart.key,
+      title: chart.title,
+      type: chart.type,
+      data: this.chartData(chart),
+      options: this.chartOptions(chart),
+      hasData: (chart.values ?? []).some(value => value > 0),
+    };
+  }
+
+  private chartData(chart: IDashboardChart): unknown {
+    return {
+      labels: chart.labels,
+      datasets: [
+        {
+          data: chart.values,
+          backgroundColor: chart.labels.map((_, index) => this.palette[index % this.palette.length]),
+          borderColor: chart.type === 'bar' ? '#1f2937' : '#ffffff',
+          borderWidth: chart.type === 'bar' ? 0 : 2,
+          borderRadius: chart.type === 'bar' ? 6 : 0,
+        },
+      ],
+    };
+  }
+
+  private chartOptions(chart: IDashboardChart): unknown {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: chart.type === 'bar' ? 'bottom' : 'right',
+          labels: {
+            boxWidth: 12,
+            boxHeight: 12,
+            usePointStyle: true,
+          },
+        },
+      },
+      scales:
+        chart.type === 'bar'
+          ? {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                },
+              },
+            }
+          : undefined,
+    };
   }
 }

@@ -58,6 +58,7 @@
   justify-content: flex-end;
 }
 
+.score-distribution-section,
 .submissions-section,
 .submission-list {
   display: flex;
@@ -75,6 +76,20 @@
 .submission-date span {
   color: var(--p-text-muted-color);
   font-size: 0.78rem;
+}
+
+.score-chart {
+  min-height: 292px;
+  padding: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+}
+
+.score-chart p-chart {
+  display: block;
+  height: 260px;
 }
 
 .submission-row {
@@ -229,6 +244,15 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .score-chart {
+    min-height: 252px;
+    padding: 8px;
+  }
+
+  .score-chart p-chart {
+    height: 228px;
   }
 
   :host ::ng-deep {

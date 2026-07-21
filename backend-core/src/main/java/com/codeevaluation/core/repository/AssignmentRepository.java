@@ -2,6 +2,7 @@ package com.codeevaluation.core.repository;
 
 import com.codeevaluation.core.api.dto.assignment.AssignmentCreateDto;
 import com.codeevaluation.core.api.dto.assignment.AssignmentFilterParams;
+import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Group;
@@ -156,16 +157,49 @@ public class AssignmentRepository implements PanacheRepository<Assignment> {
 
         if (filterParams.ungraded() != null) {
             if (filterParams.ungraded()) {
-                query.append(
-                        " and filteredSubmission.id is not null"
-                                + " and filteredSubmission.finalScore is null"
-                                + " and a.endsAt <= :ungradedNow"
-                );
-                params.put("ungradedNow", Instant.now());
+                appendUngradedFilter(query, params, filterParams.user());
             } else {
                 query.append(" and filteredSubmission.finalScore is not null");
             }
         }
+    }
+
+    private void appendUngradedFilter(
+            StringBuilder query,
+            Map<String, Object> params,
+            User currentUser
+    ) {
+        if (currentUser != null && currentUser.isAdmin()) {
+            appendAnyUngradedSubmissionExists(query);
+            return;
+        }
+
+        if (currentUser != null && currentUser.getRole() == Role.PROF) {
+            query.append(" and g.owner.id = :ungradedOwnerId");
+            params.put("ungradedOwnerId", currentUser.getId());
+            appendAnyUngradedSubmissionExists(query);
+            return;
+        }
+
+        query.append(
+                " and filteredSubmission.id is not null"
+                        + " and filteredSubmission.finalScore is null"
+                        + " and a.endsAt <= :ungradedNow"
+        );
+        params.put("ungradedNow", Instant.now());
+    }
+
+    private void appendAnyUngradedSubmissionExists(StringBuilder query) {
+        query.append(
+                """
+                and exists (
+                    select 1
+                    from Submission ungradedSubmission
+                    where ungradedSubmission.assignment = a
+                    and ungradedSubmission.finalScore is null
+                )
+                """
+        );
     }
 
     public Optional<Assignment> findByIdWithTaskAndTests(Long assignmentId) {

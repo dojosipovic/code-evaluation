@@ -102,10 +102,18 @@ jobs:
           IMAGE="${REGISTRY}/${IMAGE_NAMESPACE}/${IMAGE_NAME}"
           IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
 
+          BUILD_ARGS=""
+          if [[ "$SERVICE" == "frontend" ]]; then
+            BUILD_ARGS="BASE_HREF=/app/"
+          fi
+
           echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
           echo "dockerfile=$DOCKERFILE" >> "$GITHUB_OUTPUT"
           echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "build_args<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$BUILD_ARGS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Validate service tag and release branch
         id: release
@@ -228,6 +236,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
+          build-args: ${{ steps.meta.outputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -241,6 +250,7 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.image }}:${{ steps.release.outputs.version }}
             ${{ steps.meta.outputs.image }}:latest
+          build-args: ${{ steps.meta.outputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -10,7 +10,7 @@ export class ConfigService {
 
   load(): Promise<void> {
     return firstValueFrom(
-      this.http.get<AppConfig>('/config.json')
+      this.http.get<AppConfig>('config.json')
     ).then(config => {
       this.config = config;
     });

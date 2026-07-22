@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth/auth.service';
 export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 
-  if (req.url === '/config.json') return next(req);
+  if (req.url.endsWith('config.json')) return next(req);
 
   const isApiCall = req.url.startsWith(auth.apiBase);
 

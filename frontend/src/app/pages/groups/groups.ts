@@ -132,7 +132,7 @@ export class Groups implements OnInit {
   }
 
   openGroup(group: IGroupListItem): void {
-    this.router.navigate(['/groups', group.id, 'users']);
+    this.router.navigate(['/groups', group.id, 'tasks']);
   }
 
   resetFilters(): void {

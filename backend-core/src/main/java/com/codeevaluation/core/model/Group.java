@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,13 +55,13 @@ public class Group extends PanacheEntityBase {
     }
 
     public boolean isOwner(String username) {
-        return owner.getUsername().equals(username);
+        return Objects.equals(owner.getUsername(), username);
     }
 
     public boolean isMember(String username) {
         return members.stream()
                 .anyMatch(
-                        m -> m.getUser().getUsername().equals(username)
+                        m -> Objects.equals(m.getUser().getUsername(), username)
                 );
     }
 }

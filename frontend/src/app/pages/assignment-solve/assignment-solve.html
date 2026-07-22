@@ -1,0 +1,323 @@
+@if (loading()) {
+  <div class="solve-loading">
+    <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+    <span>Ucitavanje assignmenta...</span>
+  </div>
+} @else if (assignment) {
+  @if (compilePopupVisible() && hasCompileFailed() && getCompileOutput()) {
+    <div
+      style="position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgb(0 0 0 / 45%)"
+      tabindex="0"
+      (click)="closeCompilePopup()"
+      (keydown.enter)="closeCompilePopup()"
+      (keydown.space)="closeCompilePopup()">
+      <div
+        style="width:min(46rem,calc(100vw - 2rem));max-height:min(32rem,calc(100vh - 2rem));display:flex;flex-direction:column;border:1px solid var(--p-content-border-color);border-radius:12px;background:var(--p-content-background);box-shadow:0 24px 80px rgb(0 0 0 / 35%);overflow:hidden"
+        tabindex="0"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        (keydown.space)="$event.stopPropagation()">
+        <div
+          style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.85rem 1rem;border-bottom:1px solid var(--p-content-border-color)">
+          <div>
+            <span style="display:block;font-size:1rem;font-weight:800">Compile output</span>
+            <small>Code compilation failed.</small>
+          </div>
+
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            icon="pi pi-times"
+            style="width:2rem;height:2rem"
+            aria-label="Close compile output"
+            (click)="closeCompilePopup()">
+          </button>
+        </div>
+
+        <pre style="margin:0;flex:1;border:0;border-radius:0;background:color-mix(in srgb, var(--p-content-hover-background) 70%, transparent)">{{ getCompileOutput() }}</pre>
+      </div>
+    </div>
+  }
+
+  <main class="solve-page">
+    <header class="solve-header">
+      <div class="title-block">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-arrow-left"
+          class="icon-button"
+          aria-label="Nazad"
+          (click)="goBack()">
+        </button>
+
+        <div class="title-copy">
+          <div class="assignment-name">{{ assignment.name }}</div>
+          <h1>{{ assignment.task.title }}</h1>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <p-tag icon="pi pi-code" [value]="languageLabel"></p-tag>
+        <p-tag icon="pi pi-star" [value]="assignment.points + ' bodova'"></p-tag>
+        <div
+          class="time-left"
+          style="display:flex;align-items:center;gap:.55rem;padding:.4rem .72rem;border:1px solid;border-radius:999px;box-shadow:inset 0 1px 0 rgb(255 255 255 / 4%)"
+          [style.borderColor]="countdownBorderColor"
+          [style.background]="countdownBackground">
+          <i class="pi pi-clock" [style.color]="countdownAccentColor"></i>
+          <span style="font-size:1.08rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1" [style.color]="countdownAccentColor">
+            {{ countdownLabel }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <div
+      #workspace
+      class="solve-workspace">
+      <section class="problem-pane" [style.flex]="'0 0 ' + leftPanePx + 'px'">
+        <div class="pane-toolbar">
+          <span class="pane-title">Description</span>
+          <span class="subtle">{{ hiddenTestsCount }} hidden tests</span>
+        </div>
+
+        <div class="problem-scroll">
+          <article class="markdown-content" [innerHTML]="renderedMarkdown"></article>
+        </div>
+      </section>
+
+      <div
+        class="splitter-gutter splitter-gutter-horizontal"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="startHorizontalResize($event)">
+        <div class="splitter-handle splitter-handle-horizontal"></div>
+      </div>
+
+      <section
+        #rightColumn
+        class="right-column">
+        <section class="code-pane" [style.flex]="'0 0 ' + topPanePx + 'px'">
+          <div class="pane-toolbar">
+            <span class="pane-title">Code</span>
+
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="display:inline-flex;align-items:center;gap:.4rem;font-size:.86rem;font-weight:700;color:var(--p-text-muted-color)">
+                <i
+                  class="pi"
+                  [ngClass]="hasSubmission ? 'pi-check' : 'pi-times'"
+                  [style.color]="hasSubmission ? 'var(--p-green-500)' : 'var(--p-red-500)'">
+                </i>
+                {{ hasSubmission ? 'Predano' : 'Nije predano' }}
+              </span>
+
+              <button
+                pButton
+                type="button"
+                class="run-code-button"
+                severity="info"
+                style="min-width:6.75rem"
+                [disabled]="running() || submitting()"
+                [attr.aria-label]="submitting() ? 'Submitting assignment' : 'Submit assignment'"
+                (click)="submitAssignment()">
+                @if (submitting()) {
+                  <p-progress-spinner
+                    strokeWidth="8"
+                    fill="transparent"
+                    animationDuration=".5s"
+                    class="run-spinner"
+                    [style.width.rem]="1.2"
+                    [style.height.rem]="1.2">
+                  </p-progress-spinner>
+                } @else {
+                  <i class="pi pi-send"></i>
+                  <span>Predaj</span>
+                }
+              </button>
+
+              <button
+                pButton
+                type="button"
+                class="run-code-button"
+                [disabled]="running() || submitting()"
+                [attr.aria-label]="running() ? 'Running code' : 'Run code'"
+                (click)="runCode()">
+                @if (running()) {
+                  <p-progress-spinner
+                    strokeWidth="8"
+                    fill="transparent"
+                    animationDuration=".5s"
+                    class="run-spinner"
+                    [style.width.rem]="1.2"
+                    [style.height.rem]="1.2">
+                  </p-progress-spinner>
+                } @else {
+                  <i class="pi pi-play"></i>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div #editorShell class="editor-shell" [class.editor-shell-running]="running()">
+            <ngx-monaco-editor
+              class="editor-host"
+              [(ngModel)]="code"
+              (onInit)="onEditorInit($event)"
+              [options]="editorOptions">
+            </ngx-monaco-editor>
+
+            @if (running()) {
+              <div class="editor-running-overlay">
+                <p-progress-spinner
+                  strokeWidth="8"
+                  fill="transparent"
+                  animationDuration=".5s"
+                  class="editor-run-spinner"
+                  [style.width.rem]="3"
+                  [style.height.rem]="3">
+                </p-progress-spinner>
+              </div>
+            }
+          </div>
+        </section>
+
+        <div
+          class="splitter-gutter splitter-gutter-vertical"
+          role="separator"
+          aria-orientation="horizontal"
+          (mousedown)="startVerticalResize($event)">
+          <div class="splitter-handle splitter-handle-vertical"></div>
+        </div>
+
+        <section class="tests-pane">
+          @if (showRunProgress) {
+            <div class="solve-progress">
+              <p-progressbar
+                [mode]="runProgressMode() === 'indeterminate' ? 'indeterminate' : 'determinate'"
+                [value]="runProgressValue()"
+                [showValue]="false">
+              </p-progressbar>
+            </div>
+          }
+
+          @if (cases.length === 0) {
+            <div class="empty-results">
+              <i class="pi pi-inbox"></i>
+              <span>No test cases are available.</span>
+            </div>
+          } @else {
+            <div class="case-tabs-shell">
+              <div class="case-tab-list" role="tablist" aria-label="Test cases">
+                @for (testCase of cases; track trackByCaseIndex($index)) {
+                  <button
+                    type="button"
+                    class="case-tab-button"
+                    [class.active]="activeCaseIndex === $index"
+                    [attr.title]="getCaseStatusLabel(testCase.result)"
+                    (click)="selectCase($index)">
+                    <span class="case-status-dot" [ngClass]="getCaseStatusClass(testCase.result)"></span>
+                    Case {{ $index + 1 }}
+                  </button>
+                }
+              </div>
+
+              @if (selectedCase) {
+                <div class="case-panel">
+                  <div class="case-panel-header">
+                    <div>
+                      <span>Case {{ selectedCase.index + 1 }}</span>
+                      <small>
+                        {{ selectedCase.test.visibility === 'PUBLIC' ? 'Public' : 'Hidden' }}
+                      </small>
+                    </div>
+
+                    @if (selectedCase.result) {
+                      <p-tag
+                        [severity]="getResultSeverity(selectedCase.result.testResult)"
+                        [value]="getResultLabel(selectedCase.result.testResult)">
+                      </p-tag>
+                    } @else if (selectedCase.test.visibility === 'PUBLIC') {
+                      <p-tag severity="success" value="Public"></p-tag>
+                    } @else {
+                      <p-tag icon="pi pi-lock" severity="secondary" value="Hidden"></p-tag>
+                    }
+                  </div>
+
+                  <div class="case-input">
+                    <span class="field-caption">Input</span>
+                    @if (hasCaseInput(selectedCase.test.input)) {
+                      <pre>{{ formatTestText(selectedCase.test.input) }}</pre>
+                    } @else {
+                      <div class="redacted">No input is provided.</div>
+                    }
+                  </div>
+
+                  <div class="case-compare">
+                    <div>
+                      <span class="field-caption">Expected</span>
+                      @if (selectedCase.result) {
+                        @if (canShowExpectedOutput(selectedCase.result)) {
+                          @if (selectedCase.result.expectedOutput !== null) {
+                            @if (canShowOutputDiff(selectedCase.result)) {
+                              <pre class="diff-view">@for (part of getExpectedDiffSegments(selectedCase.result); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                            } @else {
+                              <pre>{{ formatTestText(getExpectedOutputText(selectedCase.result)) }}</pre>
+                            }
+                          } @else {
+                            <div class="redacted">No output is expected.</div>
+                          }
+                        } @else {
+                          <div class="redacted">Hidden for this test</div>
+                        }
+                      } @else if (selectedCase.test.visibility === 'PUBLIC') {
+                        @if (selectedCase.test.output !== null) {
+                          <pre>{{ formatTestText(selectedCase.test.output) }}</pre>
+                        } @else {
+                          <div class="redacted">No output is expected.</div>
+                        }
+                      } @else {
+                        <div class="redacted">Hidden for this test</div>
+                      }
+                    </div>
+
+                    <div>
+                      <span class="field-caption">Output</span>
+                      @if (selectedCase.result) {
+                        @if (canShowOutputDiff(selectedCase.result)) {
+                          <pre class="diff-view">@for (part of getActualDiffSegments(selectedCase.result); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                        } @else if (getCaseOutput(selectedCase.result)) {
+                          <pre>{{ formatTestText(getCaseOutput(selectedCase.result)) }}</pre>
+                        } @else {
+                          <div class="redacted">No output was returned.</div>
+                        }
+                      } @else if (runResponse) {
+                        <div class="redacted">Run the code to see the output for this case.</div>
+                      } @else {
+                        <div class="redacted">No run results yet.</div>
+                      }
+                    </div>
+                  </div>
+
+                  @if (selectedCase.result) {
+                    <div class="runtime-line">
+                      <span>{{ selectedCase.result.durationMs }} ms</span>
+                      @if (selectedCase.result.timedOut) {
+                        <span>Timeout {{ selectedCase.result.timeout }}</span>
+                      }
+                      @if (selectedCase.result.exitCode !== 0) {
+                        <span>Exit {{ selectedCase.result.exitCode }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+      </section>
+    </div>
+  </main>
+}

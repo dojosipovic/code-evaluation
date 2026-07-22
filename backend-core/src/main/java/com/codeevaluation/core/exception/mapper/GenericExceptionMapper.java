@@ -1,6 +1,6 @@
 package com.codeevaluation.core.exception.mapper;
 
-import com.codeevaluation.core.error.ApiError;
+import com.codeevaluation.core.api.dto.ApiError;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;

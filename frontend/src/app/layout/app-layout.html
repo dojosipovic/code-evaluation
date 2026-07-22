@@ -10,14 +10,27 @@
           }
         </div>
 
-        <p-button
-          icon="pi pi-bars"
-          [text]="true"
-          [rounded]="true"
-          (onClick)="toggleSidebar()"
-          styleClass="collapse-btn"
-          [attr.aria-label]="collapsed ? 'Proširi izbornik' : 'Sažmi izbornik'"
-        ></p-button>
+        <div class="sidebar-actions">
+          @if (!collapsed) {
+            <p-button
+              [icon]="themeService.icon()"
+              [text]="true"
+              [rounded]="true"
+              (onClick)="themeService.toggleTheme()"
+              styleClass="theme-toggle-btn"
+              [attr.aria-label]="themeService.label()">
+            </p-button>
+          }
+
+          <p-button
+            icon="pi pi-bars"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="toggleSidebar()"
+            styleClass="collapse-btn"
+            [attr.aria-label]="collapsed ? 'Prosiri izbornik' : 'Sazmi izbornik'">
+          </p-button>
+        </div>
       </div>
 
       <nav class="nav">
@@ -28,8 +41,7 @@
             [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
             class="nav-link"
             [attr.title]="collapsed ? item.label : null"
-            (click)="onNavClick()"
-          >
+            (click)="onNavClick()">
             <i [class]="item.icon + ' nav-icon'"></i>
 
             @if (!collapsed) {
@@ -43,18 +55,27 @@
 
   <div class="main">
     @if (isMobile) {
-        <div class="topbar">
-            <p-button
-                icon="pi pi-bars"
-                [text]="true"
-                [rounded]="true"
-                (onClick)="toggleSidebar()"
-                ariaLabel="Otvori izbornik"
-                styleClass="mobile-menu-btn"
-            ></p-button>
+      <div class="topbar">
+        <p-button
+          icon="pi pi-bars"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="toggleSidebar()"
+          ariaLabel="Otvori izbornik"
+          styleClass="mobile-menu-btn">
+        </p-button>
 
-            <span class="topbar-title">Moj App</span>
-        </div>
+        <span class="topbar-title">Moj App</span>
+
+        <p-button
+          [icon]="themeService.icon()"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="themeService.toggleTheme()"
+          [attr.aria-label]="themeService.label()"
+          styleClass="mobile-theme-btn">
+        </p-button>
+      </div>
     }
 
     <div class="content">
@@ -92,28 +113,36 @@
     [attr.aria-hidden]="!mobileMenuVisible"
     role="button"
     tabindex="0"
-    aria-label="Zatvori bočni izbornik"
+    aria-label="Zatvori bocni izbornik"
     (click)="closeMobileMenu()"
     (keydown.enter)="closeMobileMenu()"
-    (keydown.space)="closeMobileMenu()"
-  ></div>
+    (keydown.space)="closeMobileMenu()">
+  </div>
 
   <aside
     class="mobile-sidebar"
     [class.visible]="mobileMenuVisible"
-    [attr.aria-hidden]="!mobileMenuVisible"
-  >
+    [attr.aria-hidden]="!mobileMenuVisible">
     <div class="mobile-header">
-        <p-button
-            icon="pi pi-times"
-            [text]="true"
-            [rounded]="true"
-            (onClick)="closeMobileMenu()"
-            ariaLabel="Zatvori izbornik"
-            styleClass="mobile-menu-btn"
-        ></p-button>
+      <p-button
+        icon="pi pi-times"
+        [text]="true"
+        [rounded]="true"
+        (onClick)="closeMobileMenu()"
+        ariaLabel="Zatvori izbornik"
+        styleClass="mobile-menu-btn">
+      </p-button>
 
-        <span class="brand-text">Moj App</span>
+      <span class="brand-text">Moj App</span>
+
+      <p-button
+        [icon]="themeService.icon()"
+        [text]="true"
+        [rounded]="true"
+        (onClick)="themeService.toggleTheme()"
+        [attr.aria-label]="themeService.label()"
+        styleClass="mobile-theme-btn">
+      </p-button>
     </div>
 
     <nav class="nav">
@@ -124,8 +153,7 @@
           [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
           class="nav-link"
           [attr.title]="collapsed ? item.label : null"
-          (click)="onNavClick()"
-        >
+          (click)="onNavClick()">
           <i [class]="item.icon + ' nav-icon'"></i>
 
           @if (!collapsed) {

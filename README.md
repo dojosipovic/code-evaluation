@@ -171,7 +171,7 @@ SANDBOX_REGISTRY_USERNAME=your-github-user
 SANDBOX_REGISTRY_PASSWORD=github-token-with-package-read
 ```
 
-Add these as Dokploy file mounts for the Compose app:
+Add these as Dokploy file mounts for the Compose app (inset PKCS#8 values from [this website](https://emn178.github.io/online-tools/rsa/key-generator/)):
 
 ```txt
 publicKey.pem
@@ -197,6 +197,14 @@ For frontend deploys through the Web Application, define:
 
 ```txt
 DOKPLOY_APP_ID_FRONTEND
+```
+
+For frontend runtime config, define these Web Application environment variables:
+
+```env
+API_URL=https://your-backend-domain.com
+PLAGSCAN_REPORT_URL=https://your-backend-domain.com/api/plagscan/report
+PLAGSCAN_REPORT_VIEWER_URL=https://your-plagscan-viewer-domain.com
 ```
 
 The shared Dokploy secrets are still required:

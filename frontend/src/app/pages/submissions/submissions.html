@@ -1,0 +1,264 @@
+<div class="page-wrapper">
+  <p-dialog
+    header="Pregled submissiona"
+    [modal]="true"
+    [visible]="submissionDialogOpen"
+    [style]="{ width: 'min(1240px, calc(100vw - 32px))' }"
+    [contentStyle]="{ overflow: 'auto', padding: '0' }"
+    (visibleChange)="onSubmissionDialogVisibleChange($event)">
+    @if (viewedSubmissionId !== null) {
+      <app-submission-view
+        class="embedded-submission-view"
+        [submissionId]="viewedSubmissionId"
+        [embedded]="true">
+      </app-submission-view>
+    }
+  </p-dialog>
+
+  <p-drawer
+    [(visible)]="filtersDrawerVisible"
+    header="Filteri"
+    position="right"
+    [modal]="false"
+    styleClass="submissions-filter-drawer">
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label for="submissionAssignmentId">Assignment ID</label>
+          <p-inputnumber
+            inputId="submissionAssignmentId"
+            [(ngModel)]="submissionFilters.assignmentId"
+            [min]="1"
+            [useGrouping]="false"
+            placeholder="Svi assignmenti">
+          </p-inputnumber>
+        </div>
+
+        <div class="filter-field">
+          <label for="submissionUserId">Korisnik ID</label>
+          <p-inputnumber
+            inputId="submissionUserId"
+            [(ngModel)]="submissionFilters.userId"
+            [min]="1"
+            [useGrouping]="false"
+            placeholder="Svi korisnici">
+          </p-inputnumber>
+        </div>
+
+        <div class="filter-field">
+          <label for="submissionStatus">Status</label>
+          <p-select
+            inputId="submissionStatus"
+            [options]="statusOptions"
+            [(ngModel)]="submissionFilters.status"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="submittedAfter">Predano nakon</label>
+          <p-datepicker
+            inputId="submittedAfter"
+            [(ngModel)]="submissionFilters.submittedAfter"
+            [showTime]="true"
+            hourFormat="24"
+            [showIcon]="true"
+            appendTo="body"
+            dateFormat="dd.mm.yy"
+            placeholder="Odaberi datum">
+          </p-datepicker>
+        </div>
+
+        <div class="filter-field">
+          <label for="submittedBefore">Predano prije</label>
+          <p-datepicker
+            inputId="submittedBefore"
+            [(ngModel)]="submissionFilters.submittedBefore"
+            [showTime]="true"
+            hourFormat="24"
+            [showIcon]="true"
+            appendTo="body"
+            dateFormat="dd.mm.yy"
+            placeholder="Odaberi datum">
+          </p-datepicker>
+        </div>
+
+        <div class="filter-field">
+          <label for="submissionSort">Sort</label>
+          <p-select
+            inputId="submissionSort"
+            [options]="sortOptions"
+            [(ngModel)]="sortField"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+
+        <div class="filter-field">
+          <label for="submissionSortDirection">Smjer</label>
+          <p-select
+            inputId="submissionSortDirection"
+            [options]="sortDirectionOptions"
+            [(ngModel)]="sortDirection"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="false">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Primjeni"
+          [disabled]="loading()"
+          (click)="onApplyFiltersAndCloseDrawer()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          [disabled]="loading()"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+  </p-drawer>
+
+  <p-card class="main-card">
+    <div class="filters-toolbar">
+      <div class="filter-field search-field">
+        <label for="submissionSearch">Search</label>
+        <input
+          id="submissionSearch"
+          pInputText
+          [(ngModel)]="submissionFilters.search"
+          (ngModelChange)="onSearchInput($event)"
+          (keyup.enter)="onApplyFilters()"
+          placeholder="Pretrazi predaje" />
+      </div>
+
+      <div class="toolbar-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter"
+          label="Filteri"
+          [disabled]="loading()"
+          (click)="filtersDrawerVisible = true">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="Reset"
+          class="p-button-secondary"
+          [disabled]="loading()"
+          (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span>Predaje</span>
+      <small>{{ totalRecords }}</small>
+    </div>
+
+    <div class="submission-list">
+      @if (loading()) {
+        @for (_ of skeletonRows; track $index) {
+          <article class="submission-row">
+            <p-skeleton width="2.2rem" height="2.2rem" borderRadius="10px"></p-skeleton>
+            <div class="submission-student">
+              <p-skeleton width="12rem" height="1.1rem"></p-skeleton>
+              <p-skeleton width="8rem" height="0.85rem"></p-skeleton>
+            </div>
+            <p-skeleton width="100%" height="1rem"></p-skeleton>
+            <p-skeleton width="6rem" height="1.2rem"></p-skeleton>
+            <p-skeleton width="9rem" height="1.2rem"></p-skeleton>
+            <p-skeleton width="7rem" height="1.2rem"></p-skeleton>
+          </article>
+        }
+      } @else if (submissions.length) {
+        @for (submission of submissions; track trackBySubmission($index, submission)) {
+          <article class="submission-row">
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              icon="pi pi-eye"
+              class="submission-eye-button"
+              [attr.aria-label]="'Pregledaj submission ' + submission.id"
+              (click)="openSubmissionDialog(submission.id, $event)">
+            </button>
+
+            <div class="submission-student">
+              <strong>{{ getUserDisplayName(submission.user) }}</strong>
+              <span>Submission #{{ submission.id }}</span>
+            </div>
+
+            <div class="submission-tests">
+              <span class="tests-label">
+                <i class="pi pi-list-check"></i>
+                {{ getSubmissionTestsLabel(submission) }}
+              </span>
+              <p-progressbar
+                styleClass="submission-tests-progress"
+                [value]="getSubmissionTestPercent(submission)"
+                [showValue]="false">
+              </p-progressbar>
+            </div>
+
+            <div class="submission-score">
+              <span>Bodovi</span>
+              <strong>{{ getSubmissionScore(submission) }}</strong>
+            </div>
+
+            <div class="submission-date">
+              <span>Predano</span>
+              <strong>{{ submission.submittedAt | date:'dd.MM.yyyy HH:mm' }}</strong>
+            </div>
+
+            <div class="submission-assignment">
+              <span>Assignment</span>
+              <a [routerLink]="['/assignments', submission.assignmentId, 'submissions']">
+                #{{ submission.assignmentId }}
+              </a>
+            </div>
+
+            <p-tag
+              class="submission-status"
+              [value]="submission.status"
+              [severity]="getStatusSeverity(submission.status)">
+            </p-tag>
+          </article>
+        }
+      } @else {
+        <div class="empty-state">
+          Nema predaja za zadane filtere.
+        </div>
+      }
+    </div>
+
+    @if (!loading() && totalRecords > 0) {
+      <p-paginator
+        [first]="first"
+        [rows]="rows"
+        [totalRecords]="totalRecords"
+        [rowsPerPageOptions]="[10, 20, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first} - {last} od {totalRecords}"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    }
+  </p-card>
+</div>

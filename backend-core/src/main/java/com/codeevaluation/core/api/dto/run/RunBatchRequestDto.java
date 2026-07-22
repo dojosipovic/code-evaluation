@@ -2,5 +2,5 @@ package com.codeevaluation.core.api.dto.run;
 
 import java.util.List;
 
-public record RunBatchRequestDto(String code, Integer timeoutSec, List<TestCase> tests) {
+public record RunBatchRequestDto(String code, List<TestCase> tests) {
 }

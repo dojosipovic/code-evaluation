@@ -39,6 +39,7 @@ type ActiveTab = 'preview' | 'public' | 'private' | 'code';
 })
 export class TaskViewDialog implements OnInit {
   @Input() taskId: number | null = null;
+  @Input() showActions = true;
   @Output() closed = new EventEmitter<void>();
   @Output() cloneRequested = new EventEmitter<number>();
   @Output() changed = new EventEmitter<void>();

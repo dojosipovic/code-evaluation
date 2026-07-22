@@ -1,0 +1,166 @@
+<div class="dialog-content">
+  @if (viewerTaskId !== null) {
+    <app-task-view-dialog
+      [taskId]="viewerTaskId"
+      [showActions]="false"
+      (closed)="onTaskViewerClosed()">
+    </app-task-view-dialog>
+  }
+
+  <div class="tasks-toolbar">
+    <div class="filter-field source-field">
+      <label for="assignmentTaskSource">Izvor</label>
+      <div class="view-switcher">
+        <p-selectButton
+          inputId="assignmentTaskSource"
+          [options]="sourceOptions"
+          [(ngModel)]="source"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+          (ngModelChange)="onSourceChange()">
+        </p-selectButton>
+      </div>
+    </div>
+
+    <div class="filter-field search-field">
+      <label for="assignmentTaskSearch">Search</label>
+      <input
+        id="assignmentTaskSearch"
+        pInputText
+        [(ngModel)]="taskFilters.search"
+        (ngModelChange)="onSearchInput($event)"
+        (keyup.enter)="onApplySearch()"
+        placeholder="Pretrazi zadatke" />
+    </div>
+
+    <div class="toolbar-actions">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-refresh"
+        label="Reset"
+        class="p-button-secondary"
+        (click)="resetSearch()">
+      </button>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <p-table
+      [value]="loading() ? skeletonRows : tasks"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="rows"
+      [first]="first"
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first} - {last} od {totalRecords}"
+      (onLazyLoad)="onLazyLoad($event)"
+      class="p-datatable-sm tasks-table">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="id">
+            ID
+            <p-sortIcon field="id"></p-sortIcon>
+          </th>
+          <th pSortableColumn="title">
+            Naziv
+            <p-sortIcon field="title"></p-sortIcon>
+          </th>
+          <th pSortableColumn="status">
+            Status
+            <p-sortIcon field="status"></p-sortIcon>
+          </th>
+          <th pSortableColumn="enabled">
+            Enabled
+            <p-sortIcon field="enabled"></p-sortIcon>
+          </th>
+          <th pSortableColumn="shared">
+            Shared
+            <p-sortIcon field="shared"></p-sortIcon>
+          </th>
+          <th>Autor</th>
+          <th class="actions-column">Akcije</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-task>
+        <tr [class.selected-row]="task.id === selectedTaskId">
+          <td>{{ task.id }}</td>
+          <td>
+            <div class="primary-cell">{{ task.title }}</div>
+          </td>
+          <td>
+            <p-tag [value]="task.status" [severity]="getStatusSeverity(task.status)"></p-tag>
+          </td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="task.enabled ? 'pi-check enabled-icon' : 'pi-times disabled-icon'">
+            </i>
+          </td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="task.shared ? 'pi-globe shared-icon' : 'pi-lock private-icon'">
+            </i>
+          </td>
+          <td>
+            <div class="author-cell">
+              <div class="author-name">{{ getAuthorName(task) }}</div>
+              <div class="author-email">{{ task.user?.email }}</div>
+            </div>
+          </td>
+          <td class="actions-column">
+            <div class="task-row-actions">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-eye"
+                class="p-button-text p-button-rounded"
+                aria-label="Pregledaj zadatak"
+                title="Pregledaj zadatak"
+                (click)="openTaskPreview(task)">
+              </button>
+
+              <button
+                pButton
+                type="button"
+                icon="pi pi-check"
+                label="Odaberi"
+                [outlined]="task.id !== selectedTaskId"
+                (click)="selectTask(task)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="loadingbody">
+        <tr>
+          <td><p-skeleton width="2rem" height="1.2rem"></p-skeleton></td>
+          <td><p-skeleton width="8rem" height="1.2rem"></p-skeleton></td>
+          <td><p-skeleton width="6rem" height="1.8rem" borderRadius="12px"></p-skeleton></td>
+          <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+          <td><p-skeleton width="1.4rem" height="1.4rem" borderRadius="50%"></p-skeleton></td>
+          <td>
+            <p-skeleton width="8rem" height="1.1rem"></p-skeleton>
+            <p-skeleton width="9rem" height="0.9rem" styleClass="mt-2"></p-skeleton>
+          </td>
+          <td class="actions-column">
+            <p-skeleton width="6rem" height="2.2rem" borderRadius="10px"></p-skeleton>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">Nema zadataka za odabir.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 package com.codeevaluation.core.exception.mapper;
 
-import com.codeevaluation.core.error.ApiError;
+import com.codeevaluation.core.api.dto.ApiError;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
@@ -22,7 +22,7 @@ public class WebAppExceptionMapper implements ExceptionMapper<WebApplicationExce
 
     @Override
     public Response toResponse(WebApplicationException e) {
-        log.warn("Exception: {}", e.getMessage(), e);
+        log.warn("Exception: {}", e.getMessage());
 
         int status = e.getResponse().getStatus();
         String reason = Response.Status.fromStatusCode(status) != null

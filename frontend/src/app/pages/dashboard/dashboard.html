@@ -1,21 +1,106 @@
-<p-card>
-    <button pButton type="button" (click)="editorOpen = true">
-        Open task editor
-    </button>
+<div class="dashboard-page">
+  @if (loading()) {
+    <section class="stats-grid" aria-label="Ucitavanje dashboard statistika">
+      @for (_ of skeletonStats; track $index) {
+        <p-card class="stat-card skeleton-card">
+          <p-skeleton width="70%" height="0.9rem"></p-skeleton>
+          <p-skeleton width="4.5rem" height="1.75rem"></p-skeleton>
+        </p-card>
+      }
+    </section>
 
-    @if (editorOpen) {
-        <app-task-create-dialog (closed)="editorOpen = false"></app-task-create-dialog>
-    }
+    <section class="charts-grid" aria-label="Ucitavanje dashboard grafova">
+      @for (_ of skeletonCharts; track $index) {
+        <p-card class="chart-card">
+          <ng-template pTemplate="header">
+            <div class="chart-title">
+              <p-skeleton width="9rem" height="1rem"></p-skeleton>
+            </div>
+          </ng-template>
+          <div class="chart-frame skeleton-chart">
+            <p-skeleton shape="circle" size="9rem"></p-skeleton>
+          </div>
+        </p-card>
+      }
+    </section>
+  } @else if (error()) {
+    <p-card>
+      <div class="state-copy">
+        <strong>Dashboard nije dostupan.</strong>
+        <span>Pokusaj ponovno kasnije.</span>
+      </div>
+    </p-card>
+  } @else if (dashboard(); as dashboard) {
+    <section class="stats-grid" aria-label="Dashboard statistike">
+      @for (stat of dashboard.stats; track stat.key) {
+        @if (isActiveAssignmentStat(dashboard, stat)) {
+          <a
+            class="stat-link"
+            [routerLink]="['/assignments']"
+            [queryParams]="{ active: true, submitted: false }"
+            aria-label="Otvori aktivne assignmente">
+            <p-card class="stat-card active-assignment-card">
+              <svg class="assignment-active-orbit" aria-hidden="true">
+                <rect class="assignment-orbit-stroke" pathLength="1000"></rect>
+              </svg>
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.value | number:'1.0-1' }}{{ stat.suffix ?? '' }}</strong>
+            </p-card>
+          </a>
+        } @else if (isAnimatedStat(stat)) {
+          <a
+            class="stat-link"
+            [routerLink]="['/assignments']"
+            [queryParams]="{ ungraded: true, active: false }"
+            aria-label="Otvori neocijenjene assignmente">
+            <p-card class="stat-card active-assignment-card">
+              <svg class="assignment-active-orbit" aria-hidden="true">
+                <rect class="assignment-orbit-stroke" pathLength="1000"></rect>
+              </svg>
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.value | number:'1.0-1' }}{{ stat.suffix ?? '' }}</strong>
+            </p-card>
+          </a>
+        } @else if (isKnobStat(stat)) {
+          <p-card class="stat-card knob-card">
+            <span>{{ stat.label }}</span>
+            <p-knob
+              [ngModel]="knobValue(stat.value)"
+              [readonly]="true"
+              [size]="112"
+              [strokeWidth]="8"
+              valueTemplate="{value}%">
+            </p-knob>
+          </p-card>
+        } @else {
+          <p-card class="stat-card">
+            <span>{{ stat.label }}</span>
+            <strong>{{ stat.value | number:'1.0-1' }}{{ stat.suffix ?? '' }}</strong>
+          </p-card>
+        }
+      }
+    </section>
 
-    <p-button
-        label="Dohvati moje podatke"
-        icon="pi pi-user"
-        (onClick)="loadMe()"
-        styleClass="mb-3">
-    </p-button>
+    <section class="charts-grid" aria-label="Dashboard grafovi">
+      @for (chart of chartViews(); track chart.key) {
+        <p-card class="chart-card">
+          <ng-template pTemplate="header">
+            <div class="chart-title">{{ chart.title }}</div>
+          </ng-template>
 
-    @if (me) {
-        <pre>{{ me }}</pre>
-    }
-
-</p-card>
+          @if (chart.hasData) {
+            <div class="chart-frame">
+              <p-chart
+                [type]="chart.type"
+                [data]="chart.data"
+                [options]="chart.options">
+              </p-chart>
+            </div>
+          } @else {
+            <div class="empty-chart">Nema podataka za prikaz.</div>
+          }
+        </p-card>
+      }
+    </section>
+  }
+</div>

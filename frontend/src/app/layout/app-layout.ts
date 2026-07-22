@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, computed, HostListener, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -7,6 +8,7 @@ import { filter } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
 import { APP_NAV_ITEMS } from '../config/app-navigation.config';
 import { BreadcrumbService } from '../services/breadcrumb.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-layout',
@@ -21,8 +23,10 @@ export class AppLayout implements OnInit {
 
   private authService = inject(AuthService);
   private breadcrumbService = inject(BreadcrumbService);
+  protected themeService = inject(ThemeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private location = inject(Location);
 
   breadcrumbs = this.breadcrumbService.items;
   private currentUrl = '';
@@ -84,7 +88,7 @@ export class AppLayout implements OnInit {
       return;
     }
 
-    this.router.navigateByUrl(this.backTarget);
+    this.location.back();
   }
 
   private updateBackTarget(previousUrl: string, nextUrl: string): void {
@@ -97,6 +101,11 @@ export class AppLayout implements OnInit {
 
     if (!configuredBackTarget) {
       this.backTarget = null;
+      return;
+    }
+
+    if (this.normalizeUrl(nextUrl) !== configuredBackTarget) {
+      this.backTarget = configuredBackTarget;
       return;
     }
 
@@ -119,6 +128,13 @@ export class AppLayout implements OnInit {
     let backTarget: string | null = null;
 
     while (route) {
+      const routePath = route.snapshot.routeConfig?.path;
+      const groupId = Number(route.snapshot.queryParamMap.get('groupId'));
+
+      if (routePath === 'submissions/:id' && Number.isFinite(groupId)) {
+        backTarget = this.normalizeUrl(`/groups/${groupId}/tasks`);
+      }
+
       const configuredValue = route.snapshot.data['backTo'];
 
       if (typeof configuredValue === 'string') {

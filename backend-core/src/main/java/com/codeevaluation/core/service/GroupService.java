@@ -2,14 +2,16 @@ package com.codeevaluation.core.service;
 
 import com.codeevaluation.core.api.dto.PagedResponse;
 import com.codeevaluation.core.api.dto.group.GroupCreateDto;
+import com.codeevaluation.core.api.dto.group.GroupLeaderboardDto;
 import com.codeevaluation.core.api.dto.group.GroupListItemDto;
 import com.codeevaluation.core.api.dto.group.GroupMemberDto;
 import com.codeevaluation.core.api.dto.group.GroupResponseDto;
 import com.codeevaluation.core.api.dto.group.GroupUpdateDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
+import com.codeevaluation.core.helper.GroupAccessPolicy;
 import com.codeevaluation.core.helper.GroupValidator;
 import com.codeevaluation.core.helper.PagedContext;
-import com.codeevaluation.core.helper.PagedParams;
+import com.codeevaluation.core.api.query.PagedParams;
 import com.codeevaluation.core.helper.PagedSearchGroupImpl;
 import com.codeevaluation.core.helper.PagedSearchGroupMemberImpl;
 import com.codeevaluation.core.model.Group;
@@ -41,6 +43,7 @@ public class GroupService {
     private final GroupValidator groupValidator;
     private final PagedSearchGroupMemberImpl pagedSearchGroupMember;
     private final PagedSearchGroupImpl pagedSearchGroup;
+    private final GroupAccessPolicy groupAccessPolicy;
 
     @Transactional
     public GroupResponseDto createGroup(GroupCreateDto groupCreateDto) {
@@ -59,7 +62,7 @@ public class GroupService {
         Group group = groupRepository.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
-        if (!canFetchGroup(group)) {
+        if (!groupAccessPolicy.canFetchGroup(group, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot see this group");
         }
 
@@ -72,7 +75,7 @@ public class GroupService {
         Group group = groupRepository.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
-        if (!canModifyGroup(group)) {
+        if (!groupAccessPolicy.canModifyGroup(group, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot update this group");
         }
 
@@ -107,24 +110,11 @@ public class GroupService {
         groupMemberRepository.removeMember(group.getId(), user.getId());
     }
 
-    private boolean canFetchGroup(Group group) {
-        User currentUser = currentUserProvider.getCurrentUser();
-        return currentUser.isAdmin()
-                || group.isOwner(currentUser.getUsername())
-                || group.isMember(currentUser.getUsername());
-    }
-
-    private boolean canModifyGroup(Group group) {
-        User currentUser = currentUserProvider.getCurrentUser();
-        return currentUser.isAdmin()
-                || group.isOwner(currentUser.getUsername());
-    }
-
     private Group findGroupForModification(Long groupId) {
         Group group = groupRepository.findByIdOptional(groupId)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
-        if (!canModifyGroup(group)) {
+        if (!groupAccessPolicy.canModifyGroup(group, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot update this group");
         }
 
@@ -135,7 +125,7 @@ public class GroupService {
         Group group = groupRepository.findByIdOptional(groupId)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
-        if (!canFetchGroup(group)) {
+        if (!groupAccessPolicy.canFetchGroup(group, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot see this group");
         }
 
@@ -154,7 +144,7 @@ public class GroupService {
         Group group = groupRepository.findByIdOptional(groupId)
                 .orElseThrow(() -> new NotFoundException("Group not found"));
 
-        if (!canFetchGroup(group)) {
+        if (!groupAccessPolicy.canFetchGroup(group, currentUserProvider.getCurrentUser())) {
             throw new ForbiddenException("You cannot see this group");
         }
 
@@ -167,6 +157,17 @@ public class GroupService {
         int size = pagedContext.size();
 
         return new PagedResponse<>(items, page, size, totalItems);
+    }
+
+    public List<GroupLeaderboardDto> getLeaderboard(Long groupId) {
+        Group group = groupRepository.findByIdOptional(groupId)
+                .orElseThrow(() -> new NotFoundException("Group not found"));
+
+        if (!groupAccessPolicy.canFetchGroup(group, currentUserProvider.getCurrentUser())) {
+            throw new ForbiddenException("You cannot see this group leaderboard");
+        }
+
+        return groupMemberRepository.getLeaderboard(groupId);
     }
 
     public PagedResponse<GroupListItemDto> getGroups(PagedParams pagedParams) {

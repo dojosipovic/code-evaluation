@@ -4,13 +4,11 @@ import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.TaskStatus;
 import com.codeevaluation.core.model.Task;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 public class TaskResponseDto {
 
     private Long id;
@@ -25,19 +23,27 @@ public class TaskResponseDto {
     private UserDto user;
 
     public static TaskResponseDto from(Task task) {
-        TaskResponseDto taskResponseDto = new TaskResponseDto();
+        return buildGeneralInfo(task)
+                .tests(TestResponseDto.from(task.getTests()))
+                .build();
+    }
 
-        taskResponseDto.setId(task.getId());
-        taskResponseDto.setTitle(task.getTitle());
-        taskResponseDto.setDescription(task.getDescription());
-        taskResponseDto.setStarterCode(new StarterCodeDto(null, task.getStarterCode()));
-        taskResponseDto.setIncludeStarterCode(task.getIncludeStarterCode());
-        taskResponseDto.setShared(task.getShared());
-        taskResponseDto.setEnabled(task.getEnabled());
-        taskResponseDto.setStatus(task.getStatus());
-        taskResponseDto.setTests(TestResponseDto.from(task.getTests()));
-        taskResponseDto.setUser(UserDto.from(task.getUser()));
+    public static TaskResponseDto from(Task task, boolean showTestExpectedOutput) {
+        return buildGeneralInfo(task)
+                .tests(TestResponseDto.from(task.getTests(), showTestExpectedOutput))
+                .build();
+    }
 
-        return taskResponseDto;
+    private static TaskResponseDtoBuilder buildGeneralInfo(Task task) {
+        return TaskResponseDto.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .starterCode(new StarterCodeDto(null, task.getStarterCode()))
+                .includeStarterCode(task.getIncludeStarterCode())
+                .shared(task.getShared())
+                .enabled(task.getEnabled())
+                .status(task.getStatus())
+                .user(UserDto.from(task.getUser()));
     }
 }

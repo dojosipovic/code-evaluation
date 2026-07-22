@@ -1,0 +1,238 @@
+@if (loading()) {
+  <div class="submission-loading">
+    <p-progress-spinner ariaLabel="loading"></p-progress-spinner>
+    <span>Ucitavanje submissiona...</span>
+  </div>
+} @else if (submission) {
+  <main class="submission-page">
+    <header class="submission-header">
+      <div class="title-block">
+        @if (!embedded) {
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            icon="pi pi-arrow-left"
+            class="icon-button"
+            aria-label="Nazad"
+            (click)="goBack()">
+          </button>
+        }
+
+        <div class="title-copy">
+          <div class="eyebrow">Submission #{{ submission.id }}</div>
+          <h1>{{ submission.user.firstname }} {{ submission.user.lastname }}</h1>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <p-tag [severity]="getStatusSeverity(submission.status)" [value]="getStatusLabel(submission.status)"></p-tag>
+        <p-tag icon="pi pi-calendar" [value]="submittedAtLabel"></p-tag>
+      </div>
+    </header>
+
+    <section class="summary-band">
+      <div class="metric">
+        <span>Final score</span>
+        <strong>{{ scoreLabel }}</strong>
+      </div>
+
+      <div class="metric tests-metric">
+        <span>Tests</span>
+        <p-progressbar
+          styleClass="tests-progress"
+          [value]="testsProgressValue"
+          [showValue]="false">
+        </p-progressbar>
+        <strong>{{ passedLabel }}</strong>
+      </div>
+
+      <div class="metric">
+        <span>Runtime</span>
+        <strong>{{ runtimeLabel }}</strong>
+      </div>
+
+      <div class="metric">
+        <span>Memory</span>
+        <strong>{{ formatBytes(latestTestRun?.memoryBytes ?? null) }}</strong>
+      </div>
+    </section>
+
+    <section
+      #contentGrid
+      class="content-grid"
+      [style.gridTemplateColumns]="'minmax(0, 1fr) 8px ' + sideSectionPx + 'px'">
+      <section class="code-section">
+        <div class="section-toolbar">
+          <span>Code</span>
+          <p-tag icon="pi pi-lock" severity="secondary" value="Read only"></p-tag>
+        </div>
+
+        @if (hasCode) {
+          <div #editorShell class="editor-shell">
+            <ngx-monaco-editor
+              class="editor-host"
+              [ngModel]="submission.code"
+              (onInit)="onEditorInit($event)"
+              [options]="editorOptions">
+            </ngx-monaco-editor>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="pi pi-code"></i>
+            <span>No code is available.</span>
+          </div>
+        }
+      </section>
+
+      <div
+        class="splitter-gutter"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="startResize($event)">
+        <div class="splitter-handle"></div>
+      </div>
+
+      <aside class="side-section">
+        <section class="similarities-panel">
+          <div class="section-toolbar">
+            <span>Plagiarism similarities</span>
+            <small>{{ submission.similarities.length }}</small>
+          </div>
+
+          @if (submission.similarities.length === 0) {
+            <div class="empty-state compact">
+              <i class="pi pi-shield"></i>
+              <span>No similarities found.</span>
+            </div>
+          } @else {
+            <div class="similarity-list">
+              @for (similarity of submission.similarities; track trackBySimilarityId($index, similarity)) {
+                <article class="similarity-item" [ngClass]="getSimilaritySeverity(similarity)">
+                  <p-knob
+                    [ngModel]="getAnimatedSimilarityPercent(similarity)"
+                    [readonly]="true"
+                    [size]="92"
+                    [min]="0"
+                    [max]="100"
+                    valueTemplate="{value}%">
+                  </p-knob>
+
+                  <div>
+                    <strong>{{ similarity.matchedUser.firstname }} {{ similarity.matchedUser.lastname }}</strong>
+                    <span>Submission #{{ similarity.matchedSubmissionId }}</span>
+                    <small>{{ formatDateTime(similarity.createdAt) }}</small>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="run-panel">
+          <div class="section-toolbar">
+            <span>Latest test run</span>
+            @if (latestTestRun) {
+              <p-tag [severity]="getRunStatusSeverity(latestTestRun.status)" [value]="latestTestRun.status"></p-tag>
+            }
+          </div>
+
+          @if (!latestTestRun) {
+            <div class="empty-state compact">
+              <i class="pi pi-inbox"></i>
+              <span>No test runs are available.</span>
+            </div>
+          } @else {
+            @if (latestTestRun.logOutput) {
+              <pre class="run-log">{{ latestTestRun.logOutput }}</pre>
+            }
+          }
+        </section>
+      </aside>
+
+      @if (latestTestRun) {
+        @if (cases.length === 0) {
+          <div class="empty-state compact cases-empty">
+            <i class="pi pi-list-check"></i>
+            <span>No test cases are available.</span>
+          </div>
+        } @else {
+          <div class="case-tabs-shell">
+            <div class="case-tab-list" role="tablist" aria-label="Test cases">
+              @for (testCase of cases; track trackByCaseIndex($index)) {
+                <button
+                  type="button"
+                  class="case-tab-button"
+                  [class.active]="activeCaseIndex === $index"
+                  [attr.title]="getCaseStatusLabel(testCase)"
+                  (click)="selectCase($index)">
+                  <span class="case-status-dot" [ngClass]="getCaseStatusClass(testCase)"></span>
+                  Case {{ $index + 1 }}
+                </button>
+              }
+            </div>
+
+            @if (selectedCase) {
+              <div class="case-panel">
+                <div class="case-panel-header">
+                  <div>
+                    <span>Case {{ activeCaseIndex + 1 }}</span>
+                    <small>{{ selectedCase.visibility === 'PUBLIC' ? 'Public' : 'Hidden' }}</small>
+                  </div>
+
+                  <p-tag
+                    [severity]="getCaseStatusSeverity(selectedCase)"
+                    [value]="getCaseStatusLabel(selectedCase)">
+                  </p-tag>
+                </div>
+
+                <div class="case-input">
+                  <span class="field-caption">Input</span>
+                  @if (hasCaseInput(selectedCase.testInput)) {
+                    <pre>{{ formatTestText(selectedCase.testInput) }}</pre>
+                  } @else {
+                    <div class="redacted">No input is provided.</div>
+                  }
+                </div>
+
+                <div class="case-compare">
+                  <div>
+                    <span class="field-caption">Expected</span>
+                    @if (canShowExpectedOutput(selectedCase)) {
+                      @if (selectedCase.expectedOutput !== null) {
+                        @if (canShowOutputDiff(selectedCase)) {
+                          <pre class="diff-view">@for (part of getExpectedDiffSegments(selectedCase); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                        } @else {
+                          <pre>{{ formatTestText(getExpectedOutputText(selectedCase)) }}</pre>
+                        }
+                      } @else {
+                        <div class="redacted">No output is expected.</div>
+                      }
+                    } @else {
+                      <div class="redacted">Hidden for this test</div>
+                    }
+                  </div>
+
+                  <div>
+                    <span class="field-caption">Output</span>
+                    @if (canShowOutputDiff(selectedCase)) {
+                      <pre class="diff-view">@for (part of getActualDiffSegments(selectedCase); track $index) {<span [class]="'diff-segment-' + part.kind">{{ part.value }}</span>}</pre>
+                    } @else if (getActualOutput(selectedCase)) {
+                      <pre>{{ formatTestText(getActualOutput(selectedCase)) }}</pre>
+                    } @else {
+                      <div class="redacted">No output was returned.</div>
+                    }
+                  </div>
+                </div>
+
+                <div class="runtime-line">
+                  <span>{{ selectedCase.runtimeMs === null ? '-' : selectedCase.runtimeMs + ' ms' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </section>
+  </main>
+}

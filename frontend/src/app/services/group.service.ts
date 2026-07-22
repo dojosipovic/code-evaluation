@@ -12,6 +12,7 @@ import { IPagedQueryParams } from "../models/IPagedQueryParams";
 import { IUserResponse } from "../models/user/IUserResponse";
 import { IGroupMember } from "../models/group/IGroupMember";
 import { ConfigService } from "./config.service";
+import { IGroupLeaderboardResponse } from "../models/group/IGroupLeaderboardResponse";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -79,5 +80,9 @@ export class GroupService {
 
     addMember(groupId: number, userId: number): Observable<void> {
         return this.http.post<void>(`${this.baseUrl}/${groupId}/members/${userId}`, {});
+    }
+
+    getLeaderBoard(groupId: number): Observable<IGroupLeaderboardResponse[]> {
+        return this.http.get<IGroupLeaderboardResponse[]>(`${this.baseUrl}/${groupId}/leaderboard`);
     }
 }

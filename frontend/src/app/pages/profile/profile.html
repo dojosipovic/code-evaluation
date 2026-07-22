@@ -1,0 +1,49 @@
+<main class="profile-page">
+  <section class="profile-header">
+    <div class="profile-avatar">
+      <i class="pi pi-user"></i>
+    </div>
+
+    <div class="profile-title">
+      <span>Profil</span>
+      <h1>{{ username() || 'Korisnik' }}</h1>
+
+      <div class="role-list">
+        @for (role of roles(); track role) {
+          <p-tag icon="pi pi-shield" [value]="role"></p-tag>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="profile-actions">
+    <div class="action-copy">
+      <h2>Sesija</h2>
+      <p>Upravljanje trenutnom prijavom i aktivnim sesijama na drugim uredajima.</p>
+    </div>
+
+    <div class="action-buttons">
+      <button
+        pButton
+        type="button"
+        severity="secondary"
+        icon="pi pi-sign-out"
+        label="Odjavi se"
+        [loading]="loggingOut()"
+        [disabled]="loggingOutEverywhere()"
+        (click)="logout()">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        severity="danger"
+        icon="pi pi-lock"
+        label="Odjavi se sa svih uredaja"
+        [loading]="loggingOutEverywhere()"
+        [disabled]="loggingOut()"
+        (click)="logoutEverywhere()">
+      </button>
+    </div>
+  </section>
+</main>

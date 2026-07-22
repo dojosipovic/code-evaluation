@@ -11,6 +11,6 @@ import lombok.Setter;
 @Setter
 public class ClusterResult {
     private int clusterId;
-    private double strength;
+    private double similarity;
     private List<String> members;
 }

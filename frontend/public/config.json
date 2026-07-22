@@ -1,3 +1,5 @@
 {
-  "apiUrl": "http://localhost:8080"
+  "apiUrl": "http://localhost:8080",
+  "plagScanReportUrl": "http://localhost:8080/api/plagscan/report",
+  "plagScanReportViewerUrl": "http://localhost:5173/"
 }

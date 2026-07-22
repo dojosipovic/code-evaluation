@@ -8,6 +8,7 @@ import { AppRole } from '../../config/app-types';
 import { IRegisterRequest } from '../../models/auth/IRegisterRequest';
 import { IUserResponse } from '../../models/user/IUserResponse';
 import { ConfigService } from '../config.service';
+import { IPlagScanTokenResponse } from '../../models/auth/IPlagScanTokenResponse';
 
 export interface JwtPayload {
   sub?: string;
@@ -80,8 +81,23 @@ export class AuthService {
       );
   }
 
+  getPlagScanToken(assignmentId: number): Observable<IPlagScanTokenResponse> {
+    return this.http.post<IPlagScanTokenResponse>(`${this.apiBase}/api/auth/plagscan-token/${assignmentId}`, {});
+  }
+
   logout() {
     return this.http.post(`${this.apiBase}/api/auth/logout`, {}, { withCredentials: true }).pipe(
+      tap(() => this.setToken(null)),
+      map(() => true),
+      catchError(() => {
+        this.setToken(null);
+        return of(false);
+      })
+    );
+  }
+
+  logoutEverywhere() {
+    return this.http.post(`${this.apiBase}/api/auth/logout-everywhere`, {}, { withCredentials: true }).pipe(
       tap(() => this.setToken(null)),
       map(() => true),
       catchError(() => {

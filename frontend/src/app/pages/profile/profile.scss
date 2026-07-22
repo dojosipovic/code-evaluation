@@ -1,0 +1,123 @@
+:host {
+  display: block;
+}
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.profile-header,
+.profile-actions {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+  padding: 18px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--p-primary-50);
+  color: var(--p-primary-600);
+
+  .pi {
+    font-size: 1.5rem;
+  }
+}
+
+.profile-title {
+  min-width: 0;
+
+  span {
+    color: var(--p-text-muted-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 2px 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.55rem;
+  }
+}
+
+.role-list,
+.action-buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profile-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.action-copy {
+  max-width: 28rem;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--p-text-muted-color);
+    line-height: 1.45;
+  }
+}
+
+.action-buttons {
+  justify-content: flex-end;
+}
+
+:host ::ng-deep {
+  .p-button,
+  .p-tag {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-page {
+    max-width: none;
+  }
+
+  .profile-header,
+  .profile-actions {
+    padding: 14px;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    width: 100%;
+    justify-content: flex-start;
+
+    .p-button {
+      flex: 1 1 14rem;
+    }
+  }
+}

@@ -21,34 +21,36 @@
         </div>
 
         <div class="header-actions">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-copy"
-            label="Clone"
-            [disabled]="isActionRunning"
-            (click)="onClone()">
-          </button>
+          @if (showActions) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-copy"
+              label="Clone"
+              [disabled]="isActionRunning"
+              (click)="onClone()">
+            </button>
 
-          <button
-            pButton
-            type="button"
-            [severity]="task?.enabled ? 'danger' : 'success'"
-            [icon]="task?.enabled ? 'pi pi-times' : 'pi pi-check'"
-            [label]="task?.enabled ? 'Deaktiviraj' : 'Aktiviraj'"
-            [disabled]="isActionRunning"
-            (click)="onToggleEnabled()">
-          </button>
+            <button
+              pButton
+              type="button"
+              [severity]="task?.enabled ? 'danger' : 'success'"
+              [icon]="task?.enabled ? 'pi pi-times' : 'pi pi-check'"
+              [label]="task?.enabled ? 'Deaktiviraj' : 'Aktiviraj'"
+              [disabled]="isActionRunning"
+              (click)="onToggleEnabled()">
+            </button>
 
-          <button
-            pButton
-            type="button"
-            [severity]="task?.shared ? 'secondary' : 'success'"
-            [icon]="task?.shared ? 'pi pi-lock' : 'pi pi-globe'"
-            [label]="task?.shared ? 'Sakrij' : 'Podijeli'"
-            [disabled]="isActionRunning"
-            (click)="onToggleShared()">
-          </button>
+            <button
+              pButton
+              type="button"
+              [severity]="task?.shared ? 'secondary' : 'success'"
+              [icon]="task?.shared ? 'pi pi-lock' : 'pi pi-globe'"
+              [label]="task?.shared ? 'Sakrij' : 'Podijeli'"
+              [disabled]="isActionRunning"
+              (click)="onToggleShared()">
+            </button>
+          }
 
           <button
             pButton

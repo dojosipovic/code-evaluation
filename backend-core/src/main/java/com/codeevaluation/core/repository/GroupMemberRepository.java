@@ -1,5 +1,7 @@
 package com.codeevaluation.core.repository;
 
+import com.codeevaluation.core.api.dto.group.GroupLeaderboardDto;
+import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.enumeration.Role;
 import com.codeevaluation.core.helper.PagedContext;
 import com.codeevaluation.core.model.Group;
@@ -11,7 +13,9 @@ import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
@@ -104,5 +108,34 @@ public class GroupMemberRepository implements PanacheRepository<GroupMember> {
         int size = pagedContext.size();
 
         return User.find(query.toString(), sort, params).page(Page.of(page, size));
+    }
+
+    public List<GroupLeaderboardDto> getLeaderboard(Long groupId) {
+        return getEntityManager()
+                .createQuery(
+                        """
+                        select user, coalesce(sum(s.finalScore), :zeroScore)
+                        from GroupMember gm
+                        join gm.user user
+                        left join Submission s
+                            on s.user = user
+                            and s.assignment.group.id = :groupId
+                            and s.finalScore is not null
+                        where gm.group.id = :groupId
+                        group by user.id, user.username, user.firstname, user.lastname,
+                            user.email, user.role, user.enabled
+                        order by coalesce(sum(s.finalScore), :zeroScore) desc, user.id asc
+                        """,
+                        Object[].class
+                )
+                .setParameter("groupId", groupId)
+                .setParameter("zeroScore", BigDecimal.ZERO)
+                .getResultList()
+                .stream()
+                .map(row -> new GroupLeaderboardDto(
+                        UserDto.from((User) row[0]),
+                        (BigDecimal) row[1]
+                ))
+                .toList();
     }
 }

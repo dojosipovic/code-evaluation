@@ -6,4 +6,9 @@ html, body {
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--surface-ground);
+  color: var(--text-color);
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }

@@ -16,6 +16,7 @@ on:
         type: choice
         options:
           - backend-core
+          - backend-plagscan
           - frontend
           - cpp-compile
           - cpp-run
@@ -77,6 +78,11 @@ jobs:
               DOCKERFILE="backend-core/src/main/docker/Dockerfile.jvm"
               CONTEXT="."
               IMAGE_NAME="backend-core"
+              ;;
+            backend-plagscan)
+              DOCKERFILE="backend-plagscan/src/main/docker/Dockerfile.jvm"
+              CONTEXT="."
+              IMAGE_NAME="backend-plagscan"
               ;;
             frontend)
               DOCKERFILE="frontend/Dockerfile"
@@ -271,7 +277,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    if: inputs.deploy == true && (inputs.service == 'backend-core' || inputs.service == 'frontend')
+    if: inputs.deploy == true && (inputs.service == 'backend-core' || inputs.service == 'backend-plagscan' || inputs.service == 'frontend')
 
     environment:
       name: ${{ inputs.environment }}
@@ -293,6 +299,10 @@ jobs:
             backend-core)
               DOKPLOY_TARGET_TYPE="compose"
               DOKPLOY_TARGET_ID="${{ secrets.DOKPLOY_COMPOSE_ID_BACKEND_CORE }}"
+              ;;
+            backend-plagscan)
+              DOKPLOY_TARGET_TYPE="application"
+              DOKPLOY_TARGET_ID="${{ secrets.DOKPLOY_APP_ID_BACKEND_PLAGSCAN }}"
               ;;
             frontend)
               DOKPLOY_TARGET_TYPE="application"

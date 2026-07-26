@@ -1,4 +1,5 @@
 name: Build and deploy service
+run-name: ${{ inputs.service }} ${{ inputs.version }} -> ${{ inputs.environment }} (${{ inputs.deploy && 'deploy' || 'build only' }})
 
 on:
   workflow_dispatch:

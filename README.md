@@ -199,6 +199,12 @@ For frontend deploys through the Web Application, define:
 DOKPLOY_APP_ID_FRONTEND
 ```
 
+For the JPlag report viewer external package deploy, define:
+
+```txt
+DOKPLOY_APP_ID_JPLAG_REPORT_VIEWER
+```
+
 For frontend runtime config, define these Web Application environment variables:
 
 ```env
@@ -222,3 +228,43 @@ Build and push the sandbox images with the same workflow by selecting `cpp-compi
 Use `deploy=false` for those two services; they are pulled by the backend when it runs sandbox containers.
 
 If the sandbox images are public, `SANDBOX_REGISTRY_USERNAME` and `SANDBOX_REGISTRY_PASSWORD` can be omitted.
+
+## External GHCR packages
+
+Use the `Deploy external package` GitHub Actions workflow for Docker images that are built outside this repository and already exist in GHCR.
+
+The JPlag report viewer package is expected at:
+
+```txt
+ghcr.io/your-github-user/jplag-report-viewer:latest
+```
+
+The report viewer source is taken from the JPlag repository:
+
+```txt
+https://github.com/jplag/jplag
+```
+
+To build and push it from the local JPlag report viewer workspace:
+
+```bash
+cd D:/JPlag/report-viewer
+docker login ghcr.io -u your-github-user
+docker build --build-arg BASE_PATH=/report-viewer/ -t ghcr.io/your-github-user/jplag-report-viewer:latest .
+docker push ghcr.io/your-github-user/jplag-report-viewer:latest
+```
+
+Use `BASE_PATH=/report-viewer/` when the Dokploy domain is mounted at `/report-viewer`. The Dokploy Web Application should use container port `80`.
+
+In the `Deploy external package` workflow:
+
+```txt
+package=jplag-report-viewer
+image_namespace=your-github-user
+tag=
+deploy=true
+```
+
+Leave `tag` empty to deploy `latest`.
+
+If the GHCR package is private, open the package settings in GitHub and add this repository under `Manage Actions access` with at least read access. Otherwise the workflow cannot inspect `ghcr.io/your-github-user/jplag-report-viewer:latest`.

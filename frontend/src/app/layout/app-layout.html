@@ -3,10 +3,10 @@
     <aside class="sidebar" [class.collapsed]="collapsed">
       <div class="sidebar-header">
         <div class="brand">
-          <i class="pi pi-prime brand-icon"></i>
+          <img src="/icon.png" alt="Logo" class="brand-icon" />
 
           @if (!collapsed) {
-            <span class="brand-text">Moj App</span>
+            <span class="brand-text">Code Evaluation</span>
           }
         </div>
 
@@ -65,7 +65,9 @@
           styleClass="mobile-menu-btn">
         </p-button>
 
-        <span class="topbar-title">Moj App</span>
+        <img src="/icon.png" alt="Logo" class="brand-icon" />
+
+        <span class="topbar-title">Code Evaluation</span>
 
         <p-button
           [icon]="themeService.icon()"
@@ -133,7 +135,9 @@
         styleClass="mobile-menu-btn">
       </p-button>
 
-      <span class="brand-text">Moj App</span>
+      <img src="/icon.png" alt="Logo" class="brand-icon" />
+
+      <span class="brand-text">Code Evaluation</span>
 
       <p-button
         [icon]="themeService.icon()"

@@ -11,26 +11,26 @@
   display: grid;
   grid-template-columns: minmax(260px, 1fr) auto;
   align-items: end;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .filters-section {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .filters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 
   label {
     font-size: 12px;
@@ -42,8 +42,8 @@
 .toolbar-actions,
 .filter-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 
@@ -77,9 +77,10 @@
 
 .submission-row {
   display: grid;
-  grid-template-columns: auto minmax(190px, 1.1fr) minmax(150px, 0.9fr) minmax(80px, auto) minmax(132px, auto) minmax(92px, auto) minmax(116px, auto);
+  grid-template-columns: auto minmax(190px, 1.1fr) minmax(150px, 0.9fr) minmax(132px, auto) minmax(92px, auto) minmax(116px, auto) minmax(80px, auto);
   align-items: center;
   gap: 14px;
+  min-width: 860px;
   padding: 12px;
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
@@ -94,6 +95,17 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+}
+
+.submission-score {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  align-self: stretch;
+  justify-content: center;
+  padding-left: 10px;
+  background: var(--p-content-background);
+  box-shadow: -8px 0 12px color-mix(in srgb, var(--p-content-background) 82%, transparent);
 }
 
 .submission-student strong,
@@ -217,47 +229,36 @@
 
   .p-paginator {
     flex: 0 0 auto;
-    margin-top: 12px;
+    margin-top: 8px;
     border-radius: 10px;
   }
 }
 
 @media (max-width: 1100px) {
-  .submission-row {
-    grid-template-columns: auto 1fr minmax(116px, auto);
+  .toolbar-actions .p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
   }
 
-  .submission-tests,
-  .submission-score,
-  .submission-date,
-  .submission-assignment {
-    grid-column: 1 / -1;
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
   .filters-toolbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
-  .toolbar-actions,
-  .filter-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .toolbar-actions {
+    justify-content: flex-end;
   }
 
   .submission-row {
-    grid-template-columns: auto 1fr;
     gap: 10px;
     padding: 10px;
-  }
-
-  .submission-status {
-    grid-column: 1 / -1;
-    width: fit-content;
-  }
-
-  .submission-tests {
-    grid-template-columns: auto minmax(0, 1fr);
   }
 }

@@ -5,10 +5,10 @@
 }
 
 .page-wrapper {
-  padding: 0 24px 24px;
+  padding: 0 12px 12px;
   max-width: 1400px;
   margin: 0 auto;
-  height: calc(100vh - 92px);
+  height: calc(100vh - 64px);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -37,7 +37,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 1.25rem;
+    padding: 0.75rem;
   }
 
   ::ng-deep .p-card-content {
@@ -48,34 +48,30 @@
   }
 }
 
-.view-switcher {
-  margin-bottom: 18px;
-}
-
 .filters-toolbar {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) auto;
   align-items: end;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .filters-section {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .filters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 
   label {
     font-size: 12px;
@@ -86,7 +82,7 @@
 
 .filter-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -94,7 +90,7 @@
 .table-wrapper {
   min-height: 0;
   flex: 1 1 auto;
-  margin-top: 16px;
+  margin-top: 6px;
   overflow: hidden;
 }
 
@@ -137,6 +133,11 @@
     overflow: auto;
   }
 
+  .p-datatable-sm .p-datatable-thead > tr > th,
+  .p-datatable-sm .p-datatable-tbody > tr > td {
+    padding: 0.45rem 0.6rem;
+  }
+
   .p-datatable {
     min-height: 0;
     height: 100%;
@@ -146,6 +147,11 @@
 
   .p-paginator {
     flex: 0 0 auto;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .p-divider {
+    margin: 0.55rem 0;
   }
 
   .users-filter-drawer {
@@ -162,27 +168,11 @@
   }
 }
 
-@media (max-width: 768px) {
-  .page-wrapper {
-    height: calc(100vh - 82px);
-    padding: 0 16px 16px;
-  }
-
-  .filters-toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
 .top-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
@@ -196,8 +186,8 @@
   width: 100%;
   display: flex;
   justify-content: stretch;
-  gap: 10px;
-  padding: 5px 8px;
+  gap: 6px;
+  padding: 3px 5px;
   border: 1px solid var(--p-content-border-color);
   border-radius: 10px;
   background: var(--p-form-field-background);
@@ -206,7 +196,7 @@
 .view-switcher ::ng-deep .p-togglebutton {
   flex: 1 1 0;
   justify-content: center;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.6rem;
   border: 0;
   border-radius: 7px;
   background: transparent;
@@ -231,7 +221,76 @@
 }
 
 @media (max-width: 768px) {
+  .page-wrapper {
+    height: calc(100vh - 66px);
+    padding: 0 8px 8px;
+  }
+
+  .filters-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .filters-toolbar .filter-actions {
+    flex-wrap: nowrap;
+  }
+
+  .filters-toolbar .filter-actions .p-button,
   .top-actions .p-button {
-    width: 100%;
+    width: 2.5rem;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
+  }
+
+  .top-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  :host ::ng-deep .m-icon.p-button {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .view-switcher ::ng-deep .p-selectbutton {
+    gap: 4px;
+    padding: 3px;
+  }
+
+  .view-switcher ::ng-deep .p-togglebutton {
+    min-width: 0;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .view-switcher ::ng-deep .p-togglebutton-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :host ::ng-deep .p-datatable-thead > tr > th:last-child,
+  :host ::ng-deep .p-datatable-tbody > tr > td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--p-content-background);
+    box-shadow: -8px 0 12px color-mix(in srgb, var(--p-content-background) 82%, transparent);
+    text-align: center;
+  }
+
+  :host ::ng-deep .p-datatable-thead > tr > th:last-child {
+    z-index: 2;
+  }
+
+  :host ::ng-deep .p-datatable-tbody > tr > td:last-child .p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+  }
+
+  :host ::ng-deep .p-datatable-tbody > tr > td:last-child .p-button-label {
+    display: none;
   }
 }

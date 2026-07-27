@@ -19,15 +19,14 @@
             [disabled]="isSaving"
             placeholder="Unesi naziv zadatka"
             class="task-title-input" />
+
+          @if (submitted && !isTitleValid) {
+            <p-message severity="error" icon="pi pi-times-circle">Naziv zadatka mora imati najmanje {{ MIN_TITLE_LENGTH }} znaka i sadržavati tekst.</p-message>
+          }
         </div>
-  
-        @if (submitted && !isTitleValid) {
-          <p-message severity="error" icon="pi pi-times-circle" styleClass="mb-2">Naziv zadatka mora imati najmanje {{ MIN_TITLE_LENGTH }} znaka i sadržavati tekst.</p-message>
-        }
-  
         <div class="header-actions">
           <button pButton type="button" severity="secondary" [disabled]="isSaving" (click)="onClose()">
-            Close
+            Zatvori
           </button>
         </div>
       </div>

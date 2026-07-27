@@ -8,7 +8,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
-import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -23,7 +22,6 @@ import { Router } from '@angular/router';
     PasswordModule,
     ButtonModule,
     CheckboxModule,
-    DividerModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',

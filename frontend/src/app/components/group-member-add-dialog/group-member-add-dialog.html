@@ -1,10 +1,10 @@
 <div class="dialog-content">
   <div class="users-toolbar">
     <div class="filter-field">
-      <label for="nonMemberSearch">Search</label>
       <input
         id="nonMemberSearch"
         pInputText
+        aria-label="Pretrazi korisnike"
         [(ngModel)]="userFilters.search"
         (ngModelChange)="onSearchInput($event)"
         (keyup.enter)="onApplySearch()"
@@ -17,7 +17,9 @@
         type="button"
         icon="pi pi-refresh"
         label="Reset"
-        class="p-button-secondary"
+        aria-label="Reset"
+        title="Reset"
+        class="p-button-secondary m-icon"
         (click)="resetSearch()">
       </button>
     </div>

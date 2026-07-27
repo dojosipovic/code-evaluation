@@ -5,10 +5,10 @@
 }
 
 .page-wrapper {
-  padding: 0 24px 24px;
+  padding: 0 12px 12px;
   max-width: 1400px;
   margin: 0 auto;
-  height: calc(100vh - 92px);
+  height: calc(100vh - 64px);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -37,7 +37,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 1.25rem;
+    padding: 0.75rem;
   }
 
   ::ng-deep .p-card-content {
@@ -48,27 +48,18 @@
   }
 }
 
-.top-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-
 .filters-toolbar {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(210px, 260px) auto;
   align-items: end;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 
   label {
     font-size: 12px;
@@ -79,8 +70,9 @@
 
 .filter-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .dataview-header {
@@ -104,15 +96,15 @@
 .group-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 14px;
+  gap: 8px;
+  padding-top: 10px;
 }
 
 .group-list-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
-  padding: 18px;
+  gap: 12px;
+  padding: 12px;
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   background: var(--p-content-background);
@@ -222,15 +214,15 @@ h3 {
 .group-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-  padding-top: 14px;
+  gap: 10px;
+  padding-top: 10px;
 }
 
 .group-card {
   min-height: 150px;
   justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
+  gap: 12px;
+  padding: 12px;
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   background: var(--p-content-background);
@@ -287,7 +279,7 @@ h3 {
     flex: 0 0 auto;
     border: 0;
     border-top: 1px solid var(--p-content-border-color);
-    padding: 16px 0 0;
+    padding: 10px 0 0;
     background: transparent;
   }
 
@@ -301,6 +293,7 @@ h3 {
 
   .p-paginator {
     flex: 0 0 auto;
+    padding: 0.35rem 0.5rem;
   }
 
   .dataview-switcher .p-selectbutton {
@@ -308,7 +301,7 @@ h3 {
     display: flex;
     justify-content: stretch;
     gap: 10px;
-    padding: 5px 8px;
+    padding: 3px 5px;
     border: 1px solid var(--p-content-border-color);
     border-radius: 10px;
     background: var(--p-form-field-background);
@@ -317,7 +310,7 @@ h3 {
   .dataview-switcher .p-togglebutton {
     flex: 1 1 0;
     justify-content: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.2rem 0.6rem;
     border: 0;
     border-radius: 7px;
     background: transparent;
@@ -338,27 +331,72 @@ h3 {
   }
 }
 
-@media (max-width: 768px) {
-  .page-wrapper {
-    height: calc(100vh - 82px);
-    padding: 0 16px 16px;
-  }
-
-  .filters-toolbar,
-  .group-list-item {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-actions {
-    justify-content: stretch;
+@media (max-width: 1100px) {
+  .filters-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) auto;
   }
 
   .filter-actions .p-button {
-    width: 100%;
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    height: calc(100vh - 66px);
+    padding: 0 8px 8px;
+  }
+
+  .filters-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 36vw) auto;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .group-list-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .group-main {
+    gap: 6px;
+  }
+
+  .group-title {
+    gap: 8px;
+  }
+
+  h3 {
+    font-size: 17px;
+  }
+
+  .owner-line,
+  .created-at {
+    font-size: 12px;
+  }
+
+  .filter-actions .p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
   }
 
   .group-meta {
-    align-items: flex-start;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: auto;
   }
 
   .dataview-header {
@@ -369,5 +407,33 @@ h3 {
   .dataview-switcher {
     width: 100%;
     flex-basis: auto;
+  }
+
+  :host ::ng-deep {
+    .dataview-switcher .p-selectbutton {
+      gap: 4px;
+      padding: 3px;
+    }
+
+    .dataview-switcher .p-togglebutton {
+      min-width: 0;
+      padding: 0.35rem 0.4rem;
+    }
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sort-field {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .filter-actions {
+    grid-column: 2;
+    grid-row: 1;
   }
 }

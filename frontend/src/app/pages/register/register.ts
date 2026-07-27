@@ -4,7 +4,6 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../services/auth/auth.service';
@@ -21,8 +20,7 @@ import { usernameAvailableValidator } from '../../validator/username-available.v
     CardModule,
     InputTextModule,
     PasswordModule,
-    ButtonModule,
-    DividerModule
+    ButtonModule
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',

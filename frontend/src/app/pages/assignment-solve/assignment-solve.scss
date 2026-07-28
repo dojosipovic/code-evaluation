@@ -84,7 +84,6 @@
 
 .assignment-name,
 .subtle,
-label,
 small {
   color: var(--p-text-muted-color);
 }
@@ -198,25 +197,12 @@ pre {
   line-height: 1.45;
 }
 
-.diff-segment-expected,
-.diff-segment-actual {
-  font-weight: 800;
-}
-
 .diff-segment-expected {
   background: color-mix(in srgb, var(--p-red-500) 42%, transparent);
 }
 
 .diff-segment-actual {
   background: color-mix(in srgb, var(--p-green-500) 42%, transparent);
-}
-
-label {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.76rem;
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .redacted,
@@ -443,13 +429,6 @@ label {
     border-radius: 8px;
   }
 
-  .run-spinner {
-    --p-progressspinner-color-one: #111827;
-    --p-progressspinner-color-two: #111827;
-    --p-progressspinner-color-three: #111827;
-    --p-progressspinner-color-four: #111827;
-  }
-
   .editor-run-spinner {
     --p-progressspinner-color-one: var(--p-primary-color);
     --p-progressspinner-color-two: var(--p-primary-color);
@@ -496,10 +475,48 @@ label {
 
   .solve-workspace {
     flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
   .right-column {
     min-width: 0;
+    overflow: visible;
+  }
+
+  .problem-pane,
+  .code-pane {
+    flex: 0 0 auto !important;
+  }
+
+  .problem-scroll {
+    max-height: 42vh;
+    padding: 1rem;
+  }
+
+  .editor-shell {
+    flex: 0 0 auto;
+    height: clamp(22rem, 58vh, 34rem);
+    min-height: 22rem;
+  }
+
+  .splitter-gutter {
+    display: none;
+  }
+
+  .pane-toolbar {
+    min-height: 42px;
+    padding: .45rem .6rem;
+  }
+
+  :host ::ng-deep .run-code-button {
+    min-width: 2.4rem !important;
+    width: 2.4rem;
+    padding-inline: 0;
+  }
+
+  :host ::ng-deep .run-code-button span {
+    display: none;
   }
 
   .case-compare {

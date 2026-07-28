@@ -114,9 +114,13 @@
       <p-inputNumber
         inputId="assignmentPoints"
         formControlName="points"
-        [min]="0"
+        [min]="1"
         [showButtons]="true">
       </p-inputNumber>
+
+      @if ((form.controls.points.dirty || form.controls.points.touched) && form.controls.points.errors?.['min']) {
+        <small class="error-text">Broj bodova mora biti najmanje 1.</small>
+      }
     </div>
   </form>
 

@@ -9,7 +9,6 @@
 
   <div class="tasks-toolbar">
     <div class="filter-field source-field">
-      <label for="assignmentTaskSource">Izvor</label>
       <div class="view-switcher">
         <p-selectButton
           inputId="assignmentTaskSource"
@@ -24,10 +23,10 @@
     </div>
 
     <div class="filter-field search-field">
-      <label for="assignmentTaskSearch">Search</label>
       <input
         id="assignmentTaskSearch"
         pInputText
+        aria-label="Pretrazi zadatke"
         [(ngModel)]="taskFilters.search"
         (ngModelChange)="onSearchInput($event)"
         (keyup.enter)="onApplySearch()"
@@ -40,7 +39,9 @@
         type="button"
         icon="pi pi-refresh"
         label="Reset"
-        class="p-button-secondary"
+        aria-label="Reset"
+        title="Reset"
+        class="p-button-secondary m-icon"
         (click)="resetSearch()">
       </button>
     </div>
@@ -131,6 +132,9 @@
                 type="button"
                 icon="pi pi-check"
                 label="Odaberi"
+                aria-label="Odaberi zadatak"
+                title="Odaberi zadatak"
+                class="select-task-button"
                 [outlined]="task.id !== selectedTaskId"
                 (click)="selectTask(task)">
               </button>

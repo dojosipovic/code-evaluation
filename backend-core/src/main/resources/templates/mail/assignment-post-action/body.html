@@ -1,0 +1,97 @@
+<tr>
+    <td style="padding:34px 34px 10px;">
+        <p style="margin:0 0 10px;color:#1d4ed8;font-size:12px;line-height:18px;
+                  font-weight:700;text-transform:uppercase;letter-spacing:0;">
+            Ocjenjivanje
+        </p>
+        <h1 style="margin:0 0 20px;color:#0f172a;font-size:26px;line-height:34px;
+                   font-weight:700;letter-spacing:0;">
+            {mail.title}
+        </h1>
+        <p style="margin:0 0 18px;color:#334155;font-size:16px;line-height:25px;">
+            Pozdrav {mail.professorName},
+        </p>
+        <p style="margin:0 0 26px;color:#334155;font-size:16px;line-height:25px;">
+            Obrada za assignment
+            <strong style="color:#0f172a;">{mail.assignmentName}</strong> je završena.
+            Predaje su spremne za pregled i ocjenjivanje.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin:0 0 28px;border-collapse:separate;border-spacing:0;
+                      background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Assignment</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.assignmentName}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Zadatak</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.taskTitle}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Grupa</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.groupName}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Predaje</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.submissionCount}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Početak</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.startsAt}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Kraj</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.endsAt}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;color:#64748b;font-size:14px;">Bodovi</td>
+                <td style="padding:16px 18px;color:#0f172a;font-size:14px;
+                           font-weight:600;text-align:right;">
+                    {mail.points}
+                </td>
+            </tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin:0 0 28px;border-collapse:collapse;">
+            <tr>
+                <td align="center" bgcolor="#1d4ed8" style="border-radius:7px;">
+                    <a href="{mail.evaluationUrl}" target="_blank"
+                       style="display:block;padding:15px 24px;color:#ffffff;
+                              font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0;">
+                        Ocijeni
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <p style="margin:0;color:#64748b;font-size:13px;line-height:20px;">
+            Ako gumb ne radi, kopirajte ovaj link u preglednik:<br>
+            <a href="{mail.evaluationUrl}" style="color:#1d4ed8;text-decoration:underline;word-break:break-all;">
+                {mail.evaluationUrl}
+            </a>
+        </p>
+    </td>
+</tr>

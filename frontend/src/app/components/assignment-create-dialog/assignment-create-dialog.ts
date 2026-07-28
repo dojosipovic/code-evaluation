@@ -86,10 +86,10 @@ export class AssignmentCreateDialog implements OnDestroy {
       endsAt: this.fb.control<Date | null>(null, {
         validators: [Validators.required]
       }),
-      points: this.fb.control<number | null>(0, {
+      points: this.fb.control<number | null>(1, {
         validators: [
           Validators.required,
-          Validators.min(0)
+          Validators.min(1)
         ]
       })
     },
@@ -184,7 +184,7 @@ export class AssignmentCreateDialog implements OnDestroy {
       taskId: this.selectedTask.id,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
-      points: points ?? 0
+      points: points ?? 1
     })
       .pipe(finalize(() => (this.submitting = false)))
       .subscribe({
@@ -237,7 +237,7 @@ export class AssignmentCreateDialog implements OnDestroy {
       name: '',
       startsAt: null,
       endsAt: null,
-      points: 0
+      points: 1
     });
 
     this.selectedTask = null;

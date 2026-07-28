@@ -26,7 +26,7 @@
               pButton
               type="button"
               icon="pi pi-copy"
-              label="Clone"
+              label="Kopiraj"
               [disabled]="isActionRunning"
               (click)="onClone()">
             </button>
@@ -56,7 +56,10 @@
             pButton
             type="button"
             severity="secondary"
-            label="Close"
+            icon="pi pi-times"
+            label="Zatvori"
+            aria-label="Close"
+            title="Close"
             (click)="onClose()">
           </button>
         </div>

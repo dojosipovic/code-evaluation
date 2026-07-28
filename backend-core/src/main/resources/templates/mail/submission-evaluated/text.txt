@@ -1,0 +1,12 @@
+Pozdrav {mail.studentName},
+
+Vaš submission za assignment "{mail.assignmentName}" je ocijenjen.
+
+Zadatak: {mail.taskTitle}
+Ocjena: {mail.finalScore} / {mail.maxPoints}
+Predano: {mail.submittedAt}
+
+Submission pregledajte na:
+{mail.submissionUrl}
+
+Ova poruka je automatski generirana te Vas molimo da ne odgovarate na nju. Ako niste očekivali ovu poruku, možete zanemariti ovaj email.

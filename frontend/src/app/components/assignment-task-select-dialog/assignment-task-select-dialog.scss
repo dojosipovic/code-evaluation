@@ -1,6 +1,6 @@
 :host {
   display: block;
-  height: min(68vh, 640px);
+  height: min(72vh, 660px);
   min-height: 0;
 }
 
@@ -15,14 +15,14 @@
   display: grid;
   grid-template-columns: auto minmax(220px, 1fr) auto;
   align-items: end;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 
   label {
     font-size: 12px;
@@ -33,12 +33,14 @@
 
 .toolbar-actions {
   display: flex;
+  gap: 8px;
   justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .view-switcher {
   width: 100%;
-  min-width: 240px;
+  min-width: 220px;
 }
 
 .table-wrapper {
@@ -90,13 +92,22 @@
 .actions-column {
   width: 170px;
   text-align: center;
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--p-content-background);
+  box-shadow: -8px 0 12px color-mix(in srgb, var(--p-content-background) 82%, transparent);
+}
+
+th.actions-column {
+  z-index: 2;
 }
 
 .task-row-actions {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .selected-row {
@@ -115,8 +126,8 @@
     width: 100%;
     display: flex;
     justify-content: stretch;
-    gap: 10px;
-    padding: 5px 8px;
+    gap: 6px;
+    padding: 3px 5px;
     border: 1px solid var(--p-content-border-color);
     border-radius: 10px;
     background: var(--p-form-field-background);
@@ -125,7 +136,7 @@
   .view-switcher .p-togglebutton {
     flex: 1 1 0;
     justify-content: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.55rem;
     border: 0;
     border-radius: 7px;
     background: transparent;
@@ -164,20 +175,70 @@
   }
 }
 
-@media (max-width: 768px) {
-  :host {
-    height: 70vh;
+@media (max-width: 900px) {
+  .tasks-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .tasks-toolbar {
-    grid-template-columns: 1fr;
+  .source-field {
+    grid-column: 1 / -1;
+  }
+
+  .search-field {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
   }
 
   .toolbar-actions {
-    justify-content: stretch;
+    grid-column: 2;
+    grid-row: 2;
+  }
 
-    .p-button {
-      width: 100%;
+  .toolbar-actions .p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    height: 76vh;
+  }
+
+  .tasks-toolbar {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .actions-column {
+    width: 120px;
+  }
+
+  .select-task-button {
+    width: 2.35rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .select-task-button .p-button-label {
+    display: none;
+  }
+
+  :host ::ng-deep {
+    .view-switcher .p-selectbutton {
+      gap: 4px;
+      padding: 3px;
+    }
+
+    .view-switcher .p-togglebutton {
+      min-width: 0;
+      padding: 0.35rem 0.4rem;
     }
   }
 }

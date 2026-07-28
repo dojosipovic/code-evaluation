@@ -114,14 +114,14 @@
                 </p-progressbar>
               </div>
 
-              <div class="submission-score">
-                <span>Bodovi</span>
-                <strong>{{ getSubmissionScore(submission) }} / {{ assignment.points }}</strong>
-              </div>
-
               <div class="submission-date">
                 <span>Predano</span>
                 <strong>{{ submission.submittedAt | date:'dd.MM.yyyy HH:mm' }}</strong>
+              </div>
+
+              <div class="submission-score">
+                <span>Bodovi</span>
+                <strong>{{ getSubmissionScore(submission) }} / {{ assignment.points }}</strong>
               </div>
             </article>
           }

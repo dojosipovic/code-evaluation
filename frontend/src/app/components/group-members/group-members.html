@@ -13,10 +13,10 @@
 
 <div class="members-toolbar">
   <div class="filter-field">
-    <label for="memberSearch">Search</label>
     <input
       id="memberSearch"
       pInputText
+      aria-label="Pretrazi clanove"
       [(ngModel)]="memberFilters.search"
       (ngModelChange)="onSearchInput($event)"
       (keyup.enter)="onApplySearch()"
@@ -29,7 +29,9 @@
       type="button"
       icon="pi pi-refresh"
       label="Reset"
-      class="p-button-secondary"
+      aria-label="Reset"
+      title="Reset"
+      class="p-button-secondary m-icon"
       (click)="resetSearch()">
     </button>
 
@@ -39,6 +41,9 @@
         type="button"
         icon="pi pi-user-plus"
         label="Dodaj"
+        aria-label="Dodaj clana"
+        title="Dodaj clana"
+        class="m-icon"
         (click)="openAddMembersDialog()">
       </button>
     }

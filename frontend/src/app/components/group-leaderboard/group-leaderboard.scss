@@ -1,5 +1,6 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
 }
@@ -8,8 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .leaderboard-title {
@@ -29,7 +30,7 @@
 
 .leaderboard-table-wrapper {
   min-height: 0;
-  height: calc(100% - 54px);
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -43,6 +44,15 @@
 .score-column {
   width: 140px;
   text-align: right;
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--p-content-background);
+  box-shadow: -8px 0 12px color-mix(in srgb, var(--p-content-background) 82%, transparent);
+}
+
+th.score-column {
+  z-index: 2;
 }
 
 .primary-cell {
@@ -77,11 +87,17 @@
 
 @media (max-width: 768px) {
   .leaderboard-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
-  :host ::ng-deep .p-button {
-    width: 100%;
+  :host ::ng-deep .m-icon.p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
   }
 }

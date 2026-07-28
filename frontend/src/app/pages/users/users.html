@@ -108,6 +108,9 @@
         type="button"
         icon="pi pi-plus"
         label="Novi invite"
+        aria-label="Novi invite"
+        title="Novi invite"
+        class="m-icon"
         (click)="openCreateInviteDialog()">
       </button>
     </div>
@@ -115,10 +118,10 @@
     @if (currentView() === 'invites') {
       <div class="filters-toolbar">
         <div class="filter-field">
-          <label for="email">Email</label>
           <input
             inputId="email"
             pInputText
+            aria-label="Pretrazi inviteove po emailu"
             [(ngModel)]="inviteFilters.email"
             (ngModelChange)="onEmailInput($event)"
             (keyup.enter)="onApplyFilters()"
@@ -126,8 +129,8 @@
         </div>
 
         <div class="filter-actions">
-          <button pButton type="button" icon="pi pi-filter" (click)="inviteFiltersDrawerVisible = true">Filteri</button>
-          <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetInviteFilters()">Reset</button>
+          <button pButton type="button" icon="pi pi-filter" label="Filteri" aria-label="Filteri" title="Filteri" class="m-icon" (click)="inviteFiltersDrawerVisible = true"></button>
+          <button pButton type="button" icon="pi pi-refresh" label="Reset" aria-label="Reset" title="Reset" class="p-button-secondary m-icon" (click)="resetInviteFilters()"></button>
         </div>
       </div>
     }
@@ -135,10 +138,10 @@
     @if (currentView() === 'users') {
       <div class="filters-toolbar">
         <div class="filter-field">
-          <label for="userSearch">Search</label>
           <input
             id="userSearch"
             pInputText
+            aria-label="Pretrazi korisnike po username ili email"
             [(ngModel)]="userFilters.search"
             (ngModelChange)="onUserSearchInput($event)"
             (keyup.enter)="onApplyFilters()"
@@ -146,8 +149,8 @@
         </div>
 
         <div class="filter-actions">
-          <button pButton type="button" icon="pi pi-filter" (click)="userFiltersDrawerVisible = true">Filteri</button>
-          <button pButton type="button" icon="pi pi-refresh" class="p-button-secondary" (click)="resetUserFilters()">Reset</button>
+          <button pButton type="button" icon="pi pi-filter" label="Filteri" aria-label="Filteri" title="Filteri" class="m-icon" (click)="userFiltersDrawerVisible = true"></button>
+          <button pButton type="button" icon="pi pi-refresh" label="Reset" aria-label="Reset" title="Reset" class="p-button-secondary m-icon" (click)="resetUserFilters()"></button>
         </div>
       </div>
     }

@@ -1,12 +1,13 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
 }
 
 .table-wrapper {
   min-height: 0;
-  height: calc(100% - 72px);
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -16,14 +17,14 @@
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto;
   align-items: end;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 
   label {
     font-size: 12px;
@@ -34,8 +35,9 @@
 
 .toolbar-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .primary-cell {
@@ -45,6 +47,15 @@
 .actions-column {
   width: 90px;
   text-align: center;
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--p-content-background);
+  box-shadow: -8px 0 12px color-mix(in srgb, var(--p-content-background) 82%, transparent);
+}
+
+th.actions-column {
+  z-index: 2;
 }
 
 .enabled-icon,
@@ -124,17 +135,36 @@
   }
 }
 
+@media (max-width: 1100px) {
+  .toolbar-actions .p-button {
+    width: 2.5rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .m-icon .p-button-label {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .members-toolbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
   .toolbar-actions {
-    flex-direction: column;
-    justify-content: stretch;
+    justify-content: flex-end;
 
     .p-button {
-      width: 100%;
+      width: 2.5rem;
+      padding-inline: 0;
+      justify-content: center;
     }
+  }
+
+  .actions-column {
+    width: 72px;
   }
 }

@@ -29,6 +29,7 @@ public class InviteService {
 
     private final InviteRepository inviteRepository;
     private final UserRepository userRepository;
+    private final MailService mailService;
 
     @Transactional
     public InviteResponseDto createInvite(String email, Role role, String username) {
@@ -59,6 +60,8 @@ public class InviteService {
         invite.setCreatedByAdminUsername(username);
 
         inviteRepository.persist(invite);
+
+        mailService.sendInviteMail(invite, rawToken);
 
         return InviteResponseDto.from(invite);
     }

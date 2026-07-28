@@ -3,8 +3,8 @@
     <p-card styleClass="card">
       <div class="header">
         <div class="brand">
-          <i class="pi pi-lock"></i>
-          <span>Prijava</span>
+          <img src="/icon.png" alt="Logo" class="brand-icon" />
+          <span>Code Evaluation</span>
         </div>
       </div>
 
@@ -36,7 +36,6 @@
             <p-checkbox formControlName="remember" inputId="remember" binary="true"></p-checkbox>
             <label for="remember">Zapamti me</label>
           </div>
-          <a class="link" href="#" (click)="$event.preventDefault()">Zaboravljena lozinka?</a>
         </div>
 
         <p-button
@@ -47,13 +46,6 @@
           [disabled]="form.invalid || loading"
           [loading]="loading">
         </p-button>
-
-        <p-divider></p-divider>
-
-        <div class="hint">
-          Nemaš račun?
-          <a class="link" href="#" (click)="$event.preventDefault()">Registriraj se</a>
-        </div>
       </form>
     </p-card>
   </div>

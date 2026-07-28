@@ -1,14 +1,4 @@
 <div class="page-wrapper">
-  <div class="page-actions">
-    <button
-      pButton
-      type="button"
-      icon="pi pi-plus"
-      label="Novi zadatak"
-      (click)="openCreateTaskDialog()">
-    </button>
-  </div>
-
   <p-drawer
     [(visible)]="filtersDrawerVisible"
     header="Filteri"
@@ -96,7 +86,7 @@
         <div class="task-actions-menu">
           <button class="task-action-item" (click)="cloneTask(task)">
               <i class="pi pi-copy"></i>
-              <span>Clone</span>
+              <span>Kopiraj</span>
           </button>
 
           @if (task.status === TaskStatusEnum.DRAFT) {
@@ -157,10 +147,10 @@
   <p-card class="main-card">
     <div class="filters-toolbar">
       <div class="filter-field search-field">
-        <label for="taskSearch">Search</label>
         <input
           id="taskSearch"
           pInputText
+          aria-label="Pretrazi zadatke po nazivu"
           [(ngModel)]="taskFilters.search"
           (ngModelChange)="onSearchInput($event)"
           (keyup.enter)="onApplyFilters()"
@@ -173,6 +163,9 @@
           type="button"
           icon="pi pi-filter"
           label="Filteri"
+          aria-label="Filteri"
+          title="Filteri"
+          class="m-icon"
           (click)="filtersDrawerVisible = true">
         </button>
 
@@ -181,8 +174,21 @@
           type="button"
           icon="pi pi-refresh"
           label="Reset"
-          class="p-button-secondary"
+          class="p-button-secondary m-icon"
+          aria-label="Reset"
+          title="Reset"
           (click)="resetFilters()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-plus"
+          label="Novi zadatak"
+          aria-label="Novi zadatak"
+          title="Novi zadatak"
+          class="m-icon"
+          (click)="openCreateTaskDialog()">
         </button>
       </div>
     </div>

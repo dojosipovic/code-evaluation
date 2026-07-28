@@ -17,7 +17,16 @@ public interface MailConfig {
 
     Invite invite();
 
+    AssignmentStartReminder assignmentStartReminder();
+
     interface Invite {
+
+        String subject();
+
+        String title();
+    }
+
+    interface AssignmentStartReminder {
 
         String subject();
 

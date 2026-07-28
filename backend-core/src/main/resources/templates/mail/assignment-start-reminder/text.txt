@@ -1,0 +1,13 @@
+Pozdrav,
+
+Assignment "{mail.assignmentName}" uskoro počinje.
+
+Grupa: {mail.groupName}
+Početak: {mail.startsAt}
+Kraj: {mail.endsAt}
+Bodovi: {mail.points}
+
+Assignment otvorite na:
+{mail.assignmentUrl}
+
+Ova poruka je automatski generirana te Vas molimo da ne odgovarate na nju. Ako niste očekivali ovu poruku, možete zanemariti ovaj email.

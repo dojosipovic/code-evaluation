@@ -8,16 +8,16 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor
-public class InviteMailTemplateRenderer {
+public class AssignmentStartReminderMailTemplateRenderer {
 
     private final MailLayoutRenderer mailLayoutRenderer;
-    @Location("mail/invite/body.html")
-    private final Template inviteBodyTemplate;
-    @Location("mail/invite/text.txt")
-    private final Template inviteTextTemplate;
+    @Location("mail/assignment-start-reminder/body.html")
+    private final Template bodyTemplate;
+    @Location("mail/assignment-start-reminder/text.txt")
+    private final Template textTemplate;
 
-    public MailContent render(InviteMailTemplateData templateData) {
-        String bodyHtml = inviteBodyTemplate.data("mail", templateData).render();
+    public MailContent render(AssignmentStartReminderMailTemplateData templateData) {
+        String bodyHtml = bodyTemplate.data("mail", templateData).render();
 
         return new MailContent(
                 mailLayoutRenderer.render(
@@ -25,7 +25,7 @@ public class InviteMailTemplateRenderer {
                         templateData.logoUrl(),
                         new RawString(bodyHtml)
                 ),
-                inviteTextTemplate.data("mail", templateData).render()
+                textTemplate.data("mail", templateData).render()
         );
     }
 }

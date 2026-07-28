@@ -111,19 +111,18 @@ public class AssignmentTimedActionService {
         if (plan.plagiarismAlreadyRecorded()) {
             log.info("Assignment plagiarism scan already recorded for assignmentId={}",
                     assignmentId);
-            return;
-        }
-        if (plan.submissions().size() < 2) {
+        } else if (plan.submissions().size() < 2) {
             log.info("Assignment plagiarism scan skipped because fewer than two submissions "
                     + "exist, assignmentId={}", assignmentId);
-            return;
+        } else {
+            PlagscanResult plagscanResult = executeWithBackpressureRetry(
+                    "plagscan for assignmentId=" + assignmentId,
+                    () -> plagscanService.scanCpp(plan.toPlagscanRequest())
+            );
+            self.get().recordPlagscanResult(plan, plagscanResult);
         }
 
-        PlagscanResult plagscanResult = executeWithBackpressureRetry(
-                "plagscan for assignmentId=" + assignmentId,
-                () -> plagscanService.scanCpp(plan.toPlagscanRequest())
-        );
-        self.get().recordPlagscanResult(plan, plagscanResult);
+        sendPostActionNotification(plan);
 
         log.info("Assignment post-action completed for assignmentId={}", assignmentId);
     }
@@ -159,8 +158,15 @@ public class AssignmentTimedActionService {
 
         return new PostActionPlan(
                 assignment.getId(),
+                assignment.getName(),
                 assignment.getTask().getId(),
+                assignment.getTask().getTitle(),
+                assignment.getGroup().getName(),
+                assignment.getStartsAt(),
+                assignment.getEndsAt(),
                 assignment.getPoints(),
+                assignment.getCreatedBy().getEmail(),
+                displayName(assignment.getCreatedBy()),
                 assignment.getTask().getStarterCode(),
                 Boolean.TRUE.equals(assignment.getTask().getIncludeStarterCode()),
                 tests,
@@ -169,6 +175,30 @@ public class AssignmentTimedActionService {
                 plagiarismAlreadyRecorded,
                 assignmentConfig.postAction().plagscanMinSimilarity()
         );
+    }
+
+    private void sendPostActionNotification(PostActionPlan plan) {
+        mailService.sendAssignmentPostActionNotification(
+                plan.professorEmail(),
+                plan.professorName(),
+                plan.assignmentId(),
+                plan.assignmentName(),
+                plan.taskTitle(),
+                plan.groupName(),
+                plan.startsAt(),
+                plan.endsAt(),
+                plan.assignmentPoints(),
+                plan.submissions().size()
+        );
+    }
+
+    private String displayName(User user) {
+        String fullName = "%s %s".formatted(
+                StringUtils.defaultString(user.getFirstname()).trim(),
+                StringUtils.defaultString(user.getLastname()).trim()
+        ).trim();
+
+        return StringUtils.firstNonBlank(fullName, user.getUsername(), "profesore");
     }
 
     @Transactional
@@ -426,8 +456,15 @@ public class AssignmentTimedActionService {
 
     public record PostActionPlan(
             Long assignmentId,
+            String assignmentName,
             Long taskId,
+            String taskTitle,
+            String groupName,
+            Instant startsAt,
+            Instant endsAt,
             int assignmentPoints,
+            String professorEmail,
+            String professorName,
             String starterCode,
             boolean includeStarterCode,
             List<TestCaseSnapshot> tests,

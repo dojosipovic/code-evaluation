@@ -19,6 +19,10 @@ public interface MailConfig {
 
     AssignmentStartReminder assignmentStartReminder();
 
+    AssignmentPostAction assignmentPostAction();
+
+    SubmissionEvaluated submissionEvaluated();
+
     interface Invite {
 
         String subject();
@@ -27,6 +31,20 @@ public interface MailConfig {
     }
 
     interface AssignmentStartReminder {
+
+        String subject();
+
+        String title();
+    }
+
+    interface AssignmentPostAction {
+
+        String subject();
+
+        String title();
+    }
+
+    interface SubmissionEvaluated {
 
         String subject();
 

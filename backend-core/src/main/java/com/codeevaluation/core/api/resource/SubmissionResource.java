@@ -37,11 +37,4 @@ public class SubmissionResource {
     public SubmissionDetailResponseDto getSubmission(@PathParam("submissionId") Long submissionId) {
         return submissionService.getSubmission(submissionId);
     }
-
-    // TODO: send valuate reminder mail with link to prof when plag analysis is done
-    // TODO: send submission details mail to students when evaluation is done
-
-    // TODO: napravi leaderboard na groupama po bodovima
-    // TODO: dodaj u navigaciji assignments
-    // TODO: dodaj u navigaciji predaje
 }

@@ -62,6 +62,7 @@ public class AssignmentService {
     private final SubmissionRepository submissionRepository;
     private final PagedSearchAssignmentImpl pagedSearchAssignment;
     private final CodeExecutionService codeExecutionService;
+    private final MailService mailService;
     private final Event<AssignmentCreateEvent> assignmentCreatedEvent;
 
     private final AssignmentValidator assignmentValidator;
@@ -267,6 +268,8 @@ public class AssignmentService {
         submissions.forEach(submission -> submission.setFinalScore(
                 finalGradesBySubmissionId.get(submission.getId())
         ));
+
+        mailService.sendSubmissionEvaluatedNotifications(submissions);
 
         return SubmissionResponseDto.from(submissions);
     }

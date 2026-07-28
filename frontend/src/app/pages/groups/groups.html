@@ -5,24 +5,12 @@
   </app-group-create-update-dialog>
 
   <p-card class="main-card">
-    @if (canCreateGroup()) {
-      <div class="top-actions">
-        <button
-          pButton
-          type="button"
-          icon="pi pi-plus"
-          label="Nova grupa"
-          (click)="openCreateGroupDialog()">
-        </button>
-      </div>
-    }
-
     <div class="filters-toolbar">
       <div class="filter-field search-field">
-        <label for="groupSearch">Search</label>
         <input
           id="groupSearch"
           pInputText
+          aria-label="Pretrazi grupe po nazivu"
           [(ngModel)]="groupFilters.search"
           (ngModelChange)="onSearchInput($event)"
           (keyup.enter)="onApplyFilters()"
@@ -30,13 +18,13 @@
       </div>
 
       <div class="filter-field sort-field">
-        <label for="groupSort">Sort</label>
         <p-select
           inputId="groupSort"
           [options]="sortOptions"
           [(ngModel)]="sortKey"
           optionLabel="label"
           optionValue="value"
+          ariaLabel="Sortiraj grupe"
           (ngModelChange)="onSortChange($event)"
           [showClear]="false">
         </p-select>
@@ -48,9 +36,24 @@
           type="button"
           icon="pi pi-refresh"
           label="Reset"
-          class="p-button-secondary"
+          aria-label="Reset"
+          title="Reset"
+          class="p-button-secondary m-icon"
           (click)="resetFilters()">
         </button>
+
+        @if (canCreateGroup()) {
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Nova grupa"
+            aria-label="Nova grupa"
+            title="Nova grupa"
+            class="m-icon"
+            (click)="openCreateGroupDialog()">
+          </button>
+        }
       </div>
     </div>
 

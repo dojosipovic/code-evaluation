@@ -1,0 +1,12 @@
+Pozdrav,
+
+{mail.inviterName} vas je pozvao/la da dovršite registraciju na Code Evaluation platformi.
+
+Email: {mail.email}
+Uloga: {mail.role}
+Vrijedi do: {mail.expiresAt}
+
+Pozivnicu prihvatite na:
+{mail.inviteUrl}
+
+Ova poruka je automatski generirana te Vas molimo da ne odgovarate na nju. Ako niste očekivali ovu poruku, možete zanemariti ovaj email.

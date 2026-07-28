@@ -3,14 +3,16 @@ import { CanActivateFn, Router } from "@angular/router";
 import { AuthService } from "./auth.service";
 import { AppRole } from "../../config/app-types";
 
-export const authGuard: CanActivateFn = (route) => {
+export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   const requiredRoles = route.data?.['roles'] as AppRole[] | undefined;
 
   if (!authService.isAuthenticated()) {
-    return router.createUrlTree(['/login']);
+    return router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: state.url }
+    });
   }
 
   if (!requiredRoles || requiredRoles.length === 0) {
@@ -21,5 +23,4 @@ export const authGuard: CanActivateFn = (route) => {
     ? true
     : router.createUrlTree(['/dashboard']);
 
-  // return auth.isAuthenticated() ? true : router.createUrlTree(['/login']);
 };

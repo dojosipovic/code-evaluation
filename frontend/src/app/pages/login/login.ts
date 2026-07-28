@@ -8,10 +8,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
-import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../services/auth/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +22,6 @@ import { Router } from '@angular/router';
     PasswordModule,
     ButtonModule,
     CheckboxModule,
-    DividerModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -35,6 +33,7 @@ export class Login {
   private messageService = inject(MessageService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   form = this.fb.group({
     username: ['', [Validators.required]],
@@ -75,7 +74,17 @@ export class Login {
         return;
       }
 
-      this.router.navigateByUrl('/dashboard');
+      this.router.navigateByUrl(this.getReturnUrl());
     });
+  }
+
+  private getReturnUrl(): string {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    if (!returnUrl || !returnUrl.startsWith('/') || returnUrl.startsWith('//')) {
+      return '/dashboard';
+    }
+
+    return returnUrl;
   }
 }

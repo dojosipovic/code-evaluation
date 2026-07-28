@@ -1,0 +1,68 @@
+<tr>
+    <td style="padding:34px 34px 10px;">
+        <p style="margin:0 0 10px;color:#1d4ed8;font-size:12px;line-height:18px;
+                  font-weight:700;text-transform:uppercase;letter-spacing:0;">
+            Pozivnica
+        </p>
+        <h1 style="margin:0 0 20px;color:#0f172a;font-size:26px;line-height:34px;
+                   font-weight:700;letter-spacing:0;">
+            {mail.title}
+        </h1>
+        <p style="margin:0 0 18px;color:#334155;font-size:16px;line-height:25px;">
+            Pozdrav,
+        </p>
+        <p style="margin:0 0 26px;color:#334155;font-size:16px;line-height:25px;">
+            <strong style="color:#0f172a;">{mail.inviterName}</strong> vas je pozvao/la
+            da dovršite registraciju i pristupite Code Evaluation platformi.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin:0 0 28px;border-collapse:separate;border-spacing:0;
+                      background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Email</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.email}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#64748b;font-size:14px;">Uloga</td>
+                <td style="padding:16px 18px;border-bottom:1px solid #e2e8f0;
+                           color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+                    {mail.role}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 18px;color:#64748b;font-size:14px;">Vrijedi do</td>
+                <td style="padding:16px 18px;color:#0f172a;font-size:14px;
+                           font-weight:600;text-align:right;">
+                    {mail.expiresAt}
+                </td>
+            </tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin:0 0 28px;border-collapse:collapse;">
+            <tr>
+                <td align="center" bgcolor="#1d4ed8" style="border-radius:7px;">
+                    <a href="{mail.inviteUrl}" target="_blank"
+                       style="display:block;padding:15px 24px;color:#ffffff;
+                              font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0;">
+                        Prihvati pozivnicu
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <p style="margin:0 0 14px;color:#475569;font-size:14px;line-height:22px;">
+            Pozivnica vrijedi do <strong style="color:#0f172a;">{mail.expiresAt}</strong>.
+            Nakon prihvaćanja pozivnice postavit ćete lozinku i dovršiti korisnički profil.
+        </p>
+        <p style="margin:0;color:#64748b;font-size:13px;line-height:20px;">
+            Ako gumb ne radi, kopirajte ovaj link u preglednik:<br>
+            <a href="{mail.inviteUrl}" style="color:#1d4ed8;text-decoration:underline;word-break:break-all;">
+                {mail.inviteUrl}
+            </a>
+        </p>
+    </td>
+</tr>

@@ -1,0 +1,16 @@
+Pozdrav {mail.professorName},
+
+Obrada za assignment "{mail.assignmentName}" je završena.
+Predaje su spremne za pregled i ocjenjivanje.
+
+Zadatak: {mail.taskTitle}
+Grupa: {mail.groupName}
+Predaje: {mail.submissionCount}
+Početak: {mail.startsAt}
+Kraj: {mail.endsAt}
+Bodovi: {mail.points}
+
+Ocjenjivanje otvorite na:
+{mail.evaluationUrl}
+
+Ova poruka je automatski generirana te Vas molimo da ne odgovarate na nju. Ako niste očekivali ovu poruku, možete zanemariti ovaj email.

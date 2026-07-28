@@ -116,6 +116,8 @@
           type="button"
           icon="pi pi-filter"
           label="Primjeni"
+          aria-label="Primjeni"
+          title="Primjeni"
           [disabled]="loading()"
           (click)="onApplyFiltersAndCloseDrawer()">
         </button>
@@ -125,6 +127,8 @@
           type="button"
           icon="pi pi-refresh"
           label="Reset"
+          aria-label="Reset"
+          title="Reset"
           class="p-button-secondary"
           [disabled]="loading()"
           (click)="resetFilters()">
@@ -136,10 +140,10 @@
   <p-card class="main-card">
     <div class="filters-toolbar">
       <div class="filter-field search-field">
-        <label for="submissionSearch">Search</label>
         <input
           id="submissionSearch"
           pInputText
+          aria-label="Pretrazi predaje"
           [(ngModel)]="submissionFilters.search"
           (ngModelChange)="onSearchInput($event)"
           (keyup.enter)="onApplyFilters()"
@@ -152,6 +156,9 @@
           type="button"
           icon="pi pi-filter"
           label="Filteri"
+          aria-label="Filteri"
+          title="Filteri"
+          class="m-icon"
           [disabled]="loading()"
           (click)="filtersDrawerVisible = true">
         </button>
@@ -161,7 +168,9 @@
           type="button"
           icon="pi pi-refresh"
           label="Reset"
-          class="p-button-secondary"
+          aria-label="Reset"
+          title="Reset"
+          class="p-button-secondary m-icon"
           [disabled]="loading()"
           (click)="resetFilters()">
         </button>
@@ -218,11 +227,6 @@
               </p-progressbar>
             </div>
 
-            <div class="submission-score">
-              <span>Bodovi</span>
-              <strong>{{ getSubmissionScore(submission) }}</strong>
-            </div>
-
             <div class="submission-date">
               <span>Predano</span>
               <strong>{{ submission.submittedAt | date:'dd.MM.yyyy HH:mm' }}</strong>
@@ -240,6 +244,11 @@
               [value]="submission.status"
               [severity]="getStatusSeverity(submission.status)">
             </p-tag>
+
+            <div class="submission-score">
+              <span>Bodovi</span>
+              <strong>{{ getSubmissionScore(submission) }}</strong>
+            </div>
           </article>
         }
       } @else {

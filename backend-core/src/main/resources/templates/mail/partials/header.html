@@ -1,0 +1,24 @@
+<tr>
+    <td style="padding:26px 34px;background:#0f172a;">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+            <tr>
+                {#if brand.hasLogo}
+                    <td style="width:38px;height:38px;vertical-align:middle;">
+                        <img src="{brand.logoUrl}" width="38" height="38" alt=""
+                             style="display:block;width:38px;height:38px;border:0;">
+                    </td>
+                {#else}
+                    <td style="width:38px;height:38px;background:#ffffff;border-radius:8px;
+                               color:#0f172a;font-size:15px;font-weight:700;text-align:center;
+                               vertical-align:middle;">
+                        CE
+                    </td>
+                {/if}
+                <td style="padding-left:12px;color:#ffffff;font-size:19px;font-weight:700;
+                           line-height:24px;letter-spacing:0;vertical-align:middle;">
+                    Code Evaluation
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>

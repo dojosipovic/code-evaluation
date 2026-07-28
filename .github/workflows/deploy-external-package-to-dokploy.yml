@@ -1,0 +1,193 @@
+name: Deploy external package
+run-name: ${{ inputs.package }}:${{ inputs.tag || 'latest' }} -> ${{ inputs.environment }} (${{ inputs.deploy && 'deploy' || 'check only' }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "GitHub Environment"
+        required: true
+        type: choice
+        options:
+          - production
+
+      package:
+        description: "External GHCR package to deploy"
+        required: true
+        type: choice
+        options:
+          - jplag-report-viewer
+
+      tag:
+        description: "Docker tag to deploy. Defaults to latest when empty."
+        required: false
+        type: string
+
+      deploy:
+        description: "Trigger Dokploy deploy after image check"
+        required: true
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    environment:
+      name: ${{ inputs.environment }}
+
+    concurrency:
+      group: deploy-external-${{ inputs.environment }}-${{ inputs.package }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Resolve package metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PACKAGE="${{ inputs.package }}"
+          TAG="${{ inputs.tag }}"
+
+          if [[ -z "$TAG" ]]; then
+            TAG="latest"
+          fi
+
+          case "$PACKAGE" in
+            jplag-report-viewer)
+              IMAGE_NAME="jplag-report-viewer"
+              DOKPLOY_APP_ID="${{ secrets.DOKPLOY_APP_ID_JPLAG_REPORT_VIEWER }}"
+              ;;
+            *)
+              echo "Unknown external package: $PACKAGE"
+              exit 1
+              ;;
+          esac
+
+          if [[ -z "$DOKPLOY_APP_ID" ]]; then
+            echo "Dokploy app id is empty for package '$PACKAGE'."
+            exit 1
+          fi
+
+          IMAGE="${REGISTRY}/${IMAGE_NAMESPACE}/${IMAGE_NAME}"
+          IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
+
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "docker_image=$IMAGE:$TAG" >> "$GITHUB_OUTPUT"
+          echo "dokploy_app_id=$DOKPLOY_APP_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check package image exists
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DOCKER_IMAGE="${{ steps.meta.outputs.docker_image }}"
+
+          if ! docker manifest inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
+            echo "Image does not exist: $DOCKER_IMAGE"
+            exit 1
+          fi
+
+          echo "Image exists: $DOCKER_IMAGE"
+
+      - name: Update Dokploy Docker image
+        if: inputs.deploy == true
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
+          DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
+          DOKPLOY_APP_ID: ${{ steps.meta.outputs.dokploy_app_id }}
+          DOCKER_IMAGE: ${{ steps.meta.outputs.docker_image }}
+          REGISTRY: ${{ env.REGISTRY }}
+        run: |
+          set -euo pipefail
+
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          jq -n \
+            --arg applicationId "$DOKPLOY_APP_ID" \
+            --arg dockerImage "$DOCKER_IMAGE" \
+            --arg username "$DOKPLOY_REGISTRY_USERNAME" \
+            --arg password "$DOKPLOY_REGISTRY_PASSWORD" \
+            --arg registryUrl "$REGISTRY" \
+            '{
+              applicationId: $applicationId,
+              dockerImage: $dockerImage,
+              username: (if $username == "" then null else $username end),
+              password: (if $password == "" then null else $password end),
+              registryUrl: $registryUrl
+            }' > dokploy-docker-provider.json
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-save-docker-provider-response.txt -w "%{http_code}" -X POST \
+            "${DOKPLOY_URL}/api/application.saveDockerProvider" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            --data-binary @dokploy-docker-provider.json
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-save-docker-provider-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi
+
+      - name: Trigger Dokploy deployment through Cloudflare Access
+        if: inputs.deploy == true
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          DOKPLOY_APP_ID: ${{ steps.meta.outputs.dokploy_app_id }}
+        run: |
+          set -euo pipefail
+
+          DOKPLOY_URL="${DOKPLOY_URL%/}"
+
+          HTTP_CODE="$(
+            curl -sS -o dokploy-deploy-response.txt -w "%{http_code}" -X POST \
+            "${DOKPLOY_URL}/api/application.deploy" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Dokploy-Deploy" \
+            -H "x-api-key: ${DOKPLOY_API_KEY}" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            -d "{\"applicationId\":\"${DOKPLOY_APP_ID}\"}"
+          )"
+
+          echo "HTTP_CODE=${HTTP_CODE}"
+          cat dokploy-deploy-response.txt
+
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            exit 1
+          fi

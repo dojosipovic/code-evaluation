@@ -4,24 +4,13 @@ services:
     pull_policy: always
     restart: unless-stopped
     user: root
+    env_file:
+      - .env
     environment:
-      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
-      QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      QUARKUS_HTTP_CORS_ORIGINS: ${QUARKUS_HTTP_CORS_ORIGINS}
-      QUARKUS_MAILER_FROM: ${QUARKUS_MAILER_FROM}
-      QUARKUS_MAILER_HOST: ${QUARKUS_MAILER_HOST}
-      QUARKUS_MAILER_PORT: ${QUARKUS_MAILER_PORT}
-      QUARKUS_MAILER_USERNAME: ${QUARKUS_MAILER_USERNAME:-}
-      QUARKUS_MAILER_PASSWORD: ${QUARKUS_MAILER_PASSWORD:-}
-      QUARKUS_MAILER_START_TLS: ${QUARKUS_MAILER_START_TLS:-DISABLED}
-      QUARKUS_MAILER_MOCK: ${QUARKUS_MAILER_MOCK:-false}
-      MP_JWT_VERIFY_ISSUER: ${MP_JWT_VERIFY_ISSUER:-code-evaluation}
       MP_JWT_VERIFY_PUBLICKEY_LOCATION: /run/secrets/publicKey.pem
       SMALLRYE_JWT_SIGN_KEY_LOCATION: /run/secrets/privateKey.pem
       SANDBOX_CPP_COMPILE_IMAGE: ${CPP_COMPILE_IMAGE:-cpp-compile:latest}
       SANDBOX_CPP_RUN_IMAGE: ${CPP_RUN_IMAGE:-cpp-run:latest}
-      INVITE_STATUS_EXPIRED_CRON_EXPRESSION: ${INVITE_STATUS_EXPIRED_CRON_EXPRESSION:-0 0 */5 * * ?}
     expose:
       - "8080"
     volumes:
@@ -29,8 +18,6 @@ services:
       - ../files/publicKey.pem:/run/secrets/publicKey.pem:ro
       - ../files/privateKey.pem:/run/secrets/privateKey.pem:ro
     depends_on:
-      db:
-        condition: service_started
       sandbox-image-puller:
         condition: service_completed_successfully
 
@@ -56,15 +43,3 @@ services:
         docker pull "$$CPP_COMPILE_IMAGE"
         docker pull "$$CPP_RUN_IMAGE"
 
-  db:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:

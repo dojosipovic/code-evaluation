@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
@@ -36,6 +36,7 @@ interface DashboardChartView {
 export class Dashboard implements OnInit {
   dashboard = signal<IDashboard | null>(null);
   chartViews = signal<DashboardChartView[]>([]);
+  compactViewport = signal(false);
   loading = signal(true);
   error = signal(false);
   skeletonStats = Array.from({ length: 6 });
@@ -55,6 +56,7 @@ export class Dashboard implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.updateViewportState();
     this.loading.set(true);
     this.dashboardService.getDashboard().pipe(
       finalize(() => {
@@ -77,6 +79,16 @@ export class Dashboard implements OnInit {
     });
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    const wasCompact = this.compactViewport();
+    this.updateViewportState();
+
+    if (wasCompact !== this.compactViewport() && this.dashboard()) {
+      this.chartViews.set(this.dashboard()!.charts.map(chart => this.toChartView(chart)));
+    }
+  }
+
   isActiveAssignmentStat(dashboard: IDashboard, stat: IDashboardStat): boolean {
     return dashboard.role === 'STUDENT' && stat.key === 'activeAssignments' && stat.value > 0;
   }
@@ -92,6 +104,14 @@ export class Dashboard implements OnInit {
 
   knobValue(value: number): number {
     return Math.max(0, Math.min(100, Math.round(value)));
+  }
+
+  knobSize(): number {
+    return this.compactViewport() ? 96 : 112;
+  }
+
+  private updateViewportState(): void {
+    this.compactViewport.set(window.innerWidth <= 640);
   }
 
   private toChartView(chart: IDashboardChart): DashboardChartView {
@@ -126,11 +146,12 @@ export class Dashboard implements OnInit {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: chart.type === 'bar' ? 'bottom' : 'right',
+          position: this.compactViewport() || chart.type === 'bar' ? 'bottom' : 'right',
           labels: {
             boxWidth: 12,
             boxHeight: 12,
             usePointStyle: true,
+            padding: this.compactViewport() ? 10 : 14,
           },
         },
       },

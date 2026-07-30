@@ -166,6 +166,7 @@ public class AssignmentTimedActionService {
                 assignment.getEndsAt(),
                 assignment.getPoints(),
                 assignment.getCreatedBy().getEmail(),
+                Boolean.TRUE.equals(assignment.getCreatedBy().getEnabled()),
                 displayName(assignment.getCreatedBy()),
                 assignment.getTask().getStarterCode(),
                 Boolean.TRUE.equals(assignment.getTask().getIncludeStarterCode()),
@@ -180,6 +181,7 @@ public class AssignmentTimedActionService {
     private void sendPostActionNotification(PostActionPlan plan) {
         mailService.sendAssignmentPostActionNotification(
                 plan.professorEmail(),
+                plan.professorEnabled(),
                 plan.professorName(),
                 plan.assignmentId(),
                 plan.assignmentName(),
@@ -464,6 +466,7 @@ public class AssignmentTimedActionService {
             Instant endsAt,
             int assignmentPoints,
             String professorEmail,
+            boolean professorEnabled,
             String professorName,
             String starterCode,
             boolean includeStarterCode,

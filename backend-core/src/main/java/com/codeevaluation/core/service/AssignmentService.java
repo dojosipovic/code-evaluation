@@ -108,6 +108,9 @@ public class AssignmentService {
         if (!AssignmentAccessPolicy.canSeeAssignment(group, currentUser)) {
             throw new ForbiddenException("You cannot see this assignment");
         }
+        if (!AssignmentAccessPolicy.canSeeAssignmentDetails(assignment, currentUser)) {
+            throw new ForbiddenException("Assignment is not open yet");
+        }
 
         boolean showTestExpectedOutput =
                 AssignmentAccessPolicy.showTestExpectedOutput(group, currentUser);

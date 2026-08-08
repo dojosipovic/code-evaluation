@@ -5,6 +5,7 @@ import com.codeevaluation.core.config.MetadataConfig;
 import com.codeevaluation.core.model.Assignment;
 import com.codeevaluation.core.model.Invite;
 import com.codeevaluation.core.model.Submission;
+import com.codeevaluation.core.model.User;
 import com.codeevaluation.core.service.mail.AssignmentPostActionMailTemplateData;
 import com.codeevaluation.core.service.mail.AssignmentPostActionMailTemplateRenderer;
 import com.codeevaluation.core.service.mail.AssignmentStartReminderMailTemplateData;
@@ -100,6 +101,7 @@ public class MailService {
         List<Mail> mails = submissions.stream()
                 .filter(submission -> submission.getFinalScore() != null)
                 .filter(submission -> submission.getUser() != null)
+                .filter(submission -> isEnabledRecipient(submission.getUser()))
                 .filter(submission -> StringUtils.isNotBlank(submission.getUser().getEmail()))
                 .map(submission -> buildSubmissionEvaluatedMail(submission, dateTimeFormatter))
                 .toList();
@@ -159,6 +161,7 @@ public class MailService {
 
     public void sendAssignmentPostActionNotification(
             String recipient,
+            boolean recipientEnabled,
             String professorName,
             Long assignmentId,
             String assignmentName,
@@ -169,6 +172,12 @@ public class MailService {
             Integer points,
             int submissionCount
     ) {
+        if (!recipientEnabled) {
+            log.info("Skipping assignment post-action notification for assignmentId={} "
+                    + "because professor is disabled", assignmentId);
+            return;
+        }
+
         if (StringUtils.isBlank(recipient)) {
             log.info("Skipping assignment post-action notification for assignmentId={} "
                             + "because professor email is blank", assignmentId);
@@ -265,13 +274,17 @@ public class MailService {
                 .replace("{assignmentName}", normalizedAssignmentName);
     }
 
-    private String displayName(com.codeevaluation.core.model.User user, String fallback) {
+    private String displayName(User user, String fallback) {
         String fullName = "%s %s".formatted(
                 StringUtils.defaultString(user.getFirstname()).trim(),
                 StringUtils.defaultString(user.getLastname()).trim()
         ).trim();
 
         return StringUtils.firstNonBlank(fullName, user.getUsername(), fallback);
+    }
+
+    private boolean isEnabledRecipient(User user) {
+        return Boolean.TRUE.equals(user.getEnabled());
     }
 
     private String formatScore(BigDecimal score) {

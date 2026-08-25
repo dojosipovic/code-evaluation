@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { startAuthentication } from '@simplewebauthn/browser';
@@ -41,6 +41,7 @@ export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   form = this.fb.group({
     username: ['', [Validators.required]],
@@ -70,11 +71,11 @@ export class Login {
       return;
     }
 
-    this.loading = true;
+    this.setLoading(true);
     const { username, password, remember } = this.form.getRawValue();
 
     this.auth.login({ username: username!, password: password! }, !!remember).subscribe((res) => {
-      this.loading = false;
+      this.setLoading(false);
 
       if (!res) {
         this.messageService.add({
@@ -90,6 +91,7 @@ export class Login {
         this.twoFactorMethod = res.primaryMethod ?? 'totp';
         this.availableMethods = res.availableMethods ?? [];
         this.rememberForSecondStep = !!remember;
+        this.cdr.detectChanges();
 
         return;
       }
@@ -107,10 +109,10 @@ export class Login {
       return;
     }
 
-    this.twoFactorLoading = true;
+    this.setTwoFactorLoading(true);
     const code = this.totpForm.getRawValue().code!;
     this.auth.verifyTotpLogin(this.twoFactorToken, code, this.rememberForSecondStep).subscribe((ok) => {
-      this.twoFactorLoading = false;
+      this.setTwoFactorLoading(false);
       if (!ok) {
         this.messageService.add({
           severity: 'error',
@@ -126,14 +128,14 @@ export class Login {
   loginWithPasskey() {
     if (this.passkeyLoading) return;
 
-    this.passkeyLoading = true;
+    this.setPasskeyLoading(true);
     const remember = !!this.form.getRawValue().remember;
     this.auth.startPasskeyLogin().subscribe({
       next: async ({ token, optionsJson }) => {
         try {
           const assertion = await startAuthentication({ optionsJSON: JSON.parse(optionsJson) });
           this.auth.finishPasskeyLogin(token, JSON.stringify(assertion), remember).subscribe((ok) => {
-            this.passkeyLoading = false;
+            this.setPasskeyLoading(false);
             if (!ok) {
               this.showPasskeyError();
               return;
@@ -141,12 +143,12 @@ export class Login {
             this.router.navigateByUrl(this.getReturnUrl());
           });
         } catch {
-          this.passkeyLoading = false;
+          this.setPasskeyLoading(false);
           this.showPasskeyError();
         }
       },
       error: () => {
-        this.passkeyLoading = false;
+        this.setPasskeyLoading(false);
         this.showPasskeyError();
       },
     });
@@ -155,7 +157,7 @@ export class Login {
   verifyWebAuthnSecondFactor() {
     if (!this.twoFactorToken || this.twoFactorLoading) return;
 
-    this.twoFactorLoading = true;
+    this.setTwoFactorLoading(true);
     this.auth.startSecondFactorWebAuthn(this.twoFactorToken).subscribe({
       next: async ({ token, optionsJson }) => {
         try {
@@ -168,7 +170,7 @@ export class Login {
               this.rememberForSecondStep
             )
             .subscribe((ok) => {
-              this.twoFactorLoading = false;
+              this.setTwoFactorLoading(false);
               if (!ok) {
                 this.showPasskeyError();
                 return;
@@ -176,12 +178,12 @@ export class Login {
               this.router.navigateByUrl(this.getReturnUrl());
             });
         } catch {
-          this.twoFactorLoading = false;
+          this.setTwoFactorLoading(false);
           this.showPasskeyError();
         }
       },
       error: () => {
-        this.twoFactorLoading = false;
+        this.setTwoFactorLoading(false);
         this.showPasskeyError();
       },
     });
@@ -208,6 +210,21 @@ export class Login {
       summary: 'Passkey nije potvrden',
       detail: 'Pokusaj ponovno ili koristi drugu dostupnu metodu.',
     });
+  }
+
+  private setLoading(value: boolean) {
+    this.loading = value;
+    this.cdr.detectChanges();
+  }
+
+  private setPasskeyLoading(value: boolean) {
+    this.passkeyLoading = value;
+    this.cdr.detectChanges();
+  }
+
+  private setTwoFactorLoading(value: boolean) {
+    this.twoFactorLoading = value;
+    this.cdr.detectChanges();
   }
 
   private getReturnUrl(): string {

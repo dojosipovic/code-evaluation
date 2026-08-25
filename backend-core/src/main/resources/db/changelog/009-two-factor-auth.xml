@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="009-create-totp-credential-table" author="dominik">
+        <createTable tableName="totp_credential">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             referencedTableName="app_user"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_totp_credential_user"/>
+            </column>
+            <column name="secret" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="confirmed_at" type="timestamp with time zone"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="totp_credential"
+                columnNames="user_id"
+                constraintName="uk_totp_credential_user"/>
+    </changeSet>
+
+    <changeSet id="009-create-webauthn-credential-table" author="dominik">
+        <createTable tableName="webauthn_credential">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             referencedTableName="app_user"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_webauthn_credential_user"/>
+            </column>
+            <column name="credential_id" type="varchar(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="public_key_cose" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="signature_count" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aaguid" type="varchar(128)"/>
+            <column name="discoverable" type="boolean"/>
+            <column name="backup_eligible" type="boolean"/>
+            <column name="backed_up" type="boolean"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_used_at" type="timestamp with time zone"/>
+        </createTable>
+
+        <createIndex indexName="idx_webauthn_credential_user" tableName="webauthn_credential">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="009-create-two-factor-challenge-table" author="dominik">
+        <createTable tableName="two_factor_challenge">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints referencedTableName="app_user"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_two_factor_challenge_user"/>
+            </column>
+            <column name="challenge_type" type="varchar(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_hash" type="varchar(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="request_json" type="text"/>
+            <column name="expires_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="consumed_at" type="timestamp with time zone"/>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_two_factor_challenge_lookup" tableName="two_factor_challenge">
+            <column name="token_hash"/>
+            <column name="challenge_type"/>
+        </createIndex>
+
+        <sql>
+            ALTER TABLE "two_factor_challenge"
+                ADD CONSTRAINT chk_two_factor_challenge_type
+                    CHECK (challenge_type IN ('LOGIN','WEBAUTHN_REGISTRATION','WEBAUTHN_PASSWORDLESS','WEBAUTHN_SECOND_FACTOR'));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -30,6 +30,8 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db:5432/appdb
       QUARKUS_DATASOURCE_USERNAME: appuser
       QUARKUS_DATASOURCE_PASSWORD: apppass
+      QUARKUS_MAILER_HOST: mailpit
+      QUARKUS_MAILER_PORT: 1025
       PLAGSCAN_API_URL: http://backend-plagscan:8080
     volumes:
       - //var/run/docker.sock:/var/run/docker.sock

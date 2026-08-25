@@ -5,9 +5,14 @@ import com.codeevaluation.core.api.dto.auth.LoginResponseDto;
 import com.codeevaluation.core.api.dto.auth.PlagScanTokenResponseDto;
 import com.codeevaluation.core.api.dto.auth.RefreshResponseDto;
 import com.codeevaluation.core.api.dto.auth.RegisterRequestDto;
+import com.codeevaluation.core.api.dto.auth.TotpVerifyRequestDto;
+import com.codeevaluation.core.api.dto.auth.TwoFactorTotpVerifyRequestDto;
+import com.codeevaluation.core.api.dto.auth.WebAuthnFinishRequestDto;
 import com.codeevaluation.core.api.dto.user.UserDto;
 import com.codeevaluation.core.model.User;
+import com.codeevaluation.core.provider.CurrentUserProvider;
 import com.codeevaluation.core.service.AuthService;
+import com.codeevaluation.core.service.TwoFactorService;
 import com.codeevaluation.core.util.CookieUtil;
 import com.codeevaluation.core.util.TokenUtil;
 import io.quarkus.security.Authenticated;
@@ -16,6 +21,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -33,16 +39,139 @@ public class AuthResource {
     @Inject
     AuthService authService;
 
+    @Inject
+    TwoFactorService twoFactorService;
+
+    @Inject
+    CurrentUserProvider currentUserProvider;
+
     @POST
     @Path("/login")
     public Response login(LoginRequestDto req) {
         User user = authService.authenticate(req.username(), req.password());
 
+        if (twoFactorService.hasTwoFactor(user)) {
+            String token = twoFactorService.issueLoginChallenge(user);
+            return Response.ok(LoginResponseDto.twoFactorRequired(
+                    token,
+                    twoFactorService.primaryMethod(user),
+                    twoFactorService.availableMethods(user)
+            )).build();
+        }
+
+        return buildAuthenticatedResponse(user);
+    }
+
+    @POST
+    @Path("/2fa/totp/verify")
+    public Response verifyTotp(TwoFactorTotpVerifyRequestDto req) {
+        User user = twoFactorService.verifyTotpLogin(req.twoFactorToken(), req.code());
+        return buildAuthenticatedResponse(user);
+    }
+
+    @POST
+    @Path("/2fa/webauthn/options")
+    public Response startSecondFactorWebAuthn(TwoFactorTotpVerifyRequestDto req) {
+        return Response.ok(twoFactorService.startSecondFactorAuthentication(req.twoFactorToken()))
+                .build();
+    }
+
+    @POST
+    @Path("/2fa/webauthn/verify/{twoFactorToken}")
+    public Response finishSecondFactorWebAuthn(
+            @PathParam("twoFactorToken") String twoFactorToken,
+            WebAuthnFinishRequestDto req
+    ) {
+        User user = twoFactorService.finishSecondFactorAuthentication(
+                twoFactorToken,
+                req.token(),
+                req.responseJson()
+        );
+        return buildAuthenticatedResponse(user);
+    }
+
+    @POST
+    @Path("/passkey/options")
+    public Response startPasswordlessPasskey() {
+        return Response.ok(twoFactorService.startPasswordlessAuthentication()).build();
+    }
+
+    @POST
+    @Path("/passkey/verify")
+    public Response finishPasswordlessPasskey(WebAuthnFinishRequestDto req) {
+        User user = twoFactorService
+                .finishPasswordlessAuthentication(req.token(), req.responseJson());
+        return buildAuthenticatedResponse(user);
+    }
+
+    @GET
+    @Path("/2fa/settings")
+    @Authenticated
+    public Response twoFactorSettings() {
+        return Response.ok(twoFactorService.settings(currentUserProvider.getCurrentUser())).build();
+    }
+
+    @POST
+    @Path("/2fa/totp/setup")
+    @Authenticated
+    public Response startTotpSetup() {
+        return Response.ok(twoFactorService.startTotpSetup(currentUserProvider.getCurrentUser()))
+                .build();
+    }
+
+    @POST
+    @Path("/2fa/totp/confirm")
+    @Authenticated
+    public Response confirmTotpSetup(TotpVerifyRequestDto req) {
+        twoFactorService.confirmTotpSetup(currentUserProvider.getCurrentUser(), req.code());
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/2fa/totp")
+    @Authenticated
+    public Response disableTotp() {
+        twoFactorService.disableTotp(currentUserProvider.getCurrentUser());
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/2fa/webauthn/register/options")
+    @Authenticated
+    public Response startWebAuthnRegistration() {
+        return Response.ok(
+                twoFactorService.startWebAuthnRegistration(currentUserProvider.getCurrentUser())
+                ).build();
+    }
+
+    @POST
+    @Path("/2fa/webauthn/register/verify")
+    @Authenticated
+    public Response finishWebAuthnRegistration(WebAuthnFinishRequestDto req) {
+        twoFactorService.finishWebAuthnRegistration(
+                currentUserProvider.getCurrentUser(),
+                req.token(),
+                req.responseJson()
+        );
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/2fa/webauthn/{credentialId}")
+    @Authenticated
+    public Response deleteWebAuthnCredential(@PathParam("credentialId") Long credentialId) {
+        twoFactorService.deleteWebAuthnCredential(
+                currentUserProvider.getCurrentUser(), credentialId
+        );
+        return Response.noContent().build();
+    }
+
+    private Response buildAuthenticatedResponse(User user) {
         String access = authService.issueAccessToken(user);
         var refreshIssue = authService.issueRefreshToken(user);
         var refreshTokenCookie = CookieUtil.buildRefreshCookie(refreshIssue.refreshPlain());
 
-        return Response.ok(new LoginResponseDto(access))
+        return Response.ok(LoginResponseDto.authenticated(access))
                 .cookie(refreshTokenCookie)
                 .build();
     }

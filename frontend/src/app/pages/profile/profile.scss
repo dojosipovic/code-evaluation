@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  max-width: 760px;
+  max-width: 920px;
 }
 
 .profile-header,
@@ -90,6 +90,101 @@
   justify-content: flex-end;
 }
 
+.security-panel {
+  flex: 1;
+  min-width: min(100%, 28rem);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.security-row,
+.credential-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.security-row h3,
+.credential-item strong {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.security-row p,
+.credential-item span {
+  display: block;
+  margin: 0;
+  color: var(--p-text-muted-color);
+  line-height: 1.4;
+}
+
+.security-divider {
+  height: 1px;
+  background: var(--p-content-border-color);
+}
+
+.totp-setup {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.qr-code {
+  width: 192px;
+  height: 192px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.secret-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  span {
+    color: var(--p-text-muted-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--p-content-background);
+    color: var(--p-text-color);
+  }
+}
+
+.totp-confirm,
+.credential-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.totp-confirm {
+  grid-column: 1 / -1;
+}
+
+.credential-list {
+  border-top: 1px solid var(--p-content-border-color);
+  padding-top: 12px;
+}
+
+.credential-item {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 12px;
+}
+
 :host ::ng-deep {
   .p-button,
   .p-tag {
@@ -110,6 +205,14 @@
 
   .profile-actions {
     flex-direction: column;
+  }
+
+  .totp-setup {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-code {
+    justify-self: center;
   }
 
   .action-buttons {

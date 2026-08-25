@@ -18,6 +18,122 @@
 
   <section class="profile-actions">
     <div class="action-copy">
+      <h2>Security</h2>
+      <p>Upravljanje TOTP authenticator kodovima i passkey credentialima.</p>
+    </div>
+
+    <div class="security-panel">
+      <div class="security-row">
+        <div>
+          <h3>Authenticator app</h3>
+          <p>6-znamenkasti TOTP kod nakon lozinke.</p>
+        </div>
+        <p-tag
+          [severity]="settings()?.totpEnabled ? 'success' : 'secondary'"
+          [value]="settings()?.totpEnabled ? 'Aktivno' : 'Nije aktivno'">
+        </p-tag>
+      </div>
+
+      @if (totpSetup()) {
+        <div class="totp-setup">
+          @if (totpQrCode()) {
+            <img [src]="totpQrCode()" alt="TOTP QR code" class="qr-code" />
+          }
+
+          <div class="secret-box">
+            <span>Secret</span>
+            <code>{{ totpSetup()?.secret }}</code>
+          </div>
+
+          <form class="totp-confirm" [formGroup]="totpForm" (ngSubmit)="confirmTotpSetup()">
+            <label for="setupTotp">Potvrdi kod</label>
+            <p-inputotp
+              inputId="setupTotp"
+              formControlName="code"
+              [length]="6"
+              [integerOnly]="true"
+              [autofocus]="true">
+            </p-inputotp>
+            <p-button
+              type="submit"
+              label="Ukljuci TOTP"
+              icon="pi pi-shield"
+              [disabled]="totpForm.invalid">
+            </p-button>
+          </form>
+        </div>
+      } @else {
+        <div class="action-buttons">
+          @if (settings()?.totpEnabled) {
+            <button
+              pButton
+              type="button"
+              severity="danger"
+              icon="pi pi-times"
+              label="Iskljuci TOTP"
+              (click)="disableTotp()">
+            </button>
+          } @else {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-plus"
+              label="Setup TOTP"
+              (click)="startTotpSetup()">
+            </button>
+          }
+        </div>
+      }
+
+      <div class="security-divider"></div>
+
+      <div class="security-row">
+        <div>
+          <h3>Passkeys</h3>
+          <p>Login with passkey i WebAuthn drugi faktor.</p>
+        </div>
+        <p-tag
+          [severity]="settings()?.webauthnEnabled ? 'success' : 'secondary'"
+          [value]="settings()?.webauthnEnabled ? 'Aktivno' : 'Nije aktivno'">
+        </p-tag>
+      </div>
+
+      <div class="action-buttons">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-key"
+          label="Dodaj passkey"
+          [loading]="webauthnLoading()"
+          (click)="registerPasskey()">
+        </button>
+      </div>
+
+      @if (settings()?.webauthnCredentials?.length) {
+        <div class="credential-list">
+          @for (credential of settings()?.webauthnCredentials; track credential.id) {
+            <div class="credential-item">
+              <div>
+                <strong>Credential #{{ credential.id }}</strong>
+                <span>Created {{ credential.createdAt | date:'medium' }}</span>
+              </div>
+              <button
+                pButton
+                type="button"
+                severity="danger"
+                icon="pi pi-trash"
+                label="Obrisi"
+                (click)="deletePasskey(credential.id)">
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="profile-actions">
+    <div class="action-copy">
       <h2>Sesija</h2>
       <p>Upravljanje trenutnom prijavom i aktivnim sesijama na drugim uredajima.</p>
     </div>

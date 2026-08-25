@@ -51,6 +51,31 @@
   gap: 14px;
 }
 
+.auth-actions,
+.two-factor,
+.passkey-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.85rem;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--p-content-border-color);
+  }
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -83,6 +108,39 @@ label {
   color: #ffb4b4;
 }
 
+.center-field {
+  align-items: center;
+  text-align: center;
+}
+
+.back-button,
+.switch-link {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--p-primary-color);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0;
+}
+
+.passkey-step {
+  align-items: center;
+  text-align: center;
+
+  > .pi {
+    font-size: 2rem;
+    color: var(--p-primary-color);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
 :host ::ng-deep .w-full > button {
   width: 100%;
 }
@@ -93,4 +151,8 @@ label {
 
 :host ::ng-deep .p-password input {
   width: 100%;
+}
+
+:host ::ng-deep .p-inputotp {
+  justify-content: center;
 }

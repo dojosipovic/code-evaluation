@@ -1,16 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-
+import { ActivatedRoute, Router } from '@angular/router';
+import { startAuthentication } from '@simplewebauthn/browser';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputOtpModule } from 'primeng/inputotp';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { ButtonModule } from 'primeng/button';
-import { CheckboxModule } from 'primeng/checkbox';
-import { MessageService } from 'primeng/api';
 import { AuthService } from '../../services/auth/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -22,13 +22,20 @@ import { ActivatedRoute, Router } from '@angular/router';
     PasswordModule,
     ButtonModule,
     CheckboxModule,
+    InputOtpModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class Login {
   loading = false;
-  
+  passkeyLoading = false;
+  twoFactorLoading = false;
+  twoFactorToken: string | null = null;
+  twoFactorMethod: 'totp' | 'webauthn' | null = null;
+  availableMethods: string[] = [];
+  rememberForSecondStep = true;
+
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private auth = inject(AuthService);
@@ -38,7 +45,11 @@ export class Login {
   form = this.fb.group({
     username: ['', [Validators.required]],
     password: ['', [Validators.required]],
-    remember: [true]
+    remember: [true],
+  });
+
+  totpForm = this.fb.group({
+    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
   });
 
   isInvalid(name: 'username' | 'password') {
@@ -53,7 +64,7 @@ export class Login {
       this.messageService.add({
         severity: 'warn',
         summary: 'Forma nije ispravna',
-        detail: 'Molimo popunite sva polja.'
+        detail: 'Molimo popunite sva polja.',
       });
 
       return;
@@ -62,19 +73,140 @@ export class Login {
     this.loading = true;
     const { username, password, remember } = this.form.getRawValue();
 
-    this.auth.login({ username: username!, password: password! }, !!remember).subscribe(ok => {
+    this.auth.login({ username: username!, password: password! }, !!remember).subscribe((res) => {
       this.loading = false;
 
-      if (!ok) {
+      if (!res) {
         this.messageService.add({
           severity: 'error',
-          summary: 'Neuspješna prijava',
-          detail: 'Provjeri korisničko ime/lozinku.'
+          summary: 'Neuspjesna prijava',
+          detail: 'Provjeri korisnicko ime/lozinku.',
         });
         return;
       }
 
+      if (res.status === 'TWO_FACTOR_REQUIRED' && res.twoFactorToken) {
+        this.twoFactorToken = res.twoFactorToken;
+        this.twoFactorMethod = res.primaryMethod ?? 'totp';
+        this.availableMethods = res.availableMethods ?? [];
+        this.rememberForSecondStep = !!remember;
+
+        return;
+      }
+
+      if (res.status === 'AUTHENTICATED') {
+        this.router.navigateByUrl(this.getReturnUrl());
+      }
+    });
+  }
+
+  submitTotp() {
+    if (!this.twoFactorToken) return;
+    if (this.totpForm.invalid) {
+      this.totpForm.markAllAsTouched();
+      return;
+    }
+
+    this.twoFactorLoading = true;
+    const code = this.totpForm.getRawValue().code!;
+    this.auth.verifyTotpLogin(this.twoFactorToken, code, this.rememberForSecondStep).subscribe((ok) => {
+      this.twoFactorLoading = false;
+      if (!ok) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Neispravan kod',
+          detail: 'Provjeri TOTP kod i pokusaj ponovno.',
+        });
+        return;
+      }
       this.router.navigateByUrl(this.getReturnUrl());
+    });
+  }
+
+  loginWithPasskey() {
+    if (this.passkeyLoading) return;
+
+    this.passkeyLoading = true;
+    const remember = !!this.form.getRawValue().remember;
+    this.auth.startPasskeyLogin().subscribe({
+      next: async ({ token, optionsJson }) => {
+        try {
+          const assertion = await startAuthentication({ optionsJSON: JSON.parse(optionsJson) });
+          this.auth.finishPasskeyLogin(token, JSON.stringify(assertion), remember).subscribe((ok) => {
+            this.passkeyLoading = false;
+            if (!ok) {
+              this.showPasskeyError();
+              return;
+            }
+            this.router.navigateByUrl(this.getReturnUrl());
+          });
+        } catch {
+          this.passkeyLoading = false;
+          this.showPasskeyError();
+        }
+      },
+      error: () => {
+        this.passkeyLoading = false;
+        this.showPasskeyError();
+      },
+    });
+  }
+
+  verifyWebAuthnSecondFactor() {
+    if (!this.twoFactorToken || this.twoFactorLoading) return;
+
+    this.twoFactorLoading = true;
+    this.auth.startSecondFactorWebAuthn(this.twoFactorToken).subscribe({
+      next: async ({ token, optionsJson }) => {
+        try {
+          const assertion = await startAuthentication({ optionsJSON: JSON.parse(optionsJson) });
+          this.auth
+            .finishSecondFactorWebAuthn(
+              this.twoFactorToken!,
+              token,
+              JSON.stringify(assertion),
+              this.rememberForSecondStep
+            )
+            .subscribe((ok) => {
+              this.twoFactorLoading = false;
+              if (!ok) {
+                this.showPasskeyError();
+                return;
+              }
+              this.router.navigateByUrl(this.getReturnUrl());
+            });
+        } catch {
+          this.twoFactorLoading = false;
+          this.showPasskeyError();
+        }
+      },
+      error: () => {
+        this.twoFactorLoading = false;
+        this.showPasskeyError();
+      },
+    });
+  }
+
+  useTotp() {
+    this.twoFactorMethod = 'totp';
+  }
+
+  useWebAuthn() {
+    this.twoFactorMethod = 'webauthn';
+  }
+
+  resetLogin() {
+    this.twoFactorToken = null;
+    this.twoFactorMethod = null;
+    this.availableMethods = [];
+    this.totpForm.reset();
+  }
+
+  private showPasskeyError() {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Passkey nije potvrden',
+      detail: 'Pokusaj ponovno ili koristi drugu dostupnu metodu.',
     });
   }
 

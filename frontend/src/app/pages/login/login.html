@@ -8,45 +8,119 @@
         </div>
       </div>
 
-      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-        <div class="field">
-          <label for="username">Username</label>
-          <input id="username" pInputText type="username" formControlName="username" placeholder="johndoe" />
-          @if (isInvalid('username')) {
-            <small class="error">Unesi username</small>
-          }
+      @if (!twoFactorToken) {
+        <div class="auth-actions">
+          <p-button
+            type="button"
+            label="Login with passkey"
+            icon="pi pi-key"
+            severity="secondary"
+            styleClass="w-full"
+            [loading]="passkeyLoading"
+            [disabled]="loading"
+            (click)="loginWithPasskey()">
+          </p-button>
         </div>
 
-        <div class="field">
-          <label for="password">Lozinka</label>
-          <p-password
-            inputId="password"
-            formControlName="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            placeholder="Lozinka">
-          </p-password>
-          @if (isInvalid('password')) {
-            <small class="error">Lozinka je obavezna.</small>
-          }
-        </div>
+        <div class="divider"><span>ili</span></div>
 
-        <div class="row">
-          <div class="remember">
-            <p-checkbox formControlName="remember" inputId="remember" binary="true"></p-checkbox>
-            <label for="remember">Zapamti me</label>
+        <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" pInputText type="text" formControlName="username" placeholder="johndoe" />
+            @if (isInvalid('username')) {
+              <small class="error">Unesi username</small>
+            }
           </div>
-        </div>
 
-        <p-button
-          type="submit"
-          label="Prijavi se"
-          icon="pi pi-sign-in"
-          styleClass="w-full"
-          [disabled]="form.invalid || loading"
-          [loading]="loading">
-        </p-button>
-      </form>
+          <div class="field">
+            <label for="password">Lozinka</label>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              placeholder="Lozinka">
+            </p-password>
+            @if (isInvalid('password')) {
+              <small class="error">Lozinka je obavezna.</small>
+            }
+          </div>
+
+          <div class="row">
+            <div class="remember">
+              <p-checkbox formControlName="remember" inputId="remember" binary="true"></p-checkbox>
+              <label for="remember">Zapamti me</label>
+            </div>
+          </div>
+
+          <p-button
+            type="submit"
+            label="Prijavi se"
+            icon="pi pi-sign-in"
+            styleClass="w-full"
+            [disabled]="form.invalid || loading || passkeyLoading"
+            [loading]="loading">
+          </p-button>
+        </form>
+      } @else {
+        <div class="two-factor">
+          <button type="button" class="back-button" (click)="resetLogin()">
+            <i class="pi pi-arrow-left"></i>
+            <span>Natrag</span>
+          </button>
+
+          @if (twoFactorMethod === 'totp') {
+            <form class="form" [formGroup]="totpForm" (ngSubmit)="submitTotp()">
+              <div class="field center-field">
+                <label for="totp">Authenticator kod</label>
+                <p-inputotp
+                  inputId="totp"
+                  formControlName="code"
+                  [length]="6"
+                  [integerOnly]="true"
+                  [autofocus]="true">
+                </p-inputotp>
+                @if (totpForm.controls.code.invalid && (totpForm.controls.code.dirty || totpForm.controls.code.touched)) {
+                  <small class="error">Unesi 6 znamenki.</small>
+                }
+              </div>
+
+              <p-button
+                type="submit"
+                label="Potvrdi kod"
+                icon="pi pi-shield"
+                styleClass="w-full"
+                [disabled]="totpForm.invalid || twoFactorLoading"
+                [loading]="twoFactorLoading">
+              </p-button>
+            </form>
+          }
+
+          @if (twoFactorMethod === 'webauthn') {
+            <div class="passkey-step">
+              <i class="pi pi-key"></i>
+              <p>Potvrdi prijavu passkeyjem.</p>
+              <p-button
+                type="button"
+                label="Pokreni passkey"
+                icon="pi pi-key"
+                styleClass="w-full"
+                [loading]="twoFactorLoading"
+                (click)="verifyWebAuthnSecondFactor()">
+              </p-button>
+            </div>
+          }
+
+          @if (availableMethods.includes('totp') && twoFactorMethod !== 'totp') {
+            <button type="button" class="switch-link" (click)="useTotp()">Koristi authenticator kod</button>
+          }
+
+          @if (availableMethods.includes('webauthn') && twoFactorMethod !== 'webauthn') {
+            <button type="button" class="switch-link" (click)="useWebAuthn()">Koristi passkey</button>
+          }
+        </div>
+      }
     </p-card>
   </div>
 </div>

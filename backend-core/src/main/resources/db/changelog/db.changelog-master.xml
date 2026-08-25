@@ -14,5 +14,6 @@
     <include file="db/changelog/006-assignment.xml"/>
     <include file="db/changelog/007-submission.xml"/>
     <include file="db/changelog/008-quartz.xml"/>
+    <include file="db/changelog/009-two-factor-auth.xml"/>
 
 </databaseChangeLog>

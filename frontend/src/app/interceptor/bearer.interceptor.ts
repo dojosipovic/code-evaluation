@@ -9,6 +9,10 @@ export const bearerInterceptor: HttpInterceptorFn = (req, next) => {
 
   const skipsBearer =
     pathname.endsWith('/auth/login') ||
+    pathname.includes('/auth/passkey/') ||
+    pathname.endsWith('/auth/2fa/totp/verify') ||
+    pathname.endsWith('/auth/2fa/webauthn/options') ||
+    pathname.includes('/auth/2fa/webauthn/verify/') ||
     pathname.endsWith('/auth/refresh') ||
     pathname.endsWith('/auth/logout');
 

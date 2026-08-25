@@ -71,7 +71,8 @@ public class TwoFactorService {
     String origin;
 
     public boolean hasTwoFactor(User user) {
-        return totpCredentialRepository.hasConfirmed(user) || webAuthnCredentialRepository.hasForUser(user);
+        return totpCredentialRepository.hasConfirmed(user)
+                || webAuthnCredentialRepository.hasForUser(user);
     }
 
     public List<String> availableMethods(User user) {
@@ -118,7 +119,8 @@ public class TwoFactorService {
     public TotpSetupResponseDto startTotpSetup(User user) {
         String secret = TotpUtil.generateSecret();
         TotpCredential credential = totpCredentialRepository.upsertUnconfirmed(user, secret);
-        String otpauthUrl = TotpUtil.otpauthUrl(totpIssuer, user.getUsername(), credential.getSecret());
+        String otpauthUrl =
+                TotpUtil.otpauthUrl(totpIssuer, user.getUsername(), credential.getSecret());
         return new TotpSetupResponseDto(credential.getSecret(), otpauthUrl);
     }
 
@@ -136,7 +138,8 @@ public class TwoFactorService {
     public User verifyTotpLogin(String twoFactorToken, String code) {
         TwoFactorChallenge loginChallenge = challengeRepository
                 .findActive(twoFactorToken, TwoFactorChallengeType.LOGIN)
-                .orElseThrow(() -> new NotAuthorizedException("Invalid two factor token", "Bearer"));
+                .orElseThrow(() ->
+                        new NotAuthorizedException("Invalid two factor token", "Bearer"));
         User user = loginChallenge.getUser();
         TotpCredential credential = totpCredentialRepository.findConfirmedByUser(user)
                 .orElseThrow(() -> new BadRequestException("TOTP is not enabled"));
@@ -193,8 +196,10 @@ public class TwoFactorService {
         try {
             RegistrationResult result = relyingParty().finishRegistration(
                     FinishRegistrationOptions.builder()
-                            .request(PublicKeyCredentialCreationOptions.fromJson(challenge.getRequestJson()))
-                            .response(PublicKeyCredential.parseRegistrationResponseJson(responseJson))
+                            .request(PublicKeyCredentialCreationOptions
+                                    .fromJson(challenge.getRequestJson()))
+                            .response(PublicKeyCredential
+                                    .parseRegistrationResponseJson(responseJson))
                             .build()
             );
 
@@ -238,7 +243,8 @@ public class TwoFactorService {
     public WebAuthnOptionsResponseDto startSecondFactorAuthentication(String twoFactorToken) {
         TwoFactorChallenge loginChallenge = challengeRepository
                 .findActive(twoFactorToken, TwoFactorChallengeType.LOGIN)
-                .orElseThrow(() -> new NotAuthorizedException("Invalid two factor token", "Bearer"));
+                .orElseThrow(() ->
+                        new NotAuthorizedException("Invalid two factor token", "Bearer"));
 
         AssertionRequest request = relyingParty().startAssertion(StartAssertionOptions.builder()
                 .username(loginChallenge.getUser().getUsername())
@@ -269,7 +275,9 @@ public class TwoFactorService {
     }
 
     @Transactional
-    public User finishSecondFactorAuthentication(String twoFactorToken, String token, String responseJson) {
+    public User finishSecondFactorAuthentication(
+            String twoFactorToken, String token, String responseJson
+    ) {
         User user = finishWebAuthnAuthentication(
                 token,
                 responseJson,
@@ -279,7 +287,8 @@ public class TwoFactorService {
         TwoFactorChallenge loginChallenge = challengeRepository
                 .findActive(twoFactorToken, TwoFactorChallengeType.LOGIN)
                 .filter(existing -> existing.getUser().getId().equals(user.getId()))
-                .orElseThrow(() -> new NotAuthorizedException("Invalid two factor token", "Bearer"));
+                .orElseThrow(() ->
+                        new NotAuthorizedException("Invalid two factor token", "Bearer"));
         challengeRepository.consume(loginChallenge);
         return authenticatedUser(user);
     }
@@ -308,7 +317,8 @@ public class TwoFactorService {
                     .build());
 
             User user = userRepository.findEnabledByUsername(result.getUsername())
-                    .orElseThrow(() -> new NotAuthorizedException("Invalid WebAuthn user", "Bearer"));
+                    .orElseThrow(() ->
+                            new NotAuthorizedException("Invalid WebAuthn user", "Bearer"));
             webAuthnCredentialRepository.markUsed(
                     result.getCredentialId().getBase64Url(),
                     result.getSignatureCount(),
@@ -324,7 +334,8 @@ public class TwoFactorService {
     private User authenticatedUser(User user) {
         User initialized = userRepository.findByIdOptional(user.getId())
                 .filter(existing -> Boolean.TRUE.equals(existing.getEnabled()))
-                .orElseThrow(() -> new NotAuthorizedException("Invalid authenticated user", "Bearer"));
+                .orElseThrow(() ->
+                        new NotAuthorizedException("Invalid authenticated user", "Bearer"));
         initialized.getUsername();
         initialized.getRole();
         return initialized;

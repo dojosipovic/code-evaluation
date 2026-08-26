@@ -1,0 +1,20 @@
+$kind: http-request
+url: http://localhost:8080/api/groups/:id
+method: PUT
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"group 1\",\r
+
+    \    \"description\": \"    a      \"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 4000

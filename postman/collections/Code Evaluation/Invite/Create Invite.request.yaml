@@ -1,0 +1,18 @@
+$kind: http-request
+url: http://localhost:8080/api/invites
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"test3333@gmail.com\",\r
+
+    \  \"role\": \"STUDENT\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 1000

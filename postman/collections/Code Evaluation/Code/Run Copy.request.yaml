@@ -1,0 +1,14 @@
+$kind: http-request
+url: http://localhost:8080/api/run-cpp
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"code\": \"#include <unistd.h>\\n#include <sys/wait.h>\\n#include <iostream>\\n#include <vector>\\n\\nint main() {\\n    std::vector<pid_t> children;\\n\\n    while (true) {\\n        pid_t pid = fork();\\n\\n        if (pid < 0) {\\n            std::cout << \\\"fork failed after \\\" << children.size() << \\\" processes\\\" << std::endl;\\n            break;\\n        }\\n\\n        if (pid == 0) {\\n            _exit(0);\\n        }\\n\\n        children.push_back(pid);\\n    }\\n\\n    for (pid_t c : children)\\n        waitpid(c, nullptr, 0);\\n\\n    std::cout << \\\"done\\\" << std::endl;\\n    return 0;\\n}\",\r
+
+    \  \"timeoutSec\": 5\r
+
+    }"
+settings: {}
+order: 2000

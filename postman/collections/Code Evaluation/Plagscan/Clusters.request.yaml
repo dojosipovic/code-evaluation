@@ -1,0 +1,16 @@
+$kind: http-request
+url: http://localhost:8080/api/plagscan/clusters
+method: GET
+queryParams:
+  - key: assignmentId
+    value: "22"
+    disabled: true
+  - key: userId
+    value: "3"
+    disabled: true
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 4000

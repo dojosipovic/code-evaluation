@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:8080/api/auth/logout-everywhere
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: ""
+settings: {}
+order: 6000

@@ -1,0 +1,26 @@
+$kind: http-request
+url: http://localhost:8080/api/invites?page=0&size=20&status=PENDING&sortBy=role&sortDirection=asc
+method: GET
+queryParams:
+  - key: page
+    value: "0"
+  - key: size
+    value: "20"
+  - key: email
+    value: "@gmail.com"
+    disabled: true
+  - key: status
+    value: PENDING
+  - key: role
+    value: PROF
+    disabled: true
+  - key: sortBy
+    value: role
+  - key: sortDirection
+    value: asc
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 4000

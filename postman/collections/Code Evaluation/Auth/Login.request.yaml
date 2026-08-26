@@ -1,0 +1,22 @@
+$kind: http-request
+url: http://localhost:8080/api/auth/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"username\": \"admin\",\r
+
+    \  \"password\": \"admin\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "let response = pm.response.json();\r
+
+      let access_token = response.accessToken;\r
+
+      pm.environment.set(\"accessToken\", access_token);"
+    language: text/javascript
+settings: {}
+order: 1000

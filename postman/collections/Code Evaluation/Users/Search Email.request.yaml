@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/users/search-email?email=admin@email.com
+method: GET
+queryParams:
+  email: admin@email.com
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 3000

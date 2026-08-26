@@ -1,0 +1,36 @@
+$kind: http-request
+url: http://localhost:8080/api/assignments/:assignmentId/evaluate
+method: POST
+pathVariables:
+  assignmentId: "18"
+body:
+  type: json
+  content: "{\r
+
+    \    \"submissions\": [\r
+
+    \        {\r
+
+    \            \"submissionId\": 7,\r
+
+    \            \"finalGrade\": 0\r
+
+    \        },\r
+
+    \        {\r
+
+    \            \"submissionId\": 5,\r
+
+    \            \"finalGrade\": 1\r
+
+    \        }\r
+
+    \    ]\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 4000

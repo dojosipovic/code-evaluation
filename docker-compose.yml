@@ -32,6 +32,7 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: apppass
       QUARKUS_MAILER_HOST: mailpit
       QUARKUS_MAILER_PORT: 1025
+      QUARKUS_HTTP_CORS_ORIGINS: http://localhost:4200,http://localhost:5173,http://localhost:4201
       PLAGSCAN_API_URL: http://backend-plagscan:8080
     volumes:
       - //var/run/docker.sock:/var/run/docker.sock
@@ -55,26 +56,33 @@ services:
       - "4200:80"
     environment:
       API_URL: ""
-      PLAGSCAN_REPORT_URL: ""
-      PLAGSCAN_REPORT_VIEWER_URL: ""
+      PLAGSCAN_REPORT_URL: "http://localhost:8080/api/plagscan/report"
+      PLAGSCAN_REPORT_VIEWER_URL: "http://localhost:4201"
     depends_on:
       - backend
+      - jplag-report-viewer
+
+  jplag-report-viewer:
+    container_name: jplag-report-viewer
+    image: ghcr.io/dojosipovic/jplag-report-viewer:latest
+    ports:
+      - "4201:80"
 
   cpp-compile-image:
     profiles: [ "build-sandbox" ]
+    scale: 0
     build:
       context: ./cpp-compile
       dockerfile: Dockerfile
     image: cpp-compile:latest
-    entrypoint: [ "true" ]
 
   cpp-run-image:
     profiles: [ "build-sandbox" ]
+    scale: 0
     build:
       context: ./cpp-run
       dockerfile: Dockerfile
     image: cpp-run:latest
-    entrypoint: [ "true" ]
 
 
 

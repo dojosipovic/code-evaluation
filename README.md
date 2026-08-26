@@ -80,7 +80,7 @@ cpp-run/
 ## Build sandbox images and start everything
 
 ```bash
-docker compose --profile build-sandbox up --build
+docker compose --profile build-sandbox up --build -d
 ```
 
 Builds the sandbox-profile services and starts the normal application services.
@@ -88,10 +88,10 @@ Builds the sandbox-profile services and starts the normal application services.
 Note: the sandbox services use:
 
 ```yaml
-entrypoint: [ "true" ]
+scale: 0
 ```
 
-so they only build the images and then immediately exit.
+so Compose builds the images without starting long-running placeholder containers.
 
 ---
 

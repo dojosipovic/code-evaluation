@@ -1,0 +1,50 @@
+$kind: http-request
+url: http://localhost:8080/api/plagscan/demo/cpp
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"submissions\": [\r
+
+    \    {\r
+
+    \      \"id\": \"13\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPgojaW5jbHVkZSA8dmVjdG9yPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwoKaW50IHN1bWFQYXJuaWgxKGNvbnN0IHZlY3RvcjxpbnQ+JiBicm9qZXZpKSB7CiAgICBpbnQgc3VtYSA9IDA7CgogICAgZm9yIChpbnQgeCA6IGJyb2pldmkpIHsKICAgICAgICBpZiAoeCAlIDIgPT0gMCkgewogICAgICAgICAgICBzdW1hICs9IHg7CiAgICAgICAgfQogICAgfQoKICAgIHJldHVybiBzdW1hOwp9CgppbnQgbWFpbigpIHsKICAgIHZlY3RvcjxpbnQ+IGJyb2pldmkgPSB7MSwgMiwgMywgNCwgNSwgNn07CgoKICAgIHJldHVybiAwOwp9\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"14\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPgojaW5jbHVkZSA8dmVjdG9yPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwoKaW50IHN1bWFQYXJuaWgyKGNvbnN0IHZlY3RvcjxpbnQ+JiBuaXopIHsKICAgIGludCByZXp1bHRhdCA9IDA7CiAgICBzaXplX3QgaSA9IDA7CgogICAgd2hpbGUgKGkgPCBuaXouc2l6ZSgpKSB7CiAgICAgICAgYm9vbCBwYXJhbiA9IChuaXpbaV0gJSAyID09IDApOwoKICAgICAgICBpZiAocGFyYW4pIHsKICAgICAgICAgICAgcmV6dWx0YXQgPSByZXp1bHRhdCArIG5peltpXTsKICAgICAgICB9CgogICAgICAgICsraTsKICAgIH0KCiAgICByZXR1cm4gcmV6dWx0YXQ7Cn0KCmludCBtYWluKCkgewogICAgdmVjdG9yPGludD4gbml6ID0gezEsIDIsIDMsIDQsIDUsIDZ9OwoKCiAgICByZXR1cm4gMDsKfQ==\"\r
+
+    \    }\r
+
+    \  ],\r
+
+    \  \"baseCode\": {\r
+
+    \    \"files\": [\r
+
+    \      {\r
+
+    \        \"id\": \"starter.cpp\",\r
+
+    \        \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwoKaW50IG1haW4oKSB7CgoKICAgIHJldHVybiAwOwp9\"\r
+
+    \      }\r
+
+    \    ]\r
+
+    \  },\r
+
+    \  \"minSimilarity\": 0.1,\r
+
+    \  \"includeClusters\": true\r
+
+    }\r\n"
+settings: {}
+order: 3000

@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/assignments/:assignmentId
+method: GET
+pathVariables:
+  assignmentId: "1"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 2000

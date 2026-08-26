@@ -1,0 +1,28 @@
+$kind: http-request
+url: http://localhost:8080/api/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"token\": \"FZz4cUdU9MPmt0ysDBmKkfmNQWNKqDqKMtZ5TXNZQm4\",\r
+
+    \    \"username\": \"test5555\",\r
+
+    \    \"firstname\": \"test555\",\r
+
+    \    \"lastname\": \"test555\",\r
+
+    \    \"password\": \"test5555\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "let response = pm.response.json();\r
+
+      let access_token = response.accessToken;\r
+
+      pm.environment.set(\"accessToken\", access_token);"
+    language: text/javascript
+settings: {}
+order: 3000

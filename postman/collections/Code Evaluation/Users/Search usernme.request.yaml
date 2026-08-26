@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:8080/api/users/search-username/?username=admin
+method: GET
+queryParams:
+  username: admin
+auth:
+  type: noauth
+settings: {}
+order: 4000

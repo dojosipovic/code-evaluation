@@ -1,0 +1,18 @@
+$kind: http-request
+url: http://localhost:8080/api/quartz/demo/triggers
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"jobName\": \"demo-job-4\",\r
+
+    \    \"triggerName\": \"demo-trigger-4\",\r
+
+    \    \"startAt\": \"2026-07-04T13:49:00Z\",\r
+
+    \    \"message\": \"payload test\"\r
+
+    }"
+settings: {}
+order: 1000

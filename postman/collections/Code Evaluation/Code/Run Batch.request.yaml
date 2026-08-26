@@ -1,0 +1,24 @@
+$kind: http-request
+url: http://localhost:8080/api/run-cpp/batch
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"code\": \"#include <iostream>\\nusing namespace std;\\nint main(){ long long a,b; if(!(cin>>a>>b)) return 1; cout << (a+b) << \\\"\\\\n\\\"; }\\n\",\r
+
+    \  \"timeoutSec\": 5,\r
+
+    \  \"tests\": [\r
+
+    \    { \"input\": \"1 2\\n\" },\r
+
+    \    { \"input\": \"10 20\\n\" },\r
+
+    \    { \"input\": \"100 200\\n\" }\r
+
+    \  ]\r
+
+    }"
+settings: {}
+order: 3000

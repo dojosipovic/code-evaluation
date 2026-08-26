@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/submissions/:submissionId
+method: GET
+pathVariables:
+  submissionId: "16"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 2000

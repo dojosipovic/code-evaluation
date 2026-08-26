@@ -1,0 +1,14 @@
+$kind: http-request
+url: http://localhost:8080/api/users/:id/enabled
+method: PATCH
+pathVariables:
+  id: "13"
+body:
+  type: json
+  content: "false"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 2000

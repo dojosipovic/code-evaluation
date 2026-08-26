@@ -1,0 +1,26 @@
+$kind: http-request
+url: http://localhost:8080/api/assignments
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Test 3\",\r
+
+    \    \"taskId\": 21,\r
+
+    \    \"groupId\": 5,\r
+
+    \    \"startsAt\": \"2026-06-10T08:00:00Z\",\r
+
+    \    \"endsAt\": \"2026-06-10T08:15:00Z\",\r
+
+    \    \"points\": 10\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 6000

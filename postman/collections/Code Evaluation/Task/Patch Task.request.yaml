@@ -1,0 +1,14 @@
+$kind: http-request
+url: http://localhost:8080/api/tasks/:id
+method: PATCH
+pathVariables:
+  id: "5"
+body:
+  type: json
+  content: "{\r\n  \"enabled\": true\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 5000

@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/users?role=STUDENT
+method: GET
+queryParams:
+  role: STUDENT
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 1000

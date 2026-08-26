@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/groups/:id/leaderboard
+method: GET
+pathVariables:
+  id: "8"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 7000

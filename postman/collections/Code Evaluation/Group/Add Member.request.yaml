@@ -1,0 +1,12 @@
+$kind: http-request
+url: http://localhost:8080/api/groups/:groupId/members/:userId
+method: POST
+pathVariables:
+  groupId: ""
+  userId: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 2000

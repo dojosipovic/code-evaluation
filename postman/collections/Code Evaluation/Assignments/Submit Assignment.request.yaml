@@ -1,0 +1,18 @@
+$kind: http-request
+url: http://localhost:8080/api/assignments/:assignmentId/submit
+method: POST
+pathVariables:
+  assignmentId: "7"
+body:
+  type: json
+  content: "{\r
+
+    \    \"code\": \"#include <iostream>\\n\\nint main() {\\n    int a, b;\\n    std::cin >> a >> b;\\n    std::cout << a + b << std::endl;\\n    return 0;\\n}\\n\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 3000

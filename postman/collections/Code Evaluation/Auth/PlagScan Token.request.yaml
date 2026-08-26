@@ -1,0 +1,28 @@
+$kind: http-request
+url: http://localhost:8080/api/auth/plagscan-token/:assignmentId
+method: POST
+pathVariables:
+  assignmentId: "22"
+body:
+  type: json
+  content: "{\r
+
+    \  \"username\": \"admin\",\r
+
+    \  \"password\": \"admin\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+scripts:
+  - type: afterResponse
+    code: "let response = pm.response.json();\r
+
+      let access_token = response.accessToken;\r
+
+      pm.environment.set(\"accessTokenPlagscan\", access_token);"
+    language: text/javascript
+settings: {}
+order: 2000

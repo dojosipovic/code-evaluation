@@ -1,0 +1,25 @@
+$kind: http-request
+url: http://localhost:8080/api/groups
+method: GET
+queryParams:
+  - key: search
+    value: "444"
+    disabled: true
+  - key: page
+    value: "3"
+    disabled: true
+  - key: size
+    value: "1"
+    disabled: true
+  - key: sortDir
+    value: asc
+    disabled: true
+  - key: sortBy
+    value: memberCount
+    disabled: true
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 9000

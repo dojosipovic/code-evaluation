@@ -1,0 +1,24 @@
+$kind: http-request
+url: http://localhost:8080/api/groups/:id/non-members
+method: GET
+queryParams:
+  - key: search
+    value: ""
+    disabled: true
+  - key: page
+    value: "1"
+    disabled: true
+  - key: size
+    value: "1"
+    disabled: true
+  - key: sortDir
+    value: desc
+    disabled: true
+pathVariables:
+  id: "1"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 8000

@@ -1,0 +1,25 @@
+$kind: http-request
+url: http://localhost:8080/api/submissions
+method: GET
+queryParams:
+  - key: assignmentId
+    value: "22"
+    disabled: true
+  - key: userId
+    value: "3"
+    disabled: true
+  - key: status
+    value: QUEUED
+    disabled: true
+  - key: submittedAfter
+    value: ""
+    disabled: true
+  - key: submittedBefore
+    value: ""
+    disabled: true
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 1000

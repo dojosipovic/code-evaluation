@@ -1,0 +1,16 @@
+$kind: http-request
+url: http://localhost:8080/api/run-cpp
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"code\": \"#include <iostream>\\nusing namespace std;\\nint main(){int a,b; cin>>a>>b; cout<<a+b;}\",\r
+
+    \  \"input\": \"5\\n6\\n\",\r
+
+    \  \"timeoutSec\": 5\r
+
+    }"
+settings: {}
+order: 1000

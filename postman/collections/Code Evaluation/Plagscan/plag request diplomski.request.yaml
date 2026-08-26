@@ -1,0 +1,90 @@
+$kind: http-request
+url: http://localhost:8081/api/jplag/submissions/cpp
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"submissions\": [\r
+
+    \    {\r
+
+    \      \"id\": \"student1\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwoKaW50IG1haW4oKSB7CiAgICBpbnQgbjsKICAgIGNpbiA+PiBuOwoKICAgIGludCBicm9qLCBtYWtzaW11bTsKICAgIGNpbiA+PiBtYWtzaW11bTsKCiAgICBmb3IgKGludCBpID0gMTsgaSA8IG47IGkrKykgewogICAgICAgIGNpbiA+PiBicm9qOwogICAgICAgIGlmIChicm9qID4gbWFrc2ltdW0pIHsKICAgICAgICAgICAgbWFrc2ltdW0gPSBicm9qOwogICAgICAgIH0KICAgIH0KCiAgICBjb3V0IDw8IG1ha3NpbXVtIDw8IGVuZGw7CgogICAgcmV0dXJuIDA7Cn0=\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student2\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KdXNpbmcgbmFtZXNwYWNlIHN0ZDsNCg0KaW50IG1haW4oKSB7DQogICAgaW50IG47DQogICAgY2luID4+IG47DQoNCiAgICBpbnQgeCwgbWF4QnJvajsNCiAgICBjaW4gPj4gbWF4QnJvajsNCg0KICAgIGZvciAoaW50IGkgPSAxOyBpIDwgbjsgaSsrKSB7DQogICAgICAgIGNpbiA+PiB4Ow0KDQogICAgICAgIGlmICh4ID4gbWF4QnJvaikgew0KICAgICAgICAgICAgbWF4QnJvaiA9IHg7DQogICAgICAgIH0NCiAgICB9DQoNCiAgICBjb3V0IDw8IG1heEJyb2ogPDwgZW5kbDsNCiAgICByZXR1cm4gMDsNCn0=\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student3\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KdXNpbmcgbmFtZXNwYWNlIHN0ZDsNCg0KaW50IG1haW4oKSB7DQogICAgaW50IG4sIGJyb2osIG1heDsNCiAgICBjaW4gPj4gbjsNCg0KICAgIGNpbiA+PiBtYXg7DQoNCiAgICBmb3IgKGludCBpID0gMTsgaSA8IG47IGkrKykgew0KICAgICAgICBjaW4gPj4gYnJvajsNCg0KICAgICAgICBpZiAoYnJvaiA+IG1heCkNCiAgICAgICAgICAgIG1heCA9IGJyb2o7DQogICAgfQ0KDQogICAgY291dCA8PCBtYXggPDwgZW5kbDsNCg0KICAgIHJldHVybiAwOw0KfQ==\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student4\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KdXNpbmcgbmFtZXNwYWNlIHN0ZDsNCg0KaW50IG1haW4oKSB7DQogICAgaW50IG47DQogICAgY2luID4+IG47DQoNCiAgICBpbnQgYnJvamV2aVsxMDBdOw0KDQogICAgZm9yIChpbnQgaSA9IDA7IGkgPCBuOyBpKyspIHsNCiAgICAgICAgY2luID4+IGJyb2pldmlbaV07DQogICAgfQ0KDQogICAgaW50IG5hanZlY2kgPSBicm9qZXZpWzBdOw0KDQogICAgZm9yIChpbnQgaSA9IDE7IGkgPCBuOyBpKyspIHsNCiAgICAgICAgaWYgKGJyb2pldmlbaV0gPiBuYWp2ZWNpKSB7DQogICAgICAgICAgICBuYWp2ZWNpID0gYnJvamV2aVtpXTsNCiAgICAgICAgfQ0KICAgIH0NCg0KICAgIGNvdXQgPDwgbmFqdmVjaSA8PCBlbmRsOw0KDQogICAgcmV0dXJuIDA7DQp9\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student5\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KdXNpbmcgbmFtZXNwYWNlIHN0ZDsNCg0KaW50IG1haW4oKSB7DQogICAgaW50IG47DQogICAgY2luID4+IG47DQoNCiAgICBpbnQgbml6WzEwMF07DQoNCiAgICBmb3IgKGludCBpID0gMDsgaSA8IG47IGkrKykgew0KICAgICAgICBjaW4gPj4gbml6W2ldOw0KICAgIH0NCg0KICAgIGludCBtYWtzaW11bSA9IG5pelswXTsNCg0KICAgIGZvciAoaW50IGkgPSAxOyBpIDwgbjsgaSsrKSB7DQogICAgICAgIGlmIChuaXpbaV0gPiBtYWtzaW11bSkNCiAgICAgICAgICAgIG1ha3NpbXVtID0gbml6W2ldOw0KICAgIH0NCg0KICAgIGNvdXQgPDwgbWFrc2ltdW0gPDwgZW5kbDsNCg0KICAgIHJldHVybiAwOw0KfQ==\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student6\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KdXNpbmcgbmFtZXNwYWNlIHN0ZDsNCg0KaW50IG1haW4oKSB7DQogICAgaW50IG4sIGFbMTAwXTsNCiAgICBjaW4gPj4gbjsNCg0KICAgIGZvciAoaW50IGkgPSAwOyBpIDwgbjsgaSsrKSB7DQogICAgICAgIGNpbiA+PiBhW2ldOw0KICAgIH0NCg0KICAgIGludCBtYXggPSBhWzBdOw0KDQogICAgZm9yIChpbnQgaSA9IDE7IGkgPCBuOyBpKyspIHsNCiAgICAgICAgaWYgKGFbaV0gPiBtYXgpIHsNCiAgICAgICAgICAgIG1heCA9IGFbaV07DQogICAgICAgIH0NCiAgICB9DQoNCiAgICBjb3V0IDw8IG1heCA8PCBlbmRsOw0KICAgIHJldHVybiAwOw0KfQ==\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": \"student7\",\r
+
+    \      \"contentBase64\": \"I2luY2x1ZGUgPGlvc3RyZWFtPg0KI2luY2x1ZGUgPHZlY3Rvcj4NCiNpbmNsdWRlIDxhbGdvcml0aG0+DQoNCnVzaW5nIG5hbWVzcGFjZSBzdGQ7DQoNCmludCBtYWluKCkgew0KICAgIGludCBuOw0KICAgIGNpbiA+PiBuOw0KDQogICAgdmVjdG9yPGludD4gdnJpamVkbm9zdGkobik7DQoNCiAgICBmb3IgKGludCAmdnJpamVkbm9zdCA6IHZyaWplZG5vc3RpKSB7DQogICAgICAgIGNpbiA+PiB2cmlqZWRub3N0Ow0KICAgIH0NCg0KICAgIHNvcnQodnJpamVkbm9zdGkuYmVnaW4oKSwgdnJpamVkbm9zdGkuZW5kKCkpOw0KDQogICAgY291dCA8PCB2cmlqZWRub3N0aS5iYWNrKCkgPDwgJ1xuJzsNCn0=\"\r
+
+    \    }\r
+
+    \  ],\r
+
+    \  \"baseCode\": {\r
+
+    \    \"files\": [\r
+
+    \      {\r
+
+    \        \"id\": \"7\",\r
+
+    \        \"contentBase64\": \"Ly8gemFqZWRuacSNa2kgc2tlbGV0b24KaW50IG1haW4oKSB7CiAgICBzdHJpbmcgaW5wdXQ7CiAgICBnZXRsaW5lKGNpbiwgaW5wdXQpOwoKICAgIGF1dG8gZGF0YSA9IHBhcnNlKGlucHV0KTsKICAgIGF1dG8gcmVzdWx0ID0gc29sdmUoZGF0YSk7CgogICAgcHJpbnQocmVzdWx0KTsKfQo=\"\r
+
+    \      }\r
+
+    \    ]\r
+
+    \  },\r
+
+    \  \"minSimilarity\": 0.1,\r
+
+    \  \"includeClusters\": true\r
+
+    }\r\n"
+settings: {}
+order: 2000

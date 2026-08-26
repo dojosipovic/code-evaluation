@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/api/test-mail?to=asdf@gmail.com
+method: GET
+queryParams:
+  to: asdf@gmail.com
+settings: {}
+order: 1000

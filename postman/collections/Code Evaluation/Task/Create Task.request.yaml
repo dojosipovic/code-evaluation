@@ -1,0 +1,98 @@
+$kind: http-request
+url: http://localhost:8080/api/tasks
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Test title\",\r
+
+    \  \"description\": \"# Naziv zadatka\\n\\n## Opis\\nOvdje napiši opis zadatka.\\n\\n## Ulaz\\nOpiši ulaz.\\n\\n## Izlaz\\nOpiši izlaz.\\n\\n## Ograničenja\\n- 1 <= n <= 1000\\n\\n## Primjer\\n**Ulaz**\\n```\\n5\\n```\\n\\n**Izlaz**\\n```\\n10\\n```\\n\",\r
+
+    \  \"starterCode\": {\r
+
+    \    \"code\": \"#include <iostream>\\nusing namespace std;\\n\\nint main() {\\n\\n    return 0;\\n}\\n\"\r
+
+    \  },\r
+
+    \  \"includeStarterCode\": true,\r
+
+    \  \"shared\": true,\r
+
+    \  \"enabled\": false,\r
+
+    \  \"publicTests\": [\r
+
+    \    {\r
+
+    \      \"id\": 2,\r
+
+    \      \"input\": \"asdf\",\r
+
+    \      \"output\": \"asdf\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": 3,\r
+
+    \      \"input\": \"fdsa\",\r
+
+    \      \"output\": \"afds\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": 5,\r
+
+    \      \"input\": \"\",\r
+
+    \      \"output\": \"afds\"\r
+
+    \    }\r
+
+    \  ],\r
+
+    \  \"hiddenTests\": [\r
+
+    \    {\r
+
+    \      \"id\": 4,\r
+
+    \      \"input\": \"asdf\",\r
+
+    \      \"output\": \"asdf\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": 4,\r
+
+    \      \"input\": \"asdf\",\r
+
+    \      \"output\": \"asdf\"\r
+
+    \    },\r
+
+    \    {\r
+
+    \      \"id\": 4,\r
+
+    \      \"input\": \"asdf\",\r
+
+    \      \"output\": \"asdf\"\r
+
+    \    }\r
+
+    \  ]\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 1000

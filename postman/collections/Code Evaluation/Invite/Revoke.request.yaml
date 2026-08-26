@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/invites/:id/revoke
+method: POST
+pathVariables:
+  id: "4"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+settings: {}
+order: 2000

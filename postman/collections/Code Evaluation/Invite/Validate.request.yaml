@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:8080/api/invites/validate?token=17WyfJ7BSShZ-RErZRn5Q2O8wiT24JLUm4vgoY97jvs
+method: GET
+queryParams:
+  token: 17WyfJ7BSShZ-RErZRn5Q2O8wiT24JLUm4vgoY97jvs
+auth:
+  type: noauth
+settings: {}
+order: 3000

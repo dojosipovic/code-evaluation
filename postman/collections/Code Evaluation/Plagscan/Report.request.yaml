@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/api/plagscan/report?token={{accessTokenPlagscan}}
+method: GET
+queryParams:
+  token: "{{accessTokenPlagscan}}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessTokenPlagscan}}"
+settings: {}
+order: 5000

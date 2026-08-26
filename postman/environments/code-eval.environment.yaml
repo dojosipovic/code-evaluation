@@ -1,9 +1,6 @@
 name: code-eval
-color: null
 values:
   - key: accessToken
-    value: ""
-    enabled: true
+    value: ''
   - key: accessTokenPlagscan
-    value: ""
-    enabled: true
+    value: ''
